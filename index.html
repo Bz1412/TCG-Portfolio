@@ -4,49 +4,170 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pokémon TCG Vault</title>
-    
-    <!-- PWA Settings -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="TCG Vault">
     <meta name="theme-color" content="#f9fafb">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTgxOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTElIiBmaWxsPSIjZmZmZmZmIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAwIiBmb250LXdlaWdodD0iYm9sZCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VENHPC90ZXh0Pjwvc3ZnPg==">
-
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTgxOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTElIiBmaWxsPSIjZmZmZmZmIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAwIiBmb250LXdlaWdodD0iYm9sZCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VENHPC90ZXh0Pjwvc3ZnPg==">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         input:disabled, select:disabled { background-color: #f9fafb !important; opacity: 1 !important; color: #4b5563 !important; }
-        
-        /* สไตล์หน้าแฟ้มการ์ด (Binder) */
-        .binder-page {
-            background-color: #ffffff;
-            border-left: 6px solid #d1d5db;
-            border-radius: 0 16px 16px 0;
-            box-shadow: -10px 0 15px -3px rgba(0, 0, 0, 0.05), 4px 4px 15px rgba(0,0,0,0.05);
+
+        /* ===== BINDER STYLES ===== */
+        #view-binder {
+            display: none;
+            flex-direction: column;
+            height: 100dvh;
+            overflow: hidden;
+            background: #f3f4f6;
+            padding-bottom: 80px; /* ให้พ้น bottom nav */
+        }
+        #view-binder.active { display: flex; }
+
+        .binder-book {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
             position: relative;
+            touch-action: pan-y;
         }
-        .binder-rings {
-            position: absolute; left: -14px; top: 10%; bottom: 10%;
-            display: flex; flex-direction: column; justify-content: space-around;
+
+        /* สันปก (binding spine) */
+        .binder-spine {
+            width: 18px;
+            flex-shrink: 0;
+            background: linear-gradient(to right, #9ca3af, #d1d5db, #9ca3af);
+            border-radius: 6px 0 0 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            padding: 16px 0;
+            box-shadow: inset -3px 0 6px rgba(0,0,0,0.15);
         }
-        .ring { width: 16px; height: 16px; background: #9ca3af; border-radius: 50%; border: 3px solid #f3f4f6; box-shadow: inset 2px 2px 4px rgba(0,0,0,0.3); }
-        .binder-slot {
-            aspect-ratio: 2.5 / 3.5;
-            background-color: #f3f4f6;
-            border: 2px dashed #d1d5db;
+        .binder-ring {
+            width: 14px; height: 14px;
+            background: radial-gradient(circle at 35% 35%, #e5e7eb, #6b7280);
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* หน้ากระดาษ */
+        .binder-page-content {
+            flex: 1;
+            background: white;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: 0 12px 12px 0;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.08), inset 8px 0 16px rgba(0,0,0,0.04);
+        }
+
+        /* Grid การ์ด 4 แถวแนวนอน x 2 แนวตั้ง = 8 ช่อง */
+        .binder-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 8px;
+            padding: 12px;
+            overflow: hidden;
+        }
+
+        .card-slot {
             border-radius: 8px;
             overflow: hidden;
             position: relative;
+            border: 1.5px dashed #d1d5db;
+            background: #f9fafb;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            aspect-ratio: 2.5 / 3.5;
         }
+        .card-slot:active { transform: scale(0.95); }
+        .card-slot.has-card {
+            border: 1.5px solid #e5e7eb;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .card-slot.has-card:active { box-shadow: 0 0 0 2px #111; }
+        .card-slot.is-missing {
+            background: repeating-linear-gradient(
+                45deg, #f9fafb, #f9fafb 4px, #f3f4f6 4px, #f3f4f6 8px
+            );
+            cursor: default;
+        }
+
+        .card-slot img {
+            width: 100%; height: 100%;
+            object-fit: contain;
+            padding: 2px;
+        }
+        .slot-number {
+            position: absolute; top: 2px; left: 2px;
+            background: rgba(0,0,0,0.6); color: white;
+            font-size: 8px; font-weight: 700;
+            padding: 1px 4px; border-radius: 4px;
+            line-height: 1.4;
+        }
+        .slot-qty {
+            position: absolute; bottom: 2px; right: 2px;
+            background: #111827; color: white;
+            font-size: 8px; font-weight: 700;
+            padding: 1px 4px; border-radius: 4px;
+        }
+        .slot-wanted-badge {
+            position: absolute; inset: 0;
+            background: rgba(251, 191, 36, 0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+        }
+        .slot-missing-label {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; color: #9ca3af; font-weight: 600;
+            flex-direction: column; gap: 2px;
+        }
+
+        /* Pagination bar */
+        .binder-pagination {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 14px;
+            border-top: 1px solid #f3f4f6;
+            background: white;
+        }
+        .page-btn {
+            padding: 6px 14px;
+            background: #f3f4f6;
+            border-radius: 10px;
+            font-size: 12px; font-weight: 700;
+            color: #374151;
+            transition: background 0.15s;
+            border: none; cursor: pointer;
+        }
+        .page-btn:active { background: #e5e7eb; }
+        .page-btn:disabled { opacity: 0.35; cursor: default; }
+
+        /* Swipe animation */
+        @keyframes slideLeft { from { transform: translateX(60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideRight { from { transform: translateX(-60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .slide-in-left { animation: slideLeft 0.2s ease; }
+        .slide-in-right { animation: slideRight 0.2s ease; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 min-h-screen pb-28 selection:bg-gray-200 selection:text-gray-900">
+<body class="bg-gray-50 text-gray-900 selection:bg-gray-200 selection:text-gray-900">
 
     <datalist id="set-list"></datalist>
 
@@ -54,201 +175,196 @@
         <span id="toast-icon">✨</span> <span id="toast-message">ดำเนินการสำเร็จ</span>
     </div>
 
-    <!-- Header -->
-    <header class="relative bg-white pt-8 pb-6 px-6 rounded-b-[2.5rem] shadow-sm border-b border-gray-200 z-10">
-        <div class="max-w-md mx-auto">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <span class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold bg-gray-100 px-3 py-1 rounded-full border border-gray-200">Thai Collection</span>
-                    <h1 class="text-2xl font-extrabold tracking-tight mt-2 text-gray-900">TCG Vault</h1>
+    <!-- ===================== VIEW: HOME ===================== -->
+    <div id="view-home" class="min-h-screen pb-28">
+        <header class="bg-white pt-8 pb-6 px-6 rounded-b-[2.5rem] shadow-sm border-b border-gray-200">
+            <div class="max-w-md mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold bg-gray-100 px-3 py-1 rounded-full border border-gray-200">Thai Collection</span>
+                        <h1 class="text-2xl font-extrabold tracking-tight mt-2 text-gray-900">TCG Vault</h1>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="auth-btn-login" onclick="loginAdmin()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition text-sm">🔒</button>
+                        <button id="auth-btn-logout" onclick="logoutAdmin()" class="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 hover:text-red-500 transition text-sm hidden">🔓</button>
+                        <button onclick="openStatsModal()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition">📊</button>
+                        <button onclick="loadData()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition">🔄</button>
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    <button id="auth-btn-login" onclick="loginAdmin()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition text-sm">🔒</button>
-                    <button id="auth-btn-logout" onclick="logoutAdmin()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-red-50 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 hover:text-red-500 transition text-sm hidden">🔓</button>
-                    <button onclick="openStatsModal()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition">📊</button>
-                    <button onclick="loadData()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition">🔄</button>
+                <div class="grid grid-cols-2 gap-3.5">
+                    <div class="bg-gray-50 p-4 rounded-3xl border border-gray-200">
+                        <p class="text-[11px] text-gray-500 font-medium">การ์ดทั้งหมดในคลัง</p>
+                        <p id="total-cards" class="text-2xl font-black mt-1 text-gray-900">0 <span class="text-xs font-normal text-gray-500">ใบ</span></p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-3xl border border-gray-200">
+                        <p class="text-[11px] text-gray-500 font-medium">มูลค่าประเมินรวม</p>
+                        <p id="total-price" class="text-2xl font-black mt-1 text-emerald-600">฿0</p>
+                    </div>
                 </div>
             </div>
-            
-            <div class="grid grid-cols-2 gap-3.5" id="header-stats">
-                <div class="bg-gray-50 p-4 rounded-3xl border border-gray-200 relative overflow-hidden">
-                    <p class="text-[11px] text-gray-500 font-medium">การ์ดทั้งหมดในคลัง</p>
-                    <p id="total-cards" class="text-2xl font-black mt-1 text-gray-900">0 <span class="text-xs font-normal text-gray-500">ใบ</span></p>
+        </header>
+
+        <main class="max-w-md mx-auto p-5 space-y-4">
+            <div class="space-y-3">
+                <div class="relative flex items-center">
+                    <span class="absolute left-4 text-gray-400">🔍</span>
+                    <input type="text" id="search-input" placeholder="ค้นหาการ์ด, ซีรีส์..." class="w-full pl-11 pr-10 py-3.5 bg-white placeholder-gray-400 rounded-2xl shadow-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm" oninput="applyFilters()">
+                    <button id="clear-search-btn" onclick="clearSearch()" class="absolute right-4 text-gray-400 hidden">✕</button>
                 </div>
-                <div class="bg-gray-50 p-4 rounded-3xl border border-gray-200 relative overflow-hidden">
-                    <p class="text-[11px] text-gray-500 font-medium">มูลค่าประเมินรวม</p>
-                    <p id="total-price" class="text-2xl font-black mt-1 text-emerald-600">฿0</p>
+                <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                    <button onclick="exportForSale()" class="bg-gray-900 text-white text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-black">📋 โพสต์ขาย</button>
+                    <!-- 🌟 Dropdown กรองตาม Set -->
+                    <select id="filter-set" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none min-w-0 max-w-[130px]">
+                        <option value="">📁 ทุกชุด</option>
+                    </select>
+                    <select id="filter-status" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
+                        <option value="all">สถานะทั้งหมด</option><option value="owned">✅ มีในคลัง</option><option value="wishlist">🎯 Wishlist</option>
+                    </select>
+                    <select id="sort-select" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
+                        <option value="newest">🔥 ล่าสุด</option><option value="price_desc">💰 ราคา ↓</option><option value="price_asc">📉 ราคา ↑</option><option value="name_asc">🔤 ชื่อ A-Z</option>
+                    </select>
+                    <select id="filter-rarity" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
+                        <option value="all">ระดับทั้งหมด</option><option value="UR">UR</option><option value="SAR">SAR</option><option value="SR">SR</option><option value="AR">AR</option><option value="RR">RR</option>
+                    </select>
                 </div>
             </div>
-        </div>
-    </header>
-
-    <!-- 🌟 View 1: หน้าแรก (Dashboard/List View) -->
-    <main id="view-home" class="max-w-md mx-auto p-5 space-y-4 block">
-        <div class="space-y-3">
-            <div class="relative flex items-center">
-                <span class="absolute left-4 text-gray-400">🔍</span>
-                <input type="text" id="search-input" placeholder="ค้นหาการ์ด, ซีรีส์..." class="w-full pl-11 pr-10 py-3.5 bg-white placeholder-gray-400 rounded-2xl shadow-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm transition" oninput="applyFilters()">
-                <button id="clear-search-btn" onclick="clearSearch()" class="absolute right-4 text-gray-400 hidden">✕</button>
+            <div id="loading" class="grid grid-cols-2 gap-4">
+                <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-56"></div>
+                <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-56"></div>
             </div>
+            <div id="card-grid" class="grid grid-cols-2 gap-4 hidden"></div>
+        </main>
+    </div>
 
-            <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                <button onclick="exportForSale()" class="bg-gray-900 text-white text-xs font-semibold rounded-xl px-3 py-2 shadow-sm flex-shrink-0 flex items-center gap-1 hover:bg-black">
-                    📋 ก๊อปปี้โพสต์ขาย
-                </button>
-                <!-- 🌟 เพิ่ม Dropdown กรองตาม Set ตรงนี้ -->
-                <select id="filter-set" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
-                    <option value="all">📁 ทุกชุด (Set)</option>
+    <!-- ===================== VIEW: BINDER ===================== -->
+    <div id="view-binder">
+        <!-- Binder Header -->
+        <div class="bg-white px-4 pt-10 pb-3 flex items-center gap-3 border-b border-gray-100 shadow-sm flex-shrink-0">
+            <div class="flex-1 min-w-0">
+                <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">แฟ้มสะสมการ์ด</p>
+                <select id="binder-set-select" onchange="loadBinderSet()" class="w-full bg-transparent text-sm font-extrabold text-gray-900 outline-none mt-0.5 truncate border-0 p-0">
+                    <option value="">-- เลือกชุดการ์ด (Set) --</option>
                 </select>
-                <select id="filter-status" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
-                    <option value="all">สถานะทั้งหมด</option><option value="owned">✅ มีในคลัง</option><option value="wishlist">🎯 Wishlist</option>
-                </select>
-                <select id="sort-select" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
-                    <option value="newest">🔥 เพิ่มล่าสุด</option><option value="price_desc">💰 ราคา: แพง-ถูก</option><option value="price_asc">📉 ราคา: ถูก-แพง</option><option value="name_asc">🔤 ชื่อ: A-Z</option>
-                </select>
-                <select id="filter-rarity" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
-                    <option value="all">ระดับทั้งหมด</option><option value="UR">UR</option><option value="SAR">SAR</option><option value="SR">SR</option><option value="AR">AR</option><option value="RR">RR</option>
-                </select>
+            </div>
+            <div id="binder-stats" class="text-right flex-shrink-0">
+                <p class="text-[10px] text-gray-400 font-semibold">มีแล้ว</p>
+                <p id="binder-owned-count" class="text-sm font-extrabold text-emerald-600">0 / 0</p>
             </div>
         </div>
 
-        <div id="loading" class="grid grid-cols-2 gap-4">
-            <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-60"></div>
-            <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-60"></div>
-        </div>
-
-        <div id="card-grid" class="grid grid-cols-2 gap-4 hidden"></div>
-    </main>
-
-    <!-- 🌟 View 2: หน้าแฟ้มสะสม (Binder View) -->
-    <main id="view-binder" class="max-w-md mx-auto p-5 hidden">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-extrabold text-gray-900">📖 แฟ้มสะสมการ์ด</h2>
-            <select id="binder-set-select" onchange="loadBinderSet()" class="bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-xl px-3 py-2 shadow-sm outline-none">
-                <option value="">-- เลือกชุดการ์ด --</option>
-            </select>
-        </div>
-
-        <!-- หน้าแฟ้ม (Swipeable) -->
-        <div id="binder-container" class="relative pl-4 pr-1 py-2">
-            <div class="binder-page p-4 min-h-[65vh]">
-                <!-- ห่วงกระดูกงู -->
-                <div class="binder-rings">
-                    <div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div>
+        <!-- Binder Book -->
+        <div class="binder-book" id="binder-book">
+            <!-- Spine -->
+            <div class="binder-spine">
+                <div class="binder-ring"></div>
+                <div class="binder-ring"></div>
+                <div class="binder-ring"></div>
+                <div class="binder-ring"></div>
+                <div class="binder-ring"></div>
+                <div class="binder-ring"></div>
+            </div>
+            <!-- Page -->
+            <div class="binder-page-content">
+                <div class="binder-grid" id="binder-grid">
+                    <!-- การ์ดแสดงผลที่นี่ -->
                 </div>
-                
-                <!-- Card Slots (2x4 Grid) -->
-                <div id="binder-grid" class="grid grid-cols-2 gap-3 mb-6">
-                    <!-- Cards will be injected here -->
-                </div>
-
                 <!-- Pagination -->
-                <div class="flex justify-between items-center text-xs text-gray-500 font-bold border-t border-gray-100 pt-3">
-                    <button onclick="prevBinderPage()" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">◀ ก่อนหน้า</button>
-                    <span id="binder-page-info">หน้า 1 / 1</span>
-                    <button onclick="nextBinderPage()" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">ถัดไป ▶</button>
+                <div class="binder-pagination">
+                    <button class="page-btn" id="binder-prev" onclick="changePage(-1)">◀ ก่อนหน้า</button>
+                    <div class="text-center">
+                        <span id="binder-page-info" class="text-xs font-bold text-gray-700">หน้า 1 / 1</span>
+                        <div id="binder-page-dots" class="flex gap-1 justify-center mt-1"></div>
+                    </div>
+                    <button class="page-btn" id="binder-next" onclick="changePage(1)">ถัดไป ▶</button>
                 </div>
             </div>
         </div>
-        <p class="text-[10px] text-center text-gray-400 mt-4">💡 ปัดซ้าย-ขวา ที่หน้าแฟ้มเพื่อเปลี่ยนหน้า</p>
-    </main>
 
-    <!-- Modals (Add/Edit) -->
-    <div id="detail-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+        <p class="text-center text-[10px] text-gray-400 py-1 flex-shrink-0">⬜ = ยังไม่มี | ปัดซ้าย/ขวาเพื่อเปลี่ยนหน้า</p>
+    </div>
+
+    <!-- ===================== MODAL: Add/Edit ===================== -->
+    <div id="detail-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
         <div class="bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl relative">
-            
             <div id="upload-overlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 hidden flex-col items-center justify-center rounded-[2.5rem]">
                 <div class="w-10 h-10 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin mb-3"></div>
                 <p class="text-sm font-bold text-gray-700">กำลังย่อและอัปโหลดรูป...</p>
             </div>
-
             <div class="flex justify-between items-center pb-2">
-                <h2 id="modal-title" class="font-bold text-lg text-gray-900">จัดการ การ์ด</h2>
-                <button onclick="toggleModal(false)" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 text-lg transition">&times;</button>
+                <h2 id="modal-title" class="font-bold text-lg text-gray-900">จัดการการ์ด</h2>
+                <button onclick="toggleModal(false)" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 text-lg">&times;</button>
             </div>
-
-            <div class="flex justify-center bg-gray-50 p-4 rounded-2xl border border-gray-100 relative cursor-pointer" onclick="openImageLightbox(document.getElementById('modal-image-preview').src)">
-                <img id="modal-image-preview" src="" class="h-40 object-contain rounded-lg drop-shadow-sm transition" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
+            <div class="flex justify-center bg-gray-50 p-4 rounded-2xl border border-gray-100 cursor-pointer" onclick="openImageLightbox(document.getElementById('modal-image-preview').src)">
+                <img id="modal-image-preview" src="" class="h-40 object-contain rounded-lg drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
             </div>
-
             <form id="card-form" onsubmit="submitForm(event)" class="space-y-3.5 pt-2">
                 <input type="hidden" id="form-mode"> <input type="hidden" id="form-rowIndex"> <input type="hidden" id="form-id">
-
                 <div>
                     <label class="text-[11px] font-semibold text-gray-500">ชื่อการ์ด</label>
-                    <input type="text" id="form-name" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
+                    <input type="text" id="form-name" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
                 </div>
-                
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">ชุด / ซีรีส์</label>
-                        <input type="text" id="form-set" list="set-list" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
+                        <input type="text" id="form-set" list="set-list" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
                     </div>
                     <div>
-                        <label class="text-[11px] font-semibold text-gray-500">ลำดับการ์ด (เช่น 054/130)</label>
-                        <input type="text" id="form-cardNumber" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
+                        <label class="text-[11px] font-semibold text-gray-500">ลำดับการ์ด</label>
+                        <input type="text" id="form-cardNumber" placeholder="เช่น 054/130" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
                     </div>
                 </div>
-
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">ความหายาก</label>
-                        <select id="form-rarity" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
+                        <select id="form-rarity" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
                             <option value="-">-</option><option value="UR">UR</option><option value="SAR">SAR</option><option value="SR">SR</option><option value="AR">AR</option><option value="RR">RR</option><option value="R">R</option><option value="U">U</option><option value="C">C</option>
                         </select>
                     </div>
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">ภาษา</label>
-                        <select id="form-lang" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
+                        <select id="form-lang" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
                             <option value="TH">ไทย (TH)</option><option value="JP">ญี่ปุ่น (JP)</option><option value="EN">อังกฤษ (EN)</option>
                         </select>
                     </div>
                 </div>
-
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">ราคา (บาท)</label>
-                        <input type="number" id="form-price" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
+                        <input type="number" id="form-price" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
                     </div>
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">จำนวน</label>
-                        <input type="number" id="form-qty" required min="1" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
+                        <input type="number" id="form-qty" required min="1" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
                     </div>
                 </div>
-
                 <div>
                     <label class="text-[11px] font-semibold text-gray-500">สภาพการ์ด</label>
-                    <select id="form-condition" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
-                        <option value="NM">NM (สวยไม่มีตำหนิ)</option><option value="LP">LP (มีรอยขนแมว/ขอบขาวนิดหน่อย)</option>
-                        <option value="MP">MP (มีรอยชัดเจน)</option><option value="HP">HP (ตำหนิหนัก/หัก/งอ)</option><option value="Graded">Graded (มีเกรด)</option>
+                    <select id="form-condition" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                        <option value="NM">NM (สวยไม่มีตำหนิ)</option><option value="LP">LP (มีรอยขนแมว)</option><option value="MP">MP (มีรอยชัดเจน)</option><option value="HP">HP (ตำหนิหนัก)</option><option value="Graded">Graded (มีเกรด)</option>
                     </select>
                 </div>
-                
-                <label id="wishlist-wrapper" class="flex items-center space-x-2 mt-2 bg-gray-100 p-3 rounded-xl border border-gray-200 transition">
-                    <input type="checkbox" id="form-wishlist" class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 border-gray-300">
+                <label id="wishlist-wrapper" class="flex items-center space-x-2 bg-gray-100 p-3 rounded-xl border border-gray-200 cursor-pointer">
+                    <input type="checkbox" id="form-wishlist" class="w-4 h-4 rounded border-gray-300">
                     <span class="text-xs font-semibold text-gray-700">🎯 บันทึกเป็น Wishlist (การ์ดที่กำลังตามหา)</span>
                 </label>
-
-                <!-- ซ่อนส่วนอัปโหลดถ้ายูสเซอร์ไม่มีรหัสผ่าน (ไม่ใช่แอดมิน) -->
                 <div id="image-upload-section" class="bg-gray-50 border border-gray-200 rounded-xl p-3">
                     <label class="text-[11px] font-semibold text-gray-500 mb-2 block">รูปภาพการ์ด</label>
-                    <input type="file" id="form-file" accept="image/*" class="text-xs w-full file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-black transition cursor-pointer text-gray-500 mb-2" onchange="compressAndUploadImage(event)">
+                    <input type="file" id="form-file" accept="image/*" class="text-xs w-full file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-black cursor-pointer text-gray-500 mb-2" onchange="compressAndUploadImage(event)">
                     <div class="flex items-center gap-2">
                         <span class="text-[10px] text-gray-400">หรือ URL:</span>
                         <input type="url" id="form-image" placeholder="https://..." class="flex-1 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-gray-900" oninput="document.getElementById('modal-image-preview').src = getSafeImageUrl(this.value)">
                     </div>
                 </div>
-
                 <div id="form-actions-wrapper" class="flex gap-3 pt-4">
                     <button type="button" id="btn-delete" onclick="deleteCard()" class="w-1/3 py-3.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 rounded-xl font-semibold text-sm transition hidden">ลบ</button>
-                    <button type="submit" id="btn-save" class="flex-1 py-3.5 bg-gray-900 hover:bg-black text-white rounded-xl font-semibold text-sm shadow-md transition">บันทึกข้อมูล</button>
+                    <button type="submit" class="flex-1 py-3.5 bg-gray-900 hover:bg-black text-white rounded-xl font-semibold text-sm shadow-md transition">บันทึกข้อมูล</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Stats Modal & Lightbox -->
-    <div id="stats-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 transition-all">
+    <!-- Stats Modal -->
+    <div id="stats-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-100">
             <div class="flex justify-between items-center pb-4 border-b border-gray-100 mb-4">
                 <h2 class="font-bold text-lg text-gray-900">📊 สถิติคอลเลกชัน</h2>
@@ -257,177 +373,160 @@
             <div id="stats-content" class="space-y-4"></div>
         </div>
     </div>
-    <div id="image-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[70] hidden flex items-center justify-center p-4 transition-all" onclick="toggleImageModal(false)">
+
+    <!-- Lightbox -->
+    <div id="image-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[70] hidden flex items-center justify-center p-4" onclick="toggleImageModal(false)">
         <img id="lightbox-img" src="" class="max-h-[80vh] w-auto object-contain rounded-2xl shadow-2xl">
     </div>
 
     <!-- Bottom Nav -->
-    <nav class="fixed bottom-5 left-5 right-5 bg-white/95 backdrop-blur-xl border border-gray-200 py-3.5 px-8 shadow-[0_10px_40px_rgba(0,0,0,0.1)] max-w-sm mx-auto rounded-[2rem] flex justify-around items-center z-40">
-        <button onclick="switchTab('home')" class="flex flex-col items-center text-gray-900" id="nav-btn-home">
-            <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+    <nav class="fixed bottom-5 left-5 right-5 bg-white/95 backdrop-blur-xl border border-gray-200 py-3 px-6 shadow-[0_10px_40px_rgba(0,0,0,0.1)] max-w-sm mx-auto rounded-[2rem] flex justify-around items-center z-40">
+        <button onclick="switchTab('home')" id="nav-btn-home" class="flex flex-col items-center text-gray-900 transition">
+            <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
             <span class="text-[10px] font-semibold">หน้าแรก</span>
         </button>
         <div class="w-px h-8 bg-gray-200"></div>
-        <button onclick="switchTab('binder')" class="flex flex-col items-center text-gray-400 hover:text-gray-900 transition" id="nav-btn-binder">
-            <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+        <button onclick="switchTab('binder')" id="nav-btn-binder" class="flex flex-col items-center text-gray-400 hover:text-gray-900 transition">
+            <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
             <span class="text-[10px] font-semibold">แฟ้มการ์ด</span>
         </button>
         <div class="w-px h-8 bg-gray-200"></div>
         <button id="nav-add-btn" onclick="openAddForm()" class="flex flex-col items-center text-gray-400 hover:text-gray-900 transition hidden">
-            <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+            <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
             <span class="text-[10px] font-semibold">เพิ่มการ์ด</span>
         </button>
         <button id="nav-login-hint" onclick="loginAdmin()" class="flex flex-col items-center text-gray-400 hover:text-gray-900 transition">
-            <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
             <span class="text-[10px] font-semibold">ผู้ดูแล</span>
         </button>
     </nav>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyxUtqszvNC3tsfCnp2pH2dMJplBRX6KKX1f-JqzK3q57aAylJ3BOkGEFUJ0bxAI8e-/exec"; 
-        let allCards = []; let currentFiltered = [];
+        // ===== PWA Manifest =====
+        const manifest = { "name": "Pokémon TCG Vault", "short_name": "TCG Vault", "display": "standalone", "background_color": "#f9fafb", "theme_color": "#f9fafb", "icons": [{ "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTgxOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTElIiBmaWxsPSIjZmZmZmZmIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAwIiBmb250LXdlaWdodD0iYm9sZCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VENHPC90ZXh0Pjwvc3ZnPg==", "sizes": "512x512", "type": "image/svg+xml" }] };
+        const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+        document.head.insertAdjacentHTML('beforeend', `<link rel="manifest" href="${URL.createObjectURL(blob)}">`);
+
+        // ===== Config =====
+        const API_URL = "https://script.google.com/macros/s/AKfycbyxUtqszvNC3tsfCnp2pH2dMJplBRX6KKX1f-JqzK3q57aAylJ3BOkGEFUJ0bxAI8e-/exec";
+        const CARDS_PER_PAGE = 8;
+        let allCards = [], currentFiltered = [];
         let adminPin = localStorage.getItem('tcg_pin') || '';
-
-        // 🌟 ตัวแปรสำหรับแฟ้มสมุด (Binder)
-        let binderCards = [];
-        let currentBinderPage = 0;
-        const CARDS_PER_PAGE = 8; // 2 แถวแนวตั้ง x 4 แถวแนวนอน
+        let binderSlots = [];      // [{num, card|null}] ช่องทั้งหมดในแฟ้ม
+        let binderPage = 0;
         let touchStartX = 0;
-        let touchEndX = 0;
 
+        // ===== Auth =====
         function checkAuthUI() {
-            const isAuth = adminPin.length > 0;
-            document.getElementById('nav-add-btn').classList.toggle('hidden', !isAuth);
-            document.getElementById('nav-login-hint').classList.toggle('hidden', isAuth);
-            document.getElementById('auth-btn-login').classList.toggle('hidden', isAuth);
-            document.getElementById('auth-btn-logout').classList.toggle('hidden', !isAuth);
-            
-            const formInputs = document.querySelectorAll('#card-form input:not(#form-mode):not(#form-rowIndex):not(#form-id), #card-form select');
-            formInputs.forEach(input => input.disabled = !isAuth);
-            
-            document.getElementById('image-upload-section').classList.toggle('hidden', !isAuth);
-            document.getElementById('form-actions-wrapper').classList.toggle('hidden', !isAuth);
-            document.getElementById('wishlist-wrapper').style.opacity = isAuth ? '1' : '0.7';
-            document.getElementById('wishlist-wrapper').style.pointerEvents = isAuth ? 'auto' : 'none';
+            const ok = adminPin.length > 0;
+            document.getElementById('nav-add-btn').classList.toggle('hidden', !ok);
+            document.getElementById('nav-login-hint').classList.toggle('hidden', ok);
+            document.getElementById('auth-btn-login').classList.toggle('hidden', ok);
+            document.getElementById('auth-btn-logout').classList.toggle('hidden', !ok);
+            document.querySelectorAll('#card-form input:not([type=hidden]), #card-form select').forEach(el => el.disabled = !ok);
+            document.getElementById('image-upload-section').classList.toggle('hidden', !ok);
+            document.getElementById('form-actions-wrapper').classList.toggle('hidden', !ok);
+            ['opacity','pointerEvents'].forEach(p => document.getElementById('wishlist-wrapper').style[p] = ok ? '' : p === 'opacity' ? '0.6' : 'none');
         }
-
         function loginAdmin() {
-            const pin = prompt("🔐 กรุณาใส่รหัสผ่านผู้ดูแลระบบ:");
-            if (pin) { adminPin = pin; localStorage.setItem('tcg_pin', pin); checkAuthUI(); showToast("ปลดล็อกโหมดผู้ดูแลระบบ"); }
+            const pin = prompt("🔐 รหัสผ่านผู้ดูแลระบบ:");
+            if (pin) { adminPin = pin; localStorage.setItem('tcg_pin', pin); checkAuthUI(); showToast("ปลดล็อกโหมดผู้ดูแลแล้ว"); }
         }
-
         function logoutAdmin() {
             adminPin = ''; localStorage.removeItem('tcg_pin'); checkAuthUI(); showToast("ออกจากระบบแล้ว"); toggleModal(false);
         }
 
-        function showToast(message, type = "success") {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-message').innerText = message;
+        // ===== Toast =====
+        function showToast(msg, type = "success") {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
             document.getElementById('toast-icon').innerText = type === "success" ? "✨" : "⚠️";
-            toast.classList.remove('opacity-0', 'pointer-events-none', 'bg-gray-900', 'bg-red-500');
-            toast.classList.add('opacity-100', type === "success" ? 'bg-gray-900' : 'bg-red-500');
-            setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0', 'pointer-events-none'); }, 2500);
+            t.classList.remove('opacity-0','pointer-events-none','bg-gray-900','bg-red-500');
+            t.classList.add('opacity-100', type === "success" ? 'bg-gray-900' : 'bg-red-500');
+            setTimeout(() => { t.classList.remove('opacity-100'); t.classList.add('opacity-0','pointer-events-none'); }, 2500);
         }
 
-        // 🌟 อัปเดต Dropdown Set (ทั้งใน Filter และ Binder)
-        function updateSetDatalist() {
-            const uniqueSets = [...new Set(allCards.map(c => c.set).filter(Boolean))].sort();
+        // ===== Image =====
+        function getSafeImageUrl(url) {
+            if (!url || url.trim() === '' || url.includes('via.placeholder')) return 'https://placehold.co/150/f9fafb/9ca3af?text=?';
+            if (url.includes('drive.google.com/uc')) {
+                const m = url.match(/id=([a-zA-Z0-9_-]+)/);
+                if (m) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
+            }
+            return url;
+        }
+
+        // ===== Datalist & Dropdowns =====
+        function updateSetDropdowns() {
+            // 🌟 KEY FIX: ใช้ .trim() ตอนดึงชื่อ Set เพื่อกันช่องว่างซ่อน
+            const uniqueSets = [...new Set(allCards.map(c => String(c.set || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'th'));
             document.getElementById('set-list').innerHTML = uniqueSets.map(s => `<option value="${s}">`).join('');
-            
-            // อัปเดต Filter Set หน้าแรก
-            const filterSet = document.getElementById('filter-set');
-            const currentFilter = filterSet.value;
-            filterSet.innerHTML = '<option value="all">📁 ทุกชุด (Set)</option>' + uniqueSets.map(s => `<option value="${s}">${s}</option>`).join('');
-            if(uniqueSets.includes(currentFilter)) filterSet.value = currentFilter;
 
-            // อัปเดต Dropdown เลือกชุดในหน้าแฟ้ม
-            const binderSet = document.getElementById('binder-set-select');
-            const currentBinder = binderSet.value;
-            binderSet.innerHTML = '<option value="">-- เลื่อนเลือกชุดการ์ด --</option>' + uniqueSets.map(s => `<option value="${s}">${s}</option>`).join('');
-            if(uniqueSets.includes(currentBinder)) binderSet.value = currentBinder;
+            // Filter set (หน้าแรก)
+            const fs = document.getElementById('filter-set');
+            const prev = fs.value;
+            fs.innerHTML = '<option value="">📁 ทุกชุด</option>' + uniqueSets.map(s => `<option value="${s}">${s}</option>`).join('');
+            if (uniqueSets.includes(prev)) fs.value = prev;
+
+            // Binder set select
+            const bs = document.getElementById('binder-set-select');
+            const prevB = bs.value;
+            bs.innerHTML = '<option value="">-- เลือกชุดการ์ด --</option>' + uniqueSets.map(s => `<option value="${s}">${s}</option>`).join('');
+            if (uniqueSets.includes(prevB)) { bs.value = prevB; }
         }
 
+        // ===== Load Data =====
         async function loadData() {
             checkAuthUI();
-            document.getElementById('loading').style.display = 'grid'; document.getElementById('card-grid').style.display = 'none';
-            const cachedData = localStorage.getItem('tcg_cards');
-            if (cachedData && allCards.length === 0) { allCards = JSON.parse(cachedData); updateSetDatalist(); applyFilters(); updateSummary(allCards); }
+            document.getElementById('loading').style.display = 'grid';
+            document.getElementById('card-grid').style.display = 'none';
+            const cache = localStorage.getItem('tcg_cards');
+            if (cache && allCards.length === 0) {
+                allCards = JSON.parse(cache); updateSetDropdowns(); applyFilters(); updateSummary();
+            }
             try {
-                const response = await fetch(API_URL); const result = await response.json();
-                if (result.status === "success") {
-                    allCards = result.data; localStorage.setItem('tcg_cards', JSON.stringify(allCards));
-                    updateSetDatalist(); applyFilters(); updateSummary(allCards);
+                const r = await fetch(API_URL); const j = await r.json();
+                if (j.status === "success") {
+                    allCards = j.data; localStorage.setItem('tcg_cards', JSON.stringify(allCards));
+                    updateSetDropdowns(); applyFilters(); updateSummary();
                 }
-            } catch (error) {} finally {
-                document.getElementById('loading').style.display = 'none'; document.getElementById('card-grid').style.display = 'grid';
-            }
+            } catch(e) {}
+            finally { document.getElementById('loading').style.display = 'none'; document.getElementById('card-grid').style.display = 'grid'; }
         }
 
-        function getSafeImageUrl(url) { 
-            if (!url || url.includes('via.placeholder.com')) return 'https://placehold.co/150/f9fafb/9ca3af?text=No+Image'; 
-            if (url.includes('drive.google.com/uc')) {
-                const match = url.match(/id=([a-zA-Z0-9_-]+)/);
-                if (match && match[1]) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
-            }
-            return url; 
+        // ===== Summary =====
+        function updateSummary() {
+            const owned = allCards.filter(c => String(c.isWishlist) !== 'true');
+            document.getElementById('total-cards').innerHTML = `${owned.reduce((s,c) => s+Number(c.qty||0),0)} <span class="text-xs text-gray-500">ใบ</span>`;
+            document.getElementById('total-price').innerText = `฿${owned.reduce((s,c) => s+(Number(c.price||0)*Number(c.qty||0)),0).toLocaleString()}`;
         }
 
-        function compressAndUploadImage(event) {
-            const file = event.target.files[0]; if (!file) return;
-            const overlay = document.getElementById('upload-overlay');
-            const urlInput = document.getElementById('form-image');
-            const preview = document.getElementById('modal-image-preview');
-
-            overlay.classList.remove('hidden'); overlay.classList.add('flex');
-            const reader = new FileReader(); reader.readAsDataURL(file);
-            reader.onload = (e) => {
-                const img = new Image(); img.src = e.target.result;
-                img.onload = async () => {
-                    const MAX_SIZE = 800; let width = img.width; let height = img.height;
-                    if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
-                    else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
-                    const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
-                    const base64Data = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
-                    try {
-                        const response = await fetch(API_URL, {
-                            method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                            body: JSON.stringify({ action: 'uploadImage', pin: adminPin, fileName: file.name, mimeType: 'image/jpeg', base64: base64Data })
-                        });
-                        const result = await response.json();
-                        if (result.status === 'success') { urlInput.value = result.url; preview.src = result.url; showToast('อัปโหลดรูปสำเร็จ!'); } 
-                        else { showToast('ล้มเหลว: ' + result.message, 'error'); if(result.message.includes('Unauthorized')) logoutAdmin(); }
-                    } catch (error) { showToast('อัปโหลดล้มเหลว', 'error'); } 
-                    finally { overlay.classList.add('hidden'); overlay.classList.remove('flex'); event.target.value = ''; }
-                };
-            };
-        }
-
-        // --- Core Functions (Dashboard) ---
+        // ===== Filters (Home) =====
         function applyFilters() {
-            const keyword = document.getElementById('search-input').value.toLowerCase();
-            const sortMethod = document.getElementById('sort-select').value;
-            const filterRarity = document.getElementById('filter-rarity').value;
+            const kw = document.getElementById('search-input').value.toLowerCase().trim();
+            const sort = document.getElementById('sort-select').value;
+            const rarity = document.getElementById('filter-rarity').value;
             const status = document.getElementById('filter-status').value;
-            const filterSet = document.getElementById('filter-set').value; // ค่า Set ใหม่
-            document.getElementById('clear-search-btn').classList.toggle('hidden', keyword.length === 0);
+            // 🌟 KEY FIX: trim() ค่าจาก dropdown ก่อนเปรียบเทียบ
+            const filterSetVal = document.getElementById('filter-set').value.trim();
+
+            document.getElementById('clear-search-btn').classList.toggle('hidden', kw.length === 0);
 
             currentFiltered = allCards.filter(card => {
                 const isW = String(card.isWishlist) === 'true';
-                if(status === 'owned' && isW) return false;
-                if(status === 'wishlist' && !isW) return false;
-                if(filterSet !== 'all' && card.set !== filterSet) return false;
-
-                const matchKeyword = String(card.name).toLowerCase().includes(keyword) || String(card.set).toLowerCase().includes(keyword) || String(card.cardNumber || '').toLowerCase().includes(keyword);
-                const matchRarity = filterRarity === 'all' || card.rarity === filterRarity;
-                return matchKeyword && matchRarity;
+                if (status === 'owned' && isW) return false;
+                if (status === 'wishlist' && !isW) return false;
+                // 🌟 KEY FIX: trim() ค่าชื่อชุดก่อนเปรียบเทียบ
+                if (filterSetVal && String(card.set || '').trim() !== filterSetVal) return false;
+                const matchKw = !kw || String(card.name).toLowerCase().includes(kw) || String(card.set).toLowerCase().includes(kw) || String(card.cardNumber||'').toLowerCase().includes(kw);
+                return matchKw && (rarity === 'all' || card.rarity === rarity);
             });
 
-            currentFiltered.sort((a, b) => {
-                if (sortMethod === 'price_desc') return (Number(b.price) || 0) - (Number(a.price) || 0);
-                if (sortMethod === 'price_asc') return (Number(a.price) || 0) - (Number(b.price) || 0);
-                if (sortMethod === 'name_asc') return String(a.name).localeCompare(String(b.name));
-                return 0; 
+            currentFiltered.sort((a,b) => {
+                if (sort === 'price_desc') return (Number(b.price)||0) - (Number(a.price)||0);
+                if (sort === 'price_asc') return (Number(a.price)||0) - (Number(b.price)||0);
+                if (sort === 'name_asc') return String(a.name).localeCompare(String(b.name));
+                return 0;
             });
             renderCards(currentFiltered);
         }
@@ -435,222 +534,322 @@
         function clearSearch() { document.getElementById('search-input').value = ''; applyFilters(); }
 
         function renderCards(cards) {
-            const grid = document.getElementById('card-grid'); grid.innerHTML = '';
-            if (cards.length === 0) return grid.innerHTML = '<div class="col-span-2 text-center text-gray-500 py-12 text-xs">ไม่พบข้อมูลการ์ด</div>';
-
-            cards.forEach((card) => {
-                const imgSrc = getSafeImageUrl(card.image);
+            const g = document.getElementById('card-grid'); g.innerHTML = '';
+            if (!cards.length) return g.innerHTML = '<div class="col-span-2 text-center text-gray-400 py-12 text-xs">ไม่พบการ์ดที่ค้นหา</div>';
+            cards.forEach(card => {
+                const img = getSafeImageUrl(card.image);
                 const isW = String(card.isWishlist) === 'true';
                 const cNum = card.cardNumber ? `<span class="text-[9px] bg-gray-50 text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded">No.${card.cardNumber}</span>` : '';
-                const rarityBadge = card.rarity && card.rarity !== '-' ? `<span class="text-[9px] bg-gray-900 text-white px-1.5 py-0.5 rounded font-bold">${card.rarity}</span>` : '';
-                
-                grid.innerHTML += `
-                    <div class="bg-white border ${isW ? 'border-amber-200 bg-amber-50/30' : 'border-gray-200 hover:border-gray-300'} p-3.5 rounded-3xl shadow-sm flex flex-col justify-between group relative">
+                const rb = card.rarity && card.rarity !== '-' ? `<span class="text-[9px] bg-gray-900 text-white px-1.5 py-0.5 rounded font-bold">${card.rarity}</span>` : '';
+                g.innerHTML += `
+                    <div class="bg-white border ${isW?'border-amber-200 bg-amber-50/30':'border-gray-200 hover:border-gray-300'} p-3.5 rounded-3xl shadow-sm flex flex-col justify-between relative">
                         ${isW ? '<div class="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10 animate-pulse">🎯 WANTED</div>' : ''}
-                        <div onclick="openEditForm('${card.id}')" class="cursor-pointer ${isW ? 'opacity-80' : ''}">
-                            <div class="w-full h-36 bg-gray-50 rounded-2xl mb-3 flex items-center justify-center p-2 border border-gray-100 relative">
-                                <img src="${imgSrc}" loading="lazy" class="h-full object-contain rounded-lg drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
+                        <div onclick="openEditForm('${card.id}')" class="cursor-pointer">
+                            <div class="w-full h-36 bg-gray-50 rounded-2xl mb-3 flex items-center justify-center p-2 border border-gray-100">
+                                <img src="${img}" loading="lazy" class="h-full object-contain rounded-lg drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
                             </div>
                             <div class="flex flex-wrap gap-1 mb-1.5">
-                                <span class="text-[9px] bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded font-semibold">${card.set || '-'}</span>
-                                ${cNum} ${rarityBadge}
+                                <span class="text-[9px] bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded font-semibold">${card.set||'-'}</span>
+                                ${cNum} ${rb}
                             </div>
                             <h2 class="text-xs font-bold text-gray-900 truncate">${card.name}</h2>
-                            <p class="text-[10px] text-gray-500 mt-0.5">สภาพ: ${card.condition || 'NM'} <span class="mx-1">•</span> ${card.language || 'TH'}</p>
+                            <p class="text-[10px] text-gray-500 mt-0.5">สภาพ: ${card.condition||'NM'} • ${card.language||'TH'}</p>
                         </div>
-                        <div onclick="openEditForm('${card.id}')" class="flex justify-between items-center mt-3 pt-3 border-t ${isW ? 'border-amber-200' : 'border-gray-100'} cursor-pointer">
-                            <span class="text-xs font-black text-emerald-600">฿${Number(card.price || 0).toLocaleString()}</span>
-                            ${!isW ? `<span class="text-[10px] bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full font-semibold">x${card.qty}</span>` : '<span class="text-[10px] text-amber-600 font-semibold">อยากได้</span>'}
+                        <div onclick="openEditForm('${card.id}')" class="flex justify-between items-center mt-3 pt-3 border-t ${isW?'border-amber-200':'border-gray-100'} cursor-pointer">
+                            <span class="text-xs font-black text-emerald-600">฿${Number(card.price||0).toLocaleString()}</span>
+                            ${!isW ? `<span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full font-semibold">x${card.qty}</span>` : '<span class="text-[10px] text-amber-600 font-semibold">อยากได้</span>'}
                         </div>
                     </div>`;
             });
         }
 
-        // --- 🌟 ระบบแฟ้มสะสมการ์ด (Binder) ---
-        function switchTab(tabName) {
-            document.getElementById('view-home').classList.toggle('hidden', tabName !== 'home');
-            document.getElementById('view-binder').classList.toggle('hidden', tabName !== 'binder');
-            
-            document.getElementById('nav-btn-home').classList.toggle('text-gray-900', tabName === 'home');
-            document.getElementById('nav-btn-home').classList.toggle('text-gray-400', tabName !== 'home');
-            document.getElementById('nav-btn-binder').classList.toggle('text-gray-900', tabName === 'binder');
-            document.getElementById('nav-btn-binder').classList.toggle('text-gray-400', tabName !== 'binder');
+        // ===== TAB Switch =====
+        function switchTab(tab) {
+            document.getElementById('view-home').style.display = tab === 'home' ? 'block' : 'none';
+            const binderEl = document.getElementById('view-binder');
+            if (tab === 'binder') { binderEl.classList.add('active'); } else { binderEl.classList.remove('active'); }
 
-            // ซ่อน/แสดงสถิติด้านบน
-            document.getElementById('header-stats').style.display = tabName === 'home' ? 'grid' : 'none';
+            document.getElementById('nav-btn-home').classList.toggle('text-gray-900', tab === 'home');
+            document.getElementById('nav-btn-home').classList.toggle('text-gray-400', tab !== 'home');
+            document.getElementById('nav-btn-binder').classList.toggle('text-gray-900', tab === 'binder');
+            document.getElementById('nav-btn-binder').classList.toggle('text-gray-400', tab !== 'binder');
 
-            if(tabName === 'binder' && !document.getElementById('binder-set-select').value && allCards.length > 0) {
-                // เลือก Set แรกให้อัตโนมัติถ้ายังไม่เคยเลือก
-                const uniqueSets = [...new Set(allCards.map(c => c.set).filter(Boolean))].sort();
-                if(uniqueSets.length > 0) {
-                    document.getElementById('binder-set-select').value = uniqueSets[0];
-                    loadBinderSet();
-                }
+            if (tab === 'binder') {
+                const sel = document.getElementById('binder-set-select');
+                if (!sel.value && sel.options.length > 1) { sel.value = sel.options[1].value; loadBinderSet(); }
+                else if (sel.value) loadBinderSet();
             }
         }
 
-        function parseCardNumber(numStr) {
-            if(!numStr) return 9999;
-            const match = numStr.match(/(\d+)/); // ดึงตัวเลขชุดแรกออกมา เช่น 054/130 ได้ 54
-            return match ? parseInt(match[1], 10) : 9999;
+        // ===== BINDER LOGIC =====
+        function parseCardNum(str) {
+            if (!str) return null;
+            const m = String(str).match(/^(\d+)/);
+            return m ? parseInt(m[1], 10) : null;
+        }
+
+        function getTotalFromSet(setCards) {
+            // พยายามอ่านจำนวนรวมจาก "054/130" -> 130
+            let maxTotal = 0;
+            setCards.forEach(c => {
+                const m = String(c.cardNumber||'').match(/\/(\d+)/);
+                if (m) maxTotal = Math.max(maxTotal, parseInt(m[1], 10));
+            });
+            return maxTotal;
         }
 
         function loadBinderSet() {
-            const setName = document.getElementById('binder-set-select').value;
-            if(!setName) return;
+            // 🌟 KEY FIX: trim() ชื่อชุดก่อนกรอง
+            const setName = document.getElementById('binder-set-select').value.trim();
+            if (!setName) return;
 
-            // กรองเอาเฉพาะชุดที่เลือก และเรียงตามรหัสการ์ด
-            binderCards = allCards.filter(c => c.set === setName).sort((a, b) => parseCardNumber(a.cardNumber) - parseCardNumber(b.cardNumber));
-            currentBinderPage = 0;
+            // กรองการ์ดในชุดนี้ (trim() ด้วย)
+            const setCards = allCards.filter(c => String(c.set||'').trim() === setName);
+            const ownedCount = setCards.filter(c => String(c.isWishlist) !== 'true').length;
+            const totalCards = getTotalFromSet(setCards);
+
+            document.getElementById('binder-owned-count').innerText = `${ownedCount} / ${totalCards || setCards.length}`;
+
+            // 🌟 สร้างช่องตามลำดับหมายเลข
+            if (totalCards > 0) {
+                // มีข้อมูลจำนวนรวม -> สร้างช่องตามลำดับ 1 ถึง totalCards
+                const cardMap = {};
+                setCards.forEach(c => {
+                    const n = parseCardNum(c.cardNumber);
+                    if (n !== null) cardMap[n] = c;
+                });
+                binderSlots = [];
+                for (let i = 1; i <= totalCards; i++) {
+                    binderSlots.push({ num: i, card: cardMap[i] || null });
+                }
+            } else {
+                // ไม่มี cardNumber -> เรียงตามลำดับที่มี
+                binderSlots = setCards
+                    .sort((a,b) => parseCardNum(a.cardNumber) - parseCardNum(b.cardNumber))
+                    .map(c => ({ num: parseCardNum(c.cardNumber), card: c }));
+            }
+
+            binderPage = 0;
             renderBinderPage();
         }
 
-        function renderBinderPage() {
+        function renderBinderPage(direction = 'none') {
             const grid = document.getElementById('binder-grid');
+            const totalPages = Math.max(1, Math.ceil(binderSlots.length / CARDS_PER_PAGE));
+            const pageSlots = binderSlots.slice(binderPage * CARDS_PER_PAGE, (binderPage + 1) * CARDS_PER_PAGE);
+
+            // Page info
+            document.getElementById('binder-page-info').innerText = `หน้า ${binderPage+1} / ${totalPages}`;
+            document.getElementById('binder-prev').disabled = binderPage === 0;
+            document.getElementById('binder-next').disabled = binderPage >= totalPages - 1;
+
+            // Dots
+            const dotsEl = document.getElementById('binder-page-dots');
+            dotsEl.innerHTML = Array.from({length: Math.min(totalPages,8)}, (_,i) =>
+                `<div class="w-1.5 h-1.5 rounded-full ${i === binderPage ? 'bg-gray-800' : 'bg-gray-300'}"></div>`
+            ).join('');
+
+            // Animate
+            grid.className = 'binder-grid ' + (direction === 'next' ? 'slide-in-left' : direction === 'prev' ? 'slide-in-right' : '');
+
+            // Render cards
             grid.innerHTML = '';
-
-            const totalPages = Math.max(1, Math.ceil(binderCards.length / CARDS_PER_PAGE));
-            document.getElementById('binder-page-info').innerText = `หน้า ${currentBinderPage + 1} / ${totalPages}`;
-
-            const startIdx = currentBinderPage * CARDS_PER_PAGE;
-            const pageCards = binderCards.slice(startIdx, startIdx + CARDS_PER_PAGE);
-
-            // วาดช่องใส่การ์ด 8 ช่อง (ถ้าการ์ดมีไม่ถึง 8 ใบ ก็วาดช่องว่างให้ครบ)
             for (let i = 0; i < CARDS_PER_PAGE; i++) {
-                if (i < pageCards.length) {
-                    const card = pageCards[i];
-                    const imgSrc = getSafeImageUrl(card.image);
-                    const isW = String(card.isWishlist) === 'true';
+                const slot = pageSlots[i];
+                if (!slot) {
+                    // ช่องว่างเกิน
+                    grid.innerHTML += `<div class="card-slot" style="visibility:hidden"></div>`;
+                    continue;
+                }
+
+                const card = slot.card;
+                const numLabel = slot.num !== null ? `<span class="slot-number">${String(slot.num).padStart(3,'0')}</span>` : '';
+
+                if (!card) {
+                    // ช่องว่าง - ยังไม่มีการ์ดใบนี้
                     grid.innerHTML += `
-                        <div class="binder-slot shadow-sm bg-white cursor-pointer group" onclick="openEditForm('${card.id}')">
-                            <img src="${imgSrc}" loading="lazy" class="w-full h-full object-contain ${isW ? 'opacity-50 grayscale' : ''}" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
-                            ${card.qty > 1 && !isW ? `<span class="absolute bottom-1 right-1 bg-black/70 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">x${card.qty}</span>` : ''}
-                            ${card.cardNumber ? `<span class="absolute top-1 left-1 bg-white/80 text-gray-800 text-[8px] font-bold px-1 rounded shadow-sm">${card.cardNumber}</span>` : ''}
-                        </div>
-                    `;
+                        <div class="card-slot is-missing">
+                            ${numLabel}
+                            <div class="slot-missing-label">
+                                <span style="font-size:18px">☐</span>
+                                <span>ยังไม่มี</span>
+                            </div>
+                        </div>`;
                 } else {
-                    grid.innerHTML += `<div class="binder-slot bg-gray-100/50"></div>`; // ช่องว่าง
+                    const isW = String(card.isWishlist) === 'true';
+                    const img = getSafeImageUrl(card.image);
+                    grid.innerHTML += `
+                        <div class="card-slot has-card ${isW ? 'opacity-60' : ''}" onclick="openEditForm('${card.id}')">
+                            ${numLabel}
+                            <img src="${img}" loading="lazy" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=?'">
+                            ${card.qty > 1 && !isW ? `<span class="slot-qty">x${card.qty}</span>` : ''}
+                            ${isW ? '<div class="slot-wanted-badge">🎯</div>' : ''}
+                        </div>`;
                 }
             }
         }
 
-        function nextBinderPage() {
-            const totalPages = Math.ceil(binderCards.length / CARDS_PER_PAGE);
-            if (currentBinderPage < totalPages - 1) { currentBinderPage++; renderBinderPage(); }
-        }
-        function prevBinderPage() {
-            if (currentBinderPage > 0) { currentBinderPage--; renderBinderPage(); }
-        }
-
-        // ระบบ ปัดซ้าย/ขวา หน้าแฟ้ม
-        const binderEl = document.getElementById('binder-container');
-        binderEl.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
-        binderEl.addEventListener('touchend', e => {
-            touchEndX = e.changedTouches[0].screenX;
-            if (touchEndX < touchStartX - 40) nextBinderPage(); // ปัดซ้าย
-            if (touchEndX > touchStartX + 40) prevBinderPage(); // ปัดขวา
-        });
-
-        function updateSummary(cards) {
-            const owned = cards.filter(c => String(c.isWishlist) !== 'true');
-            const totalCards = owned.reduce((sum, c) => sum + Number(c.qty || 0), 0);
-            const totalPrice = owned.reduce((sum, c) => sum + (Number(c.price || 0) * Number(c.qty || 0)), 0);
-            document.getElementById('total-cards').innerHTML = `${totalCards} <span class="text-xs text-gray-500">ใบ</span>`;
-            document.getElementById('total-price').innerText = `฿${totalPrice.toLocaleString()}`;
+        function changePage(dir) {
+            const totalPages = Math.ceil(binderSlots.length / CARDS_PER_PAGE);
+            const newPage = binderPage + dir;
+            if (newPage < 0 || newPage >= totalPages) return;
+            binderPage = newPage;
+            renderBinderPage(dir > 0 ? 'next' : 'prev');
         }
 
-        function exportForSale() {
-            const cardsToSell = currentFiltered.filter(c => String(c.isWishlist) !== 'true');
-            if(cardsToSell.length === 0) return showToast('ไม่มีการ์ดให้คัดลอก', 'error');
-            let text = "🔥 [ปล่อยของ] การ์ดโปเกมอน\n\n"; let total = 0;
-            cardsToSell.forEach(c => { text += `- ${c.name} [${c.set}] ${c.rarity && c.rarity!=='-'?`(${c.rarity}) `:''}สภาพ ${c.condition} x${c.qty} = ${Number(c.price * c.qty).toLocaleString()} บ.\n`; total += (c.price * c.qty); });
-            text += `\n💰 รวมมูลค่า: ${total.toLocaleString()} บาท\nสนใจพิมพ์รับ หรือ IB ได้เลยครับ!`;
-            navigator.clipboard.writeText(text).then(() => showToast('คัดลอกข้อความขายแล้ว!'));
-        }
+        // Swipe
+        const book = document.getElementById('binder-book');
+        book.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, {passive:true});
+        book.addEventListener('touchend', e => {
+            const diff = e.changedTouches[0].screenX - touchStartX;
+            if (Math.abs(diff) > 45) changePage(diff < 0 ? 1 : -1);
+        }, {passive:true});
 
-        function openStatsModal() {
-            const owned = allCards.filter(c => String(c.isWishlist) !== 'true');
-            const rCounts = {}; const lCounts = {};
-            owned.forEach(c => {
-                if(c.rarity && c.rarity !== '-') rCounts[c.rarity] = (rCounts[c.rarity] || 0) + Number(c.qty);
-                lCounts[c.language || 'TH'] = (lCounts[c.language || 'TH'] || 0) + Number(c.qty);
-            });
-            const total = owned.reduce((s, c) => s + Number(c.qty), 0);
-            
-            let html = '<h3 class="text-xs font-bold text-gray-500 mb-2">⭐ แยกตามความหายาก</h3>';
-            Object.keys(rCounts).sort((a,b) => rCounts[b] - rCounts[a]).forEach(k => {
-                let pct = total > 0 ? (rCounts[k] / total * 100).toFixed(0) : 0;
-                html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-gray-800 h-full rounded-full" style="width:${pct}%"></div></div><span class="w-8 text-right text-gray-500">${rCounts[k]}</span></div>`;
-            });
-            html += '<h3 class="text-xs font-bold text-gray-500 mt-5 mb-2">🌐 แยกตามภาษา</h3>';
-            Object.keys(lCounts).forEach(k => {
-                let pct = total > 0 ? (lCounts[k] / total * 100).toFixed(0) : 0;
-                html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-emerald-500 h-full rounded-full" style="width:${pct}%"></div></div><span class="w-8 text-right text-gray-500">${lCounts[k]}</span></div>`;
-            });
-            document.getElementById('stats-content').innerHTML = html; document.getElementById('stats-modal').classList.remove('hidden');
-        }
-
-        function toggleModal(isOpen) { document.getElementById('detail-modal').classList.toggle('hidden', !isOpen); }
-        function toggleImageModal(isOpen) { document.getElementById('image-modal').classList.toggle('hidden', !isOpen); }
-        function openImageLightbox(imgUrl) { document.getElementById('lightbox-img').src = getSafeImageUrl(imgUrl); toggleImageModal(true); }
+        // ===== Modals =====
+        function toggleModal(o) { document.getElementById('detail-modal').classList.toggle('hidden', !o); }
+        function toggleImageModal(o) { document.getElementById('image-modal').classList.toggle('hidden', !o); }
+        function openImageLightbox(url) { document.getElementById('lightbox-img').src = getSafeImageUrl(url); toggleImageModal(true); }
 
         function openAddForm() {
-            if(!adminPin) return loginAdmin(); 
-            document.getElementById('card-form').reset(); document.getElementById('form-mode').value = 'add';
-            document.getElementById('modal-title').innerText = '✨ เพิ่มการ์ดใหม่'; document.getElementById('btn-delete').classList.add('hidden');
+            if (!adminPin) return loginAdmin();
+            document.getElementById('card-form').reset();
+            document.getElementById('form-mode').value = 'add';
+            document.getElementById('modal-title').innerText = '✨ เพิ่มการ์ดใหม่';
+            document.getElementById('btn-delete').classList.add('hidden');
             document.getElementById('modal-image-preview').src = 'https://placehold.co/150/f9fafb/9ca3af?text=No+Image';
-            toggleModal(true);
+            checkAuthUI(); toggleModal(true);
         }
 
         function openEditForm(id) {
-            const card = allCards.find(c => c.id === id); if(!card) return;
-            document.getElementById('form-mode').value = 'update'; document.getElementById('form-rowIndex').value = card.rowIndex; document.getElementById('form-id').value = card.id;
-            document.getElementById('form-name').value = card.name; document.getElementById('form-set').value = card.set; document.getElementById('form-cardNumber').value = card.cardNumber || '';
-            document.getElementById('form-price').value = card.price; document.getElementById('form-qty').value = card.qty;
-            document.getElementById('form-rarity').value = card.rarity || '-'; document.getElementById('form-lang').value = card.language || 'TH';
-            document.getElementById('form-condition').value = card.condition || 'NM'; document.getElementById('form-image').value = card.image || '';
+            const card = allCards.find(c => c.id == id); if (!card) return;
+            document.getElementById('form-mode').value = 'update';
+            document.getElementById('form-rowIndex').value = card.rowIndex;
+            document.getElementById('form-id').value = card.id;
+            document.getElementById('form-name').value = card.name || '';
+            document.getElementById('form-set').value = card.set || '';
+            document.getElementById('form-cardNumber').value = card.cardNumber || '';
+            document.getElementById('form-price').value = card.price || 0;
+            document.getElementById('form-qty').value = card.qty || 1;
+            document.getElementById('form-rarity').value = card.rarity || '-';
+            document.getElementById('form-lang').value = card.language || 'TH';
+            document.getElementById('form-condition').value = card.condition || 'NM';
+            document.getElementById('form-image').value = card.image || '';
             document.getElementById('form-wishlist').checked = String(card.isWishlist) === 'true';
-            
             document.getElementById('modal-title').innerText = adminPin ? '🛠️ แก้ไขข้อมูล' : '🔍 รายละเอียดการ์ด';
-            document.getElementById('btn-delete').classList.toggle('hidden', !adminPin); 
+            document.getElementById('btn-delete').classList.toggle('hidden', !adminPin);
             document.getElementById('modal-image-preview').src = getSafeImageUrl(card.image);
-            toggleModal(true);
+            checkAuthUI(); toggleModal(true);
         }
 
+        // ===== Submit / Delete =====
         async function submitForm(e) {
-            e.preventDefault(); if(!adminPin) return showToast('สิทธิ์ถูกปฏิเสธ', 'error');
-            const dataObj = {
-                pin: adminPin, name: document.getElementById('form-name').value, set: document.getElementById('form-set').value,
-                cardNumber: document.getElementById('form-cardNumber').value, price: Number(document.getElementById('form-price').value),
-                qty: Number(document.getElementById('form-qty').value), rarity: document.getElementById('form-rarity').value,
-                language: document.getElementById('form-lang').value, condition: document.getElementById('form-condition').value,
-                image: document.getElementById('form-image').value, isWishlist: document.getElementById('form-wishlist').checked
+            e.preventDefault();
+            if (!adminPin) return showToast('กรุณาล็อกอินก่อน', 'error');
+            const d = {
+                pin: adminPin,
+                name: document.getElementById('form-name').value,
+                set: document.getElementById('form-set').value,
+                cardNumber: document.getElementById('form-cardNumber').value,
+                price: Number(document.getElementById('form-price').value),
+                qty: Number(document.getElementById('form-qty').value),
+                rarity: document.getElementById('form-rarity').value,
+                language: document.getElementById('form-lang').value,
+                condition: document.getElementById('form-condition').value,
+                image: document.getElementById('form-image').value,
+                isWishlist: document.getElementById('form-wishlist').checked
             };
             const isAdd = document.getElementById('form-mode').value === 'add';
-            if(isAdd) { dataObj.id = "CARD-" + Date.now(); dataObj.rowIndex = allCards.length + 2; allCards.unshift(dataObj); } 
-            else { dataObj.action = 'update'; dataObj.rowIndex = Number(document.getElementById('form-rowIndex').value); dataObj.id = document.getElementById('form-id').value;
-                const i = allCards.findIndex(c => c.rowIndex === dataObj.rowIndex); if(i !== -1) allCards[i] = { ...allCards[i], ...dataObj }; }
-            
-            updateSetDatalist(); applyFilters(); updateSummary(allCards); if(!document.getElementById('view-binder').classList.contains('hidden')) loadBinderSet();
-            localStorage.setItem('tcg_cards', JSON.stringify(allCards)); toggleModal(false); showToast(isAdd ? "เพิ่มการ์ดแล้ว..." : "อัปเดตข้อมูลแล้ว...");
+            if (isAdd) { d.id = "CARD-" + Date.now(); d.rowIndex = allCards.length + 2; allCards.unshift(d); }
+            else {
+                d.action = 'update'; d.rowIndex = Number(document.getElementById('form-rowIndex').value); d.id = document.getElementById('form-id').value;
+                const i = allCards.findIndex(c => c.rowIndex === d.rowIndex);
+                if (i !== -1) allCards[i] = {...allCards[i], ...d};
+            }
+            updateSetDropdowns(); applyFilters(); updateSummary();
+            localStorage.setItem('tcg_cards', JSON.stringify(allCards));
+            toggleModal(false);
+            showToast(isAdd ? "เพิ่มการ์ดสำเร็จ" : "อัปเดตสำเร็จ");
+            // รีโหลดแฟ้มถ้ากำลังดูอยู่
+            if (document.getElementById('binder-set-select').value) loadBinderSet();
             try {
-                const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dataObj) });
-                const result = await response.json(); if(result.status === 'error' && result.message.includes('Unauthorized')) logoutAdmin();
-            } catch (err) {}
+                const r = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(d)});
+                const j = await r.json();
+                if (j.status === 'error' && j.message.includes('Unauthorized')) logoutAdmin();
+            } catch(e) {}
         }
 
         async function deleteCard() {
             if (!confirm("ลบการ์ดใบนี้?")) return;
-            const rowIndex = Number(document.getElementById('form-rowIndex').value);
-            allCards = allCards.filter(c => c.rowIndex !== rowIndex);
-            updateSetDatalist(); applyFilters(); updateSummary(allCards); if(!document.getElementById('view-binder').classList.contains('hidden')) loadBinderSet();
-            localStorage.setItem('tcg_cards', JSON.stringify(allCards)); toggleModal(false); showToast("ลบการ์ดแล้ว");
+            const ri = Number(document.getElementById('form-rowIndex').value);
+            allCards = allCards.filter(c => c.rowIndex !== ri);
+            updateSetDropdowns(); applyFilters(); updateSummary();
+            localStorage.setItem('tcg_cards', JSON.stringify(allCards));
+            if (document.getElementById('binder-set-select').value) loadBinderSet();
+            toggleModal(false); showToast("ลบการ์ดแล้ว");
             try {
-                const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'delete', rowIndex: rowIndex, pin: adminPin }) });
-                const result = await response.json(); if(result.status === 'error' && result.message.includes('Unauthorized')) logoutAdmin();
-            } catch (err) {}
+                const r = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'delete', rowIndex:ri, pin:adminPin})});
+                const j = await r.json();
+                if (j.status === 'error' && j.message.includes('Unauthorized')) logoutAdmin();
+            } catch(e) {}
         }
-        
+
+        // ===== Compress & Upload =====
+        function compressAndUploadImage(event) {
+            const file = event.target.files[0]; if (!file) return;
+            const ov = document.getElementById('upload-overlay');
+            ov.classList.remove('hidden'); ov.classList.add('flex');
+            const reader = new FileReader(); reader.readAsDataURL(file);
+            reader.onload = e => {
+                const img = new Image(); img.src = e.target.result;
+                img.onload = async () => {
+                    const MAX = 800; let w = img.width, h = img.height;
+                    if (w > h) { if (w > MAX) { h = h*MAX/w; w = MAX; } } else { if (h > MAX) { w = w*MAX/h; h = MAX; } }
+                    const c = document.createElement('canvas'); c.width = w; c.height = h;
+                    c.getContext('2d').drawImage(img, 0, 0, w, h);
+                    const b64 = c.toDataURL('image/jpeg', 0.8).split(',')[1];
+                    try {
+                        const r = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'uploadImage', pin:adminPin, fileName:file.name, mimeType:'image/jpeg', base64:b64})});
+                        const j = await r.json();
+                        if (j.status === 'success') { document.getElementById('form-image').value = j.url; document.getElementById('modal-image-preview').src = j.url; showToast('อัปโหลดสำเร็จ!'); }
+                        else { showToast('ล้มเหลว: '+j.message, 'error'); if(j.message.includes('Unauthorized')) logoutAdmin(); }
+                    } catch(e) { showToast('อัปโหลดล้มเหลว', 'error'); }
+                    finally { ov.classList.add('hidden'); ov.classList.remove('flex'); event.target.value=''; }
+                };
+            };
+        }
+
+        // ===== Export / Stats =====
+        function exportForSale() {
+            const sell = currentFiltered.filter(c => String(c.isWishlist) !== 'true');
+            if (!sell.length) return showToast('ไม่มีการ์ดให้คัดลอก', 'error');
+            let txt = "🔥 [ปล่อยของ] การ์ดโปเกมอน\n\n"; let tot = 0;
+            sell.forEach(c => { txt += `- ${c.name} [${c.set}] ${c.rarity&&c.rarity!=='-'?`(${c.rarity}) `:''}สภาพ ${c.condition} x${c.qty} = ${Number(c.price*c.qty).toLocaleString()} บ.\n`; tot += c.price*c.qty; });
+            txt += `\n💰 รวม: ${tot.toLocaleString()} บาท\nสนใจ IB ได้เลยครับ!`;
+            navigator.clipboard.writeText(txt).then(() => showToast('คัดลอกแล้ว!'));
+        }
+
+        function openStatsModal() {
+            const owned = allCards.filter(c => String(c.isWishlist) !== 'true');
+            const r = {}, l = {};
+            owned.forEach(c => {
+                if (c.rarity && c.rarity !== '-') r[c.rarity] = (r[c.rarity]||0) + Number(c.qty);
+                l[c.language||'TH'] = (l[c.language||'TH']||0) + Number(c.qty);
+            });
+            const tot = owned.reduce((s,c) => s+Number(c.qty),0);
+            let html = '<h3 class="text-xs font-bold text-gray-500 mb-2">⭐ ตามความหายาก</h3>';
+            Object.keys(r).sort((a,b)=>r[b]-r[a]).forEach(k => {
+                const p = tot > 0 ? (r[k]/tot*100).toFixed(0) : 0;
+                html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-gray-800 h-full rounded-full" style="width:${p}%"></div></div><span class="text-gray-500">${r[k]}</span></div>`;
+            });
+            html += '<h3 class="text-xs font-bold text-gray-500 mt-5 mb-2">🌐 ตามภาษา</h3>';
+            Object.keys(l).forEach(k => {
+                const p = tot > 0 ? (l[k]/tot*100).toFixed(0) : 0;
+                html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-emerald-500 h-full rounded-full" style="width:${p}%"></div></div><span class="text-gray-500">${l[k]}</span></div>`;
+            });
+            document.getElementById('stats-content').innerHTML = html;
+            document.getElementById('stats-modal').classList.remove('hidden');
+        }
+
         loadData();
     </script>
 </body>

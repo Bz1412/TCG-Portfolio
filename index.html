@@ -636,95 +636,143 @@
         }
 
         function loadBinderSet() {
-            // 🌟 KEY FIX: trim() ชื่อชุดก่อนกรอง
-            const setName = document.getElementById('binder-set-select').value.trim();
-            if (!setName) return;
+    const setName = document.getElementById('binder-set-select').value.trim();
+    if (!setName) return;
 
-            // กรองการ์ดในชุดนี้ (trim() ด้วย)
-            const setCards = allCards.filter(c => String(c.set||'').trim() === setName);
-            const ownedCount = setCards.filter(c => String(c.isWishlist) !== 'true').length;
-            const totalCards = getTotalFromSet(setCards);
+    const setCards = allCards.filter(c => String(c.set || '').trim() === setName);
+    const ownedCount = setCards.filter(c => String(c.isWishlist) !== 'true').length;
+    const totalCards = getTotalFromSet(setCards);
 
-            document.getElementById('binder-owned-count').innerText = `${ownedCount} / ${totalCards || setCards.length}`;
+    document.getElementById('binder-owned-count').innerText = `${ownedCount} / ${totalCards || setCards.length}`;
 
-            // 🌟 สร้างช่องตามลำดับหมายเลข
-            if (totalCards > 0) {
-                // มีข้อมูลจำนวนรวม -> สร้างช่องตามลำดับ 1 ถึง totalCards
-                const cardMap = {};
-                setCards.forEach(c => {
-                    const n = parseCardNum(c.cardNumber);
-                    if (n !== null) cardMap[n] = c;
-                });
-                binderSlots = [];
-                for (let i = 1; i <= totalCards; i++) {
-                    binderSlots.push({ num: i, card: cardMap[i] || null });
-                }
-            } else {
-                // ไม่มี cardNumber -> เรียงตามลำดับที่มี
-                binderSlots = setCards
-                    .sort((a,b) => parseCardNum(a.cardNumber) - parseCardNum(b.cardNumber))
-                    .map(c => ({ num: parseCardNum(c.cardNumber), card: c }));
-            }
+    binderSlots = [];
 
-            binderPage = 0;
-            renderBinderPage();
+    if (totalCards > 0) {
+        // --- สร้าง Map ของการ์ดทั้งหมดในชุดนี้ โดย Key = เลขการ์ด ---
+        const cardMap = {};
+        setCards.forEach(c => {
+            const n = parseCardNum(c.cardNumber);
+            if (n !== null) cardMap[n] = c;
+        });
+
+        // 1. สร้างช่อง 1 ถึง totalCards (การ์ดปกติ)
+        for (let i = 1; i <= totalCards; i++) {
+            binderSlots.push({ num: i, card: cardMap[i] || null });
         }
+
+        // 2. นำการ์ดพิเศษ (เลขเกิน totalCards) มาต่อท้าย เรียงตามเลข
+        const specialCards = setCards
+            .filter(c => {
+                const n = parseCardNum(c.cardNumber);
+                return n !== null && n > totalCards;
+            })
+            .sort((a, b) => parseCardNum(a.cardNumber) - parseCardNum(b.cardNumber));
+
+        if (specialCards.length > 0) {
+            // ใส่เส้นแบ่ง "การ์ดพิเศษ" (null slot พิเศษ)
+            // เติมให้หน้าปัจจุบันเต็มก่อน แล้วค่อยขึ้นหน้าใหม่
+            const remainder = binderSlots.length % CARDS_PER_PAGE;
+            if (remainder !== 0) {
+                for (let i = 0; i < (CARDS_PER_PAGE - remainder); i++) {
+                    binderSlots.push({ num: null, card: null, isFiller: true });
+                }
+            }
+            // ใส่ header บอกว่าเป็นช่วงการ์ดพิเศษ
+            binderSlots.push({ num: null, card: null, isSpecialHeader: true });
+            // เติม filler ให้ครบ 1 หน้าที่เหลือ
+            for (let i = 1; i < CARDS_PER_PAGE; i++) {
+                binderSlots.push({ num: null, card: null, isFiller: true });
+            }
+            // ใส่การ์ดพิเศษจริงๆ (ไม่มีช่องว่าง เรียงต่อกันเลย)
+            specialCards.forEach(c => {
+                binderSlots.push({ num: parseCardNum(c.cardNumber), card: c, isSpecial: true });
+            });
+        }
+
+    } else {
+        // ไม่มี cardNumber → เรียงตามลำดับที่มี
+        binderSlots = setCards
+            .sort((a, b) => parseCardNum(a.cardNumber) - parseCardNum(b.cardNumber))
+            .map(c => ({ num: parseCardNum(c.cardNumber), card: c }));
+    }
+
+    binderPage = 0;
+    renderBinderPage();
+}
 
         function renderBinderPage(direction = 'none') {
-            const grid = document.getElementById('binder-grid');
-            const totalPages = Math.max(1, Math.ceil(binderSlots.length / CARDS_PER_PAGE));
-            const pageSlots = binderSlots.slice(binderPage * CARDS_PER_PAGE, (binderPage + 1) * CARDS_PER_PAGE);
+    const grid = document.getElementById('binder-grid');
+    const totalPages = Math.max(1, Math.ceil(binderSlots.length / CARDS_PER_PAGE));
+    const pageSlots = binderSlots.slice(binderPage * CARDS_PER_PAGE, (binderPage + 1) * CARDS_PER_PAGE);
 
-            // Page info
-            document.getElementById('binder-page-info').innerText = `หน้า ${binderPage+1} / ${totalPages}`;
-            document.getElementById('binder-prev').disabled = binderPage === 0;
-            document.getElementById('binder-next').disabled = binderPage >= totalPages - 1;
+    document.getElementById('binder-page-info').innerText = `หน้า ${binderPage + 1} / ${totalPages}`;
+    document.getElementById('binder-prev').disabled = binderPage === 0;
+    document.getElementById('binder-next').disabled = binderPage >= totalPages - 1;
 
-            // Dots
-            const dotsEl = document.getElementById('binder-page-dots');
-            dotsEl.innerHTML = Array.from({length: Math.min(totalPages,8)}, (_,i) =>
-                `<div class="w-1.5 h-1.5 rounded-full ${i === binderPage ? 'bg-gray-800' : 'bg-gray-300'}"></div>`
-            ).join('');
+    const dotsEl = document.getElementById('binder-page-dots');
+    dotsEl.innerHTML = Array.from({ length: Math.min(totalPages, 8) }, (_, i) =>
+        `<div class="w-1.5 h-1.5 rounded-full ${i === binderPage ? 'bg-gray-800' : 'bg-gray-300'}"></div>`
+    ).join('');
 
-            // Animate
-            grid.className = 'binder-grid ' + (direction === 'next' ? 'slide-in-left' : direction === 'prev' ? 'slide-in-right' : '');
+    grid.className = 'binder-grid ' + (direction === 'next' ? 'slide-in-left' : direction === 'prev' ? 'slide-in-right' : '');
+    grid.innerHTML = '';
 
-            // Render cards
-            grid.innerHTML = '';
-            for (let i = 0; i < CARDS_PER_PAGE; i++) {
-                const slot = pageSlots[i];
-                if (!slot) {
-                    // ช่องว่างเกิน
-                    grid.innerHTML += `<div class="card-slot" style="visibility:hidden"></div>`;
-                    continue;
-                }
+    for (let i = 0; i < CARDS_PER_PAGE; i++) {
+        const slot = pageSlots[i];
 
-                const card = slot.card;
-                const numLabel = slot.num !== null ? `<span class="slot-number">${String(slot.num).padStart(3,'0')}</span>` : '';
-
-                if (!card) {
-                    // ช่องว่าง - ยังไม่มีการ์ดใบนี้
-                    grid.innerHTML += `
-                        <div class="card-slot is-missing">
-                            ${numLabel}
-                            <div class="slot-missing-label">
-                                <span style="font-size:18px">☐</span>
-                                <span>ยังไม่มี</span>
-                            </div>
-                        </div>`;
-                } else {
-                    const isW = String(card.isWishlist) === 'true';
-                    const img = getSafeImageUrl(card.image);
-                    grid.innerHTML += `
-                        <div class="card-slot has-card ${isW ? 'opacity-60' : ''}" onclick="openEditForm('${card.id}')">
-                            ${numLabel}
-                            <img src="${img}" loading="lazy" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=?'">
-                            ${card.qty > 1 && !isW ? `<span class="slot-qty">x${card.qty}</span>` : ''}
-                            ${isW ? '<div class="slot-wanted-badge">🎯</div>' : ''}
-                        </div>`;
-                }
-            }
+        // ช่องที่ไม่มีข้อมูล (padding ท้ายหน้า)
+        if (!slot) {
+            grid.innerHTML += `<div class="card-slot" style="visibility:hidden"></div>`;
+            continue;
         }
+
+        // 🌟 Header บอก "การ์ดพิเศษ" — แสดงเป็น Banner คาดทั้งหน้า
+        if (slot.isSpecialHeader) {
+            grid.innerHTML += `
+                <div class="card-slot flex items-center justify-center bg-gray-900 rounded-xl border-0" style="aspect-ratio:unset; min-height:0">
+                    <div class="text-center text-white">
+                        <div style="font-size:20px">⭐</div>
+                        <div class="font-extrabold text-[11px] mt-1">การ์ดพิเศษ</div>
+                        <div class="text-[9px] opacity-60">Secret Rare</div>
+                    </div>
+                </div>`;
+            continue;
+        }
+
+        // ช่อง Filler (padding ก่อนหน้าการ์ดพิเศษ)
+        if (slot.isFiller) {
+            grid.innerHTML += `<div class="card-slot" style="visibility:hidden"></div>`;
+            continue;
+        }
+
+        const card = slot.card;
+        const numLabel = slot.num !== null
+            ? `<span class="slot-number">${String(slot.num).padStart(3, '0')}${slot.isSpecial ? ' ★' : ''}</span>`
+            : '';
+
+        if (!card) {
+            // ช่องว่าง — ยังไม่มีการ์ดใบนี้
+            grid.innerHTML += `
+                <div class="card-slot is-missing">
+                    ${numLabel}
+                    <div class="slot-missing-label">
+                        <span style="font-size:18px">☐</span>
+                        <span>ยังไม่มี</span>
+                    </div>
+                </div>`;
+        } else {
+            const isW = String(card.isWishlist) === 'true';
+            const img = getSafeImageUrl(card.image);
+            grid.innerHTML += `
+                <div class="card-slot has-card ${isW ? 'opacity-60' : ''} ${slot.isSpecial ? 'ring-2 ring-amber-400' : ''}" onclick="openEditForm('${card.id}')">
+                    ${numLabel}
+                    <img src="${img}" loading="lazy" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=?'">
+                    ${card.qty > 1 && !isW ? `<span class="slot-qty">x${card.qty}</span>` : ''}
+                    ${isW ? '<div class="slot-wanted-badge">🎯</div>' : ''}
+                </div>`;
+        }
+    }
+}
 
         function changePage(dir) {
             const totalPages = Math.ceil(binderSlots.length / CARDS_PER_PAGE);

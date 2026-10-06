@@ -10,9 +10,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Prompt', sans-serif; }
-        /* ซ่อน Scrollbar ให้ดูสะอาดตาขึ้นเวลาเลื่อน */
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
+        /* ซ่อน scrollbar แนวนอนสำหรับแถบฟิลเตอร์ */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen pb-28 selection:bg-gray-200 selection:text-gray-900">
@@ -20,7 +22,7 @@
     <!-- Toast Notification -->
     <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-white text-gray-800 px-5 py-3 rounded-2xl shadow-xl text-xs font-semibold z-50 transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2.5 border border-gray-100">
         <span id="toast-icon" class="text-sm">✨</span>
-        <span id="toast-message">ดำเนินการสำเร็จเรียบร้อย</span>
+        <span id="toast-message">ดำเนินการสำเร็จ</span>
     </div>
 
     <!-- Header & Summary Dashboard -->
@@ -50,23 +52,58 @@
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-md mx-auto p-5 space-y-5">
-        <!-- Search Bar -->
-        <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400">🔍</span>
-            <input type="text" id="search-input" placeholder="ค้นหาชื่อการ์ด หรือซีรีส์ชุด..." 
-                class="w-full pl-11 pr-4 py-3.5 bg-white text-gray-900 placeholder-gray-400 rounded-2xl shadow-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm transition"
-                oninput="filterCards()">
+    <main class="max-w-md mx-auto p-5 space-y-4">
+        <!-- Search & Filter Area -->
+        <div class="space-y-3">
+            <!-- Search Bar with Clear Button -->
+            <div class="relative flex items-center">
+                <span class="absolute left-4 text-gray-400">🔍</span>
+                <input type="text" id="search-input" placeholder="ค้นหาชื่อการ์ด หรือซีรีส์ชุด..." 
+                    class="w-full pl-11 pr-10 py-3.5 bg-white text-gray-900 placeholder-gray-400 rounded-2xl shadow-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm transition"
+                    oninput="applyFilters()">
+                <button id="clear-search-btn" onclick="clearSearch()" class="absolute right-4 text-gray-400 hover:text-gray-900 hidden transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+
+            <!-- Sorting & Tags Toolbar -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                <select id="sort-select" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 flex-shrink-0">
+                    <option value="newest">🔥 เพิ่มล่าสุด</option>
+                    <option value="price_desc">💰 ราคา: แพง ➔ ถูก</option>
+                    <option value="price_asc">📉 ราคา: ถูก ➔ แพง</option>
+                    <option value="name_asc">🔤 ชื่อ: A ➔ Z</option>
+                </select>
+
+                <select id="filter-rarity" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 flex-shrink-0">
+                    <option value="all">ระดับทั้งหมด</option>
+                    <option value="UR">UR</option>
+                    <option value="SAR">SAR</option>
+                    <option value="SR">SR</option>
+                    <option value="AR">AR</option>
+                    <option value="RR">RR</option>
+                </select>
+
+                <select id="filter-lang" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 flex-shrink-0">
+                    <option value="all">ทุกภาษา</option>
+                    <option value="TH">ไทย (TH)</option>
+                    <option value="JP">ญี่ปุ่น (JP)</option>
+                    <option value="EN">อังกฤษ (EN)</option>
+                </select>
+            </div>
         </div>
 
-        <!-- Loading State -->
-        <div id="loading" class="text-center py-16 flex flex-col items-center justify-center space-y-3">
-            <div class="w-8 h-8 border-3 border-gray-200 border-t-gray-800 rounded-full animate-spin"></div>
-            <span class="text-xs text-gray-500 font-medium">กำลังโหลดข้อมูล...</span>
+        <!-- Skeleton Loading State -->
+        <div id="loading" class="grid grid-cols-2 gap-4">
+            <!-- Skeleton Items -->
+            <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-60"></div>
+            <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-60"></div>
+            <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-60"></div>
+            <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-60"></div>
         </div>
 
         <!-- Card Grid -->
-        <div id="card-grid" class="grid grid-cols-2 gap-4">
+        <div id="card-grid" class="grid grid-cols-2 gap-4 hidden">
             <!-- ข้อมูลการ์ดแสดงผลที่นี่ -->
         </div>
     </main>
@@ -88,8 +125,7 @@
             </div>
 
             <div class="flex justify-center bg-gray-50 p-4 rounded-2xl border border-gray-100 relative group cursor-pointer" onclick="openImageLightbox(document.getElementById('modal-preview-image').src)">
-                <img id="modal-preview-image" src="" alt="Card Preview" class="h-44 object-contain rounded-lg drop-shadow-sm transition group-hover:scale-105" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
-                <span class="absolute bottom-3 right-3 bg-white/90 text-gray-600 text-[10px] px-2 py-1 rounded-lg border border-gray-200 shadow-sm backdrop-blur-sm">🔍 แตะเพื่อขยาย</span>
+                <img id="modal-preview-image" src="" alt="Card Preview" class="h-40 object-contain rounded-lg drop-shadow-sm transition group-hover:scale-105" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
             </div>
 
             <form id="edit-form" onsubmit="updateCard(event)" class="space-y-3.5 pt-2">
@@ -100,37 +136,63 @@
                     <label class="text-[11px] font-semibold text-gray-500">ชื่อการ์ด</label>
                     <input type="text" id="edit-name" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
                 </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">ความหายาก (Rarity)</label>
+                        <select id="edit-rarity" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
+                            <option value="-">-</option>
+                            <option value="UR">UR</option>
+                            <option value="SAR">SAR</option>
+                            <option value="SR">SR</option>
+                            <option value="AR">AR</option>
+                            <option value="RR">RR</option>
+                            <option value="R">R</option>
+                            <option value="U">U</option>
+                            <option value="C">C</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">ภาษา (Language)</label>
+                        <select id="edit-lang" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
+                            <option value="TH">ไทย (TH)</option>
+                            <option value="JP">ญี่ปุ่น (JP)</option>
+                            <option value="EN">อังกฤษ (EN)</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">ซีรีส์ / ชุด</label>
                         <input type="text" id="edit-set" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
                     </div>
                     <div>
-                        <label class="text-[11px] font-semibold text-gray-500">จำนวน</label>
+                        <label class="text-[11px] font-semibold text-gray-500">สภาพการ์ด</label>
+                        <select id="edit-condition" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
+                            <option value="NM">NM (สวย)</option>
+                            <option value="LP">LP (มีรอยนิดหน่อย)</option>
+                            <option value="MP">MP (มีรอยชัด)</option>
+                            <option value="HP">HP (ตำหนิหนัก)</option>
+                            <option value="Graded">Graded (มีเกรด)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">ราคาประเมิน (บาท)</label>
+                        <input type="number" id="edit-price" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">จำนวนที่มี</label>
                         <input type="number" id="edit-qty" required min="1" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
                     </div>
                 </div>
-                <div>
-                    <label class="text-[11px] font-semibold text-gray-500">ราคาประเมิน (บาท)</label>
-                    <input type="number" id="edit-price" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition" oninput="calculateFBPricePreview()">
-                </div>
+
                 <div>
                     <label class="text-[11px] font-semibold text-gray-500">ลิงก์รูปภาพ</label>
                     <input type="url" id="edit-image" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition" oninput="document.getElementById('modal-preview-image').src = getSafeImageUrl(this.value)">
-                </div>
-
-                <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 mt-2">
-                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">📊 ราคาตลาดโดยประมาณ</p>
-                    <div class="grid grid-cols-2 gap-3 text-xs">
-                        <div class="bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm">
-                            <span class="text-[10px] text-gray-500 block mb-0.5">สภาพสวย (NM)</span>
-                            <span id="preview-nm" class="font-bold text-emerald-600">฿0</span>
-                        </div>
-                        <div class="bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm">
-                            <span class="text-[10px] text-gray-500 block mb-0.5">มีตำหนิ (Played)</span>
-                            <span id="preview-played" class="font-bold text-amber-500">฿0</span>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="flex gap-3 pt-4">
@@ -158,20 +220,60 @@
                     <label class="text-[11px] font-semibold text-gray-500">ชื่อการ์ด</label>
                     <input type="text" id="card-name" required placeholder="เช่น Charizard ex" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
                 </div>
-                <div>
-                    <label class="text-[11px] font-semibold text-gray-500">ซีรีส์ / ชุด</label>
-                    <input type="text" id="card-set" required placeholder="เช่น SV3s" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">ความหายาก (Rarity)</label>
+                        <select id="card-rarity" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
+                            <option value="-">-</option>
+                            <option value="UR">UR</option>
+                            <option value="SAR">SAR</option>
+                            <option value="SR">SR</option>
+                            <option value="AR">AR</option>
+                            <option value="RR">RR</option>
+                            <option value="R">R</option>
+                            <option value="U">U</option>
+                            <option value="C">C</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">ภาษา (Language)</label>
+                        <select id="card-lang" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
+                            <option value="TH">ไทย (TH)</option>
+                            <option value="JP">ญี่ปุ่น (JP)</option>
+                            <option value="EN">อังกฤษ (EN)</option>
+                        </select>
+                    </div>
                 </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">ซีรีส์ / ชุด</label>
+                        <input type="text" id="card-set" required placeholder="เช่น SV3s" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">สภาพการ์ด</label>
+                        <select id="card-condition" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
+                            <option value="NM">NM (สวย)</option>
+                            <option value="LP">LP (มีรอยนิดหน่อย)</option>
+                            <option value="MP">MP (มีรอยชัด)</option>
+                            <option value="HP">HP (ตำหนิหนัก)</option>
+                            <option value="Graded">Graded (มีเกรด)</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">ราคาตลาด (บาท)</label>
                         <input type="number" id="card-price" required placeholder="0" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
                     </div>
                     <div>
-                        <label class="text-[11px] font-semibold text-gray-500">จำนวน</label>
+                        <label class="text-[11px] font-semibold text-gray-500">จำนวนที่มี</label>
                         <input type="number" id="card-qty" required value="1" min="1" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
                     </div>
                 </div>
+
                 <div>
                     <label class="text-[11px] font-semibold text-gray-500">ลิงก์รูปภาพ (URL)</label>
                     <input type="url" id="card-image" placeholder="https://..." class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
@@ -200,20 +302,14 @@
     <!-- Script -->
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyxUtqszvNC3tsfCnp2pH2dMJplBRX6KKX1f-JqzK3q57aAylJ3BOkGEFUJ0bxAI8e-/exec";
-        
         let allCards = [];
 
         function showToast(message, type = "success") {
             const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toast-message');
-            const toastIcon = document.getElementById('toast-icon');
-
-            toastMsg.innerText = message;
-            toastIcon.innerText = type === "success" ? "✨" : "⚠️";
-
+            document.getElementById('toast-message').innerText = message;
+            document.getElementById('toast-icon').innerText = type === "success" ? "✨" : "⚠️";
             toast.classList.remove('opacity-0', 'pointer-events-none');
             toast.classList.add('opacity-100');
-
             setTimeout(() => {
                 toast.classList.remove('opacity-100');
                 toast.classList.add('opacity-0', 'pointer-events-none');
@@ -221,16 +317,14 @@
         }
 
         async function loadData() {
-            const loadingEl = document.getElementById('loading');
+            document.getElementById('loading').style.display = 'grid';
+            document.getElementById('card-grid').style.display = 'none';
             
             const cachedData = localStorage.getItem('tcg_cards');
             if (cachedData && allCards.length === 0) {
                 allCards = JSON.parse(cachedData);
-                renderCards(allCards);
+                applyFilters();
                 updateSummary(allCards);
-                loadingEl.style.display = 'none';
-            } else if (allCards.length === 0) {
-                loadingEl.style.display = 'flex';
             }
             
             try {
@@ -240,20 +334,54 @@
                 if (result.status === "success") {
                     allCards = result.data;
                     localStorage.setItem('tcg_cards', JSON.stringify(allCards));
-                    renderCards(allCards);
+                    applyFilters();
                     updateSummary(allCards);
                 }
-                loadingEl.style.display = 'none';
             } catch (error) {
-                loadingEl.innerHTML = "<span class='text-red-500 text-xs'>โหลดข้อมูลล้มเหลว กำลังใช้ข้อมูลออฟไลน์</span>";
+                console.error("โหลดข้อมูลล้มเหลว กำลังใช้ข้อมูลออฟไลน์");
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('card-grid').style.display = 'grid';
             }
         }
 
         function getSafeImageUrl(url) {
-            if (!url || url.includes('via.placeholder.com')) {
-                return 'https://placehold.co/150/f9fafb/9ca3af?text=No+Image';
-            }
-            return url;
+            return (!url || url.includes('via.placeholder.com')) ? 'https://placehold.co/150/f9fafb/9ca3af?text=No+Image' : url;
+        }
+
+        // รวมฟังก์ชันค้นหา ตัวกรอง และจัดเรียง ไว้ด้วยกัน
+        function applyFilters() {
+            const keyword = document.getElementById('search-input').value.toLowerCase();
+            const sortMethod = document.getElementById('sort-select').value;
+            const filterRarity = document.getElementById('filter-rarity').value;
+            const filterLang = document.getElementById('filter-lang').value;
+            const clearBtn = document.getElementById('clear-search-btn');
+
+            // แสดง/ซ่อนปุ่มเคลียร์ค้นหา
+            clearBtn.classList.toggle('hidden', keyword.length === 0);
+
+            // 1. กรองข้อมูล (Filter)
+            let filtered = allCards.filter(card => {
+                const matchName = String(card.name).toLowerCase().includes(keyword) || String(card.set).toLowerCase().includes(keyword);
+                const matchRarity = filterRarity === 'all' || card.rarity === filterRarity;
+                const matchLang = filterLang === 'all' || card.language === filterLang;
+                return matchName && matchRarity && matchLang;
+            });
+
+            // 2. จัดเรียงข้อมูล (Sort)
+            filtered.sort((a, b) => {
+                if (sortMethod === 'price_desc') return (Number(b.price) || 0) - (Number(a.price) || 0);
+                if (sortMethod === 'price_asc') return (Number(a.price) || 0) - (Number(b.price) || 0);
+                if (sortMethod === 'name_asc') return String(a.name).localeCompare(String(b.name));
+                return 0; // 'newest' ยึดตามลำดับ Index ปกติ
+            });
+
+            renderCards(filtered);
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            applyFilters();
         }
 
         function renderCards(cards) {
@@ -261,27 +389,39 @@
             grid.innerHTML = '';
 
             if (cards.length === 0) {
-                grid.innerHTML = '<div class="col-span-2 text-center text-gray-500 py-12 text-xs">ยังไม่มีการ์ดในคลัง กดปุ่มด้านล่างเพื่อเพิ่ม</div>';
+                grid.innerHTML = '<div class="col-span-2 text-center text-gray-500 py-12 text-xs">ไม่พบข้อมูลการ์ดที่ค้นหา</div>';
                 return;
             }
 
             cards.forEach((card, index) => {
                 const imgSrc = getSafeImageUrl(card.image);
+                // ดึงข้อมูลใหม่มาแสดง (เช็คเผื่อการ์ดเก่าไม่มีข้อมูลเหล่านี้)
+                const rarity = card.rarity && card.rarity !== '-' ? card.rarity : '';
+                const lang = card.language || 'TH';
+                const cond = card.condition || 'NM';
+                const set = card.set || '-';
+
                 grid.innerHTML += `
                     <div class="bg-white hover:shadow-md border border-gray-200 hover:border-gray-300 p-3.5 rounded-3xl shadow-sm flex flex-col justify-between transition-all duration-300 group">
-                        <div>
-                            <div onclick="openCardDetail(${index})" class="w-full h-36 bg-gray-50 rounded-2xl mb-3 flex items-center justify-center p-2 overflow-hidden border border-gray-100 transition cursor-pointer relative">
+                        <div onclick="openCardDetail('${card.id}')" class="cursor-pointer">
+                            <div class="w-full h-36 bg-gray-50 rounded-2xl mb-3 flex items-center justify-center p-2 overflow-hidden border border-gray-100 relative">
                                 <img src="${imgSrc}" alt="${card.name}" class="h-full object-contain rounded-lg drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
-                                <button onclick="event.stopPropagation(); openImageLightbox('${imgSrc}')" class="absolute bottom-2 right-2 bg-white/90 hover:bg-gray-900 text-gray-600 hover:text-white w-7 h-7 flex items-center justify-center rounded-full text-xs backdrop-blur-sm transition shadow-sm border border-gray-200">
-                                    🔍
-                                </button>
+                                <button onclick="event.stopPropagation(); openImageLightbox('${imgSrc}')" class="absolute bottom-2 right-2 bg-white/90 hover:bg-gray-900 text-gray-600 hover:text-white w-7 h-7 flex items-center justify-center rounded-full text-xs backdrop-blur-sm shadow-sm border border-gray-200">🔍</button>
                             </div>
-                            <span class="text-[9px] bg-gray-100 text-gray-500 border border-gray-200 px-2 py-0.5 rounded-md font-semibold">${card.set || '-'}</span>
-                            <h2 onclick="openCardDetail(${index})" class="text-xs font-bold text-gray-900 truncate mt-1.5 cursor-pointer hover:text-gray-600 transition">${card.name}</h2>
+                            
+                            <div class="flex flex-wrap gap-1 mb-1.5">
+                                <span class="text-[9px] bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded font-semibold">${set}</span>
+                                ${rarity ? `<span class="text-[9px] bg-gray-900 text-white px-1.5 py-0.5 rounded font-bold">${rarity}</span>` : ''}
+                                <span class="text-[9px] bg-gray-100 text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded">${lang}</span>
+                            </div>
+                            
+                            <h2 class="text-xs font-bold text-gray-900 truncate hover:text-gray-600">${card.name}</h2>
+                            <p class="text-[10px] text-gray-500 mt-0.5">สภาพ: ${cond}</p>
                         </div>
-                        <div onclick="openCardDetail(${index})" class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 cursor-pointer">
+                        
+                        <div onclick="openCardDetail('${card.id}')" class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 cursor-pointer">
                             <span class="text-xs font-black text-emerald-600">฿${Number(card.price || 0).toLocaleString()}</span>
-                            <span class="text-[10px] bg-gray-100 text-gray-500 border border-gray-200 px-2.5 py-0.5 rounded-full font-semibold">x${card.qty}</span>
+                            <span class="text-[10px] bg-gray-100 text-gray-600 border border-gray-200 px-2.5 py-0.5 rounded-full font-semibold">x${card.qty}</span>
                         </div>
                     </div>
                 `;
@@ -291,38 +431,21 @@
         function updateSummary(cards) {
             const totalCards = cards.reduce((sum, card) => sum + Number(card.qty || 0), 0);
             const totalPrice = cards.reduce((sum, card) => sum + (Number(card.price || 0) * Number(card.qty || 0)), 0);
-
             document.getElementById('total-cards').innerHTML = `${totalCards} <span class="text-xs font-normal text-gray-500">ใบ</span>`;
             document.getElementById('total-price').innerText = `฿${totalPrice.toLocaleString()}`;
         }
 
-        function filterCards() {
-            const keyword = document.getElementById('search-input').value.toLowerCase();
-            const filtered = allCards.filter(card => 
-                String(card.name).toLowerCase().includes(keyword) || String(card.set).toLowerCase().includes(keyword)
-            );
-            renderCards(filtered);
-        }
-
-        function toggleAddModal(isOpen) {
-            document.getElementById('add-modal').classList.toggle('hidden', !isOpen);
-        }
-
-        function toggleDetailModal(isOpen) {
-            document.getElementById('detail-modal').classList.toggle('hidden', !isOpen);
-        }
-
-        function toggleImageModal(isOpen) {
-            document.getElementById('image-modal').classList.toggle('hidden', !isOpen);
-        }
+        function toggleAddModal(isOpen) { document.getElementById('add-modal').classList.toggle('hidden', !isOpen); }
+        function toggleDetailModal(isOpen) { document.getElementById('detail-modal').classList.toggle('hidden', !isOpen); }
+        function toggleImageModal(isOpen) { document.getElementById('image-modal').classList.toggle('hidden', !isOpen); }
 
         function openImageLightbox(imgUrl) {
             document.getElementById('lightbox-img').src = getSafeImageUrl(imgUrl);
             toggleImageModal(true);
         }
 
-        function openCardDetail(index) {
-            const card = allCards[index];
+        function openCardDetail(id) {
+            const card = allCards.find(c => c.id === id);
             if (!card) return;
 
             document.getElementById('edit-row-index').value = card.rowIndex;
@@ -332,21 +455,18 @@
             document.getElementById('edit-qty').value = card.qty || 1;
             document.getElementById('edit-price').value = card.price || 0;
             document.getElementById('edit-image').value = card.image || '';
+            
+            // ข้อมูลใหม่
+            document.getElementById('edit-rarity').value = card.rarity || '-';
+            document.getElementById('edit-lang').value = card.language || 'TH';
+            document.getElementById('edit-condition').value = card.condition || 'NM';
+
             document.getElementById('modal-preview-image').src = getSafeImageUrl(card.image);
-
-            calculateFBPricePreview();
             toggleDetailModal(true);
-        }
-
-        function calculateFBPricePreview() {
-            const price = Number(document.getElementById('edit-price').value) || 0;
-            document.getElementById('preview-nm').innerText = `฿${Math.round(price * 1.15).toLocaleString()}`;
-            document.getElementById('preview-played').innerText = `฿${Math.round(price * 0.75).toLocaleString()}`;
         }
 
         async function submitCard(event) {
             event.preventDefault();
-            
             const newCard = {
                 id: "CARD-" + Date.now(),
                 name: document.getElementById('card-name').value,
@@ -354,11 +474,14 @@
                 price: Number(document.getElementById('card-price').value),
                 qty: Number(document.getElementById('card-qty').value),
                 image: document.getElementById('card-image').value,
+                rarity: document.getElementById('card-rarity').value,
+                language: document.getElementById('card-lang').value,
+                condition: document.getElementById('card-condition').value,
                 rowIndex: allCards.length + 2
             };
 
             allCards.unshift(newCard);
-            renderCards(allCards);
+            applyFilters();
             updateSummary(allCards);
             localStorage.setItem('tcg_cards', JSON.stringify(allCards));
             
@@ -371,7 +494,6 @@
 
         async function updateCard(event) {
             event.preventDefault();
-            
             const rowIndex = Number(document.getElementById('edit-row-index').value);
             const updatedCard = {
                 action: 'update',
@@ -381,7 +503,10 @@
                 set: document.getElementById('edit-set').value,
                 price: Number(document.getElementById('edit-price').value),
                 qty: Number(document.getElementById('edit-qty').value),
-                image: document.getElementById('edit-image').value
+                image: document.getElementById('edit-image').value,
+                rarity: document.getElementById('edit-rarity').value,
+                language: document.getElementById('edit-lang').value,
+                condition: document.getElementById('edit-condition').value
             };
 
             const index = allCards.findIndex(c => c.rowIndex === rowIndex);
@@ -389,7 +514,7 @@
                 allCards[index] = { ...allCards[index], ...updatedCard };
             }
 
-            renderCards(allCards);
+            applyFilters();
             updateSummary(allCards);
             localStorage.setItem('tcg_cards', JSON.stringify(allCards));
             toggleDetailModal(false);
@@ -400,11 +525,10 @@
 
         async function deleteCard() {
             if (!confirm("ลบการ์ดใบนี้ออกจากคลัง?")) return;
-
             const rowIndex = Number(document.getElementById('edit-row-index').value);
             
             allCards = allCards.filter(c => c.rowIndex !== rowIndex);
-            renderCards(allCards);
+            applyFilters();
             updateSummary(allCards);
             localStorage.setItem('tcg_cards', JSON.stringify(allCards));
             toggleDetailModal(false);
@@ -413,6 +537,7 @@
             fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', rowIndex: rowIndex }) });
         }
 
+        // เริ่มโหลดข้อมูล
         loadData();
     </script>
 </body>

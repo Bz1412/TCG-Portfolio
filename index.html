@@ -194,6 +194,14 @@
             }
         }
 
+        // ฟังก์ชันช่วยจัดการรูปภาพ (ปัองกันลิงก์พังหรือลิงก์เก่าจาก Google Sheets)
+        function getSafeImageUrl(url) {
+            if (!url || url.includes('via.placeholder.com')) {
+                return 'https://placehold.co/150/1e293b/94a3b8?text=No+Image';
+            }
+            return url;
+        }
+
         function renderCards(cards) {
             const grid = document.getElementById('card-grid');
             grid.innerHTML = '';
@@ -204,7 +212,7 @@
             }
 
             cards.forEach((card, index) => {
-                const imgSrc = card.image ? card.image : 'https://placehold.co/150/1e293b/94a3b8?text=No+Image';
+                const imgSrc = getSafeImageUrl(card.image);
                 grid.innerHTML += `
                     <div onclick="openCardDetail(${index})" class="bg-slate-800/80 hover:bg-slate-800 border border-slate-700/70 hover:border-violet-500/50 p-3 rounded-2xl shadow-md flex flex-col justify-between cursor-pointer transition transform active:scale-95">
                         <div>
@@ -263,7 +271,7 @@
 
             document.getElementById('modal-card-name').innerText = card.name;
             document.getElementById('modal-card-set').innerText = `SET: ${card.set || '-'}`;
-            document.getElementById('modal-card-image').src = card.image || 'https://placehold.co/150/1e293b/94a3b8?text=No+Image';
+            document.getElementById('modal-card-image').src = getSafeImageUrl(card.image);
             document.getElementById('modal-card-qty').innerText = `${card.qty} ใบ`;
             
             const basePrice = Number(card.price || 0);
@@ -319,9 +327,11 @@
     </script>
 </body>
 </html>
-```นี่คือโค้ดไฟล์ `index.html` ฉบับเต็มและสมบูรณ์ ที่เปลี่ยนลิงก์รูปภาพสำรองมาใช้บริการของ `placehold.co` ที่เสถียรและเข้ากับธีมมืดของแอปเรียบร้อยแล้วครับ 
+```สาเหตุที่ยังเจอ Error นี้ เป็นเพราะลิงก์เก่า `via.placeholder.com` ถูก **บันทึกค้างไว้ใน Google Sheets ของคุณแล้ว** (ตรงคอลัมน์ `image` ของการ์ดที่คุณเคยเพิ่มเข้าไป) ทำให้เวลาเว็บดึงข้อมูลมาแสดง มันจึงหยิบลิงก์เก่าขึ้นมาแสดงผลครับ
 
-คุณสามารถคัดลอกโค้ดนี้ไปแทนที่ไฟล์เดิมได้เลยครับ (อย่าลืมใส่ URL ของ Google Apps Script ตรงตัวแปร `API_URL` ด้านล่างสุดเช่นเดิม):
+วิธีแก้ที่ดีที่สุดคือ ผมได้เพิ่มโค้ดป้องกันให้ **ระบบทำการแปลงลิงก์เก่าโดยอัตโนมัติทันที** ต่อให้ใน Google Sheets จะมีลิงก์เก่าค้างอยู่ ระบบก็จะเปลี่ยนเป็น `placehold.co` ให้ทันทีโดยไม่ต้องไปแก้ในชีตครับ
+
+คุณสามารถก๊อปปี้โค้ดชุดเต็มนี้ไปแทนที่ไฟล์ `index.html` ได้เลยครับ:
 
 ```html
 <!DOCTYPE html>
@@ -520,6 +530,14 @@
             }
         }
 
+        // ฟังก์ชันช่วยจัดการรูปภาพ (ปัองกันลิงก์พังหรือลิงก์เก่าจาก Google Sheets)
+        function getSafeImageUrl(url) {
+            if (!url || url.includes('via.placeholder.com')) {
+                return 'https://placehold.co/150/1e293b/94a3b8?text=No+Image';
+            }
+            return url;
+        }
+
         function renderCards(cards) {
             const grid = document.getElementById('card-grid');
             grid.innerHTML = '';
@@ -530,7 +548,7 @@
             }
 
             cards.forEach((card, index) => {
-                const imgSrc = card.image ? card.image : 'https://placehold.co/150/1e293b/94a3b8?text=No+Image';
+                const imgSrc = getSafeImageUrl(card.image);
                 grid.innerHTML += `
                     <div onclick="openCardDetail(${index})" class="bg-slate-800/80 hover:bg-slate-800 border border-slate-700/70 hover:border-violet-500/50 p-3 rounded-2xl shadow-md flex flex-col justify-between cursor-pointer transition transform active:scale-95">
                         <div>
@@ -589,7 +607,7 @@
 
             document.getElementById('modal-card-name').innerText = card.name;
             document.getElementById('modal-card-set').innerText = `SET: ${card.set || '-'}`;
-            document.getElementById('modal-card-image').src = card.image || 'https://placehold.co/150/1e293b/94a3b8?text=No+Image';
+            document.getElementById('modal-card-image').src = getSafeImageUrl(card.image);
             document.getElementById('modal-card-qty').innerText = `${card.qty} ใบ`;
             
             const basePrice = Number(card.price || 0);

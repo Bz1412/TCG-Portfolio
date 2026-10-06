@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokémon TCG Thai Collection</title>
+    <title>Pokémon TCG Thai Vault</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Font (Prompt) -->
@@ -12,29 +12,31 @@
         body { font-family: 'Prompt', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen pb-24">
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-28 selection:bg-violet-500 selection:text-white">
 
-    <!-- Header & Summary -->
-    <header class="bg-gradient-to-r from-violet-600 to-indigo-700 text-white p-6 rounded-b-[2.5rem] shadow-xl">
+    <!-- Header & Summary Dashboard -->
+    <header class="relative bg-gradient-to-br from-violet-900 via-indigo-950 to-slate-900 text-white p-6 rounded-b-[2.5rem] shadow-2xl border-b border-violet-500/20">
         <div class="max-w-md mx-auto">
-            <div class="flex justify-between items-center mb-4">
+            <div class="flex justify-between items-center mb-5">
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight">⚡ Thai TCG Vault</h1>
-                    <p class="text-xs text-violet-200">ระบบจัดการคอลเลกชันและเช็คราคาไทย</p>
+                    <span class="text-[10px] uppercase tracking-widest text-violet-400 font-semibold bg-violet-500/10 px-2.5 py-1 rounded-full border border-violet-500/20">Thai Collection</span>
+                    <h1 class="text-2xl font-extrabold tracking-tight mt-1 bg-gradient-to-r from-white via-slate-200 to-violet-300 bg-clip-text text-transparent">⚡ TCG Vault</h1>
                 </div>
-                <div class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-                    <span class="text-lg">🃏</span>
-                </div>
+                <button onclick="loadData()" class="w-10 h-10 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition active:scale-95 shadow-inner">
+                    <span class="text-sm">🔄</span>
+                </button>
             </div>
             
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 shadow-inner">
-                    <p class="text-[11px] text-violet-200">การ์ดทั้งหมด</p>
-                    <p id="total-cards" class="text-xl font-extrabold tracking-tight mt-0.5">0 ใบ</p>
+            <div class="grid grid-cols-2 gap-3.5">
+                <div class="bg-white/[0.07] backdrop-blur-xl p-4 rounded-3xl border border-white/10 shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-violet-500/10 text-5xl font-bold">📦</div>
+                    <p class="text-[11px] text-violet-200 font-medium">การ์ดทั้งหมดในคลัง</p>
+                    <p id="total-cards" class="text-2xl font-black tracking-tight mt-1 text-white">0 <span class="text-xs font-normal text-slate-300">ใบ</span></p>
                 </div>
-                <div class="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 shadow-inner">
-                    <p class="text-[11px] text-violet-200">มูลค่าตลาดรวม</p>
-                    <p id="total-price" class="text-xl font-extrabold tracking-tight mt-0.5 text-emerald-300">฿0</p>
+                <div class="bg-white/[0.07] backdrop-blur-xl p-4 rounded-3xl border border-white/10 shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-emerald-500/10 text-5xl font-bold">💎</div>
+                    <p class="text-[11px] text-violet-200 font-medium">มูลค่าประเมินรวม</p>
+                    <p id="total-price" class="text-2xl font-black tracking-tight mt-1 text-emerald-400">฿0</p>
                 </div>
             </div>
         </div>
@@ -42,18 +44,18 @@
 
     <!-- Main Container -->
     <main class="max-w-md mx-auto p-4 space-y-4">
-        <!-- Search & Filter -->
+        <!-- Search Bar -->
         <div class="relative">
             <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">🔍</span>
-            <input type="text" id="search-input" placeholder="ค้นหาชื่อการ์ด, ซีรีส์..." 
-                class="w-full pl-11 pr-4 py-3 bg-slate-800 text-slate-100 placeholder-slate-400 rounded-2xl shadow-sm border border-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm transition"
+            <input type="text" id="search-input" placeholder="ค้นหาชื่อการ์ด หรือซีรีส์ชุด..." 
+                class="w-full pl-11 pr-4 py-3.5 bg-slate-900/90 text-slate-100 placeholder-slate-500 rounded-2xl shadow-inner border border-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm transition"
                 oninput="filterCards()">
         </div>
 
         <!-- Loading State -->
-        <div id="loading" class="text-center py-12 text-slate-400 text-sm flex flex-col items-center justify-center space-y-2">
-            <div class="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
-            <span>กำลังดึงข้อมูลจาก Google Sheets...</span>
+        <div id="loading" class="text-center py-16 text-slate-400 text-sm flex flex-col items-center justify-center space-y-3">
+            <div class="w-8 h-8 border-3 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-xs text-slate-400 font-medium">กำลังซิงค์ข้อมูลจาก Google Sheets...</span>
         </div>
 
         <!-- Card Grid -->
@@ -62,449 +64,129 @@
         </div>
     </main>
 
-    <!-- Modal: รายละเอียดการ์ดและการอิงราคาตลาด FB -->
-    <div id="detail-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
-        <div class="bg-slate-800 text-slate-100 w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-5 max-h-[90vh] overflow-y-auto border border-slate-700 shadow-2xl">
-            <div class="flex justify-between items-start border-b border-slate-700 pb-4">
+    <!-- Modal: รายละเอียด & แก้ไขข้อมูลการ์ด -->
+    <div id="detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+        <div class="bg-slate-900 text-slate-100 w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-4 max-h-[92vh] overflow-y-auto border border-slate-800 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h2 class="font-bold text-base text-white flex items-center gap-2">🛠️ จัดการข้อมูลการ์ด</h2>
+                <button onclick="toggleDetailModal(false)" class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white text-lg transition">&times;</button>
+            </div>
+
+            <!-- รูปภาพการ์ดตัวอย่าง -->
+            <div class="flex justify-center bg-slate-950/60 p-3 rounded-2xl border border-slate-800/80">
+                <img id="modal-preview-image" src="" alt="Card Preview" class="h-40 object-contain rounded-lg shadow-md" onerror="this.src='https://placehold.co/150/1e293b/94a3b8?text=No+Image'">
+            </div>
+
+            <!-- ฟอร์มแก้ไขข้อมูล -->
+            <form id="edit-form" onsubmit="updateCard(event)" class="space-y-3">
+                <input type="hidden" id="edit-row-index">
+                <input type="hidden" id="edit-card-id">
+
                 <div>
-                    <span id="modal-card-set" class="text-[10px] bg-violet-500/20 text-violet-300 px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider">Set</span>
-                    <h2 id="modal-card-name" class="font-bold text-lg text-white mt-1.5">ชื่อการ์ด</h2>
+                    <label class="text-[11px] font-semibold text-slate-400">ชื่อการ์ด</label>
+                    <input type="text" id="edit-name" required class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
                 </div>
-                <button onclick="toggleDetailModal(false)" class="w-8 h-8 rounded-full bg-slate-700/50 flex items-center justify-center text-slate-400 hover:text-white text-lg font-bold transition">&times;</button>
-            </div>
-
-            <!-- รูปภาพขนาดใหญ่ -->
-            <div class="flex justify-center bg-slate-900/60 p-4 rounded-2xl border border-slate-700/50">
-                <img id="modal-card-image" src="" alt="Card Image" class="h-48 object-contain rounded-lg drop-shadow-lg" onerror="this.src='https://placehold.co/150/1e293b/94a3b8?text=No+Image'">
-            </div>
-
-            <!-- ข้อมูลคอลเลกชันส่วนตัว -->
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-slate-700/40 p-3 rounded-xl border border-slate-700">
-                    <p class="text-[10px] text-slate-400">จำนวนที่คุณมี</p>
-                    <p id="modal-card-qty" class="text-base font-bold text-violet-300 mt-0.5">0 ใบ</p>
-                </div>
-                <div class="bg-slate-700/40 p-3 rounded-xl border border-slate-700">
-                    <p class="text-[10px] text-slate-400">ราคาตั้งต้น / ซื้อมา</p>
-                    <p id="modal-card-price" class="text-base font-bold text-emerald-400 mt-0.5">฿0</p>
-                </div>
-            </div>
-
-            <!-- ส่วนอิงราคาตลาดจากกลุ่ม Facebook -->
-            <div class="bg-violet-950/40 border border-violet-500/30 rounded-2xl p-4 space-y-3">
-                <div class="flex items-center space-x-2">
-                    <span class="text-base">📊</span>
-                    <h3 class="text-xs font-bold text-violet-300 uppercase tracking-wide">ราคาอ้างอิงจากกลุ่มซื้อขาย Facebook</h3>
-                </div>
-                <div class="space-y-2 text-xs">
-                    <div class="flex justify-between items-center bg-slate-900/50 px-3 py-2 rounded-xl">
-                        <span class="text-slate-300">สภาพสวย (NM / Mint)</span>
-                        <span id="fb-price-nm" class="font-semibold text-emerald-400">฿0</span>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400">ซีรีส์ / ชุด (Set)</label>
+                        <input type="text" id="edit-set" required class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
                     </div>
-                    <div class="flex justify-between items-center bg-slate-900/50 px-3 py-2 rounded-xl">
-                        <span class="text-slate-300">สภาพเล่น / มีตำหนิ (Played)</span>
-                        <span id="fb-price-played" class="font-semibold text-amber-400">฿0</span>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400">จำนวนที่มี</label>
+                        <input type="number" id="edit-qty" required min="1" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
                     </div>
                 </div>
-                <p class="text-[10px] text-violet-300/70 italic">* อ้างอิงจากราคาซื้อขายจริงในกลุ่ม Pokémon TCG Thailand Marketplace</p>
-            </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-400">ราคาตลาด / ราคาซื้อ (บาท)</label>
+                    <input type="number" id="edit-price" required class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500" oninput="calculateFBPricePreview()">
+                </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-400">ลิงก์รูปภาพ (Image URL)</label>
+                    <input type="url" id="edit-image" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500" oninput="document.getElementById('modal-preview-image').src = getSafeImageUrl(this.value)">
+                </div>
 
-            <button onclick="toggleDetailModal(false)" class="w-full py-3 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl font-semibold text-sm transition">
-                ปิดหน้าต่าง
-            </button>
+                <!-- กล่องแสดงราคาอ้างอิง Facebook -->
+                <div class="bg-violet-950/30 border border-violet-500/20 rounded-2xl p-3.5 space-y-2">
+                    <p class="text-[10px] font-bold text-violet-300 uppercase tracking-wide">📊 ราคาอ้างอิงตลาดกลุ่ม Facebook</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+                            <span class="text-[10px] text-slate-400 block">สภาพสวย (NM)</span>
+                            <span id="preview-nm" class="font-bold text-emerald-400">฿0</span>
+                        </div>
+                        <div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+                            <span class="text-[10px] text-slate-400 block">มีตำหนิ (Played)</span>
+                            <span id="preview-played" class="font-bold text-amber-400">฿0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="deleteCard()" class="w-1/3 py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl font-semibold text-xs transition">
+                        ลบการ์ด
+                    </button>
+                    <button type="submit" id="update-btn" class="w-2/3 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-semibold text-xs shadow-lg shadow-violet-600/30 transition">
+                        บันทึกการแก้ไข
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- Modal: เพิ่มการ์ดใหม่ -->
-    <div id="add-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-slate-800 text-slate-100 w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto border border-slate-700 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+    <div id="add-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-slate-900 text-slate-100 w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-4 max-h-[92vh] overflow-y-auto border border-slate-800 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                 <h2 class="font-bold text-base text-white">✨ เพิ่มการ์ดใหม่เข้าคอลเลกชัน</h2>
-                <button onclick="toggleAddModal(false)" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+                <button onclick="toggleAddModal(false)" class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white text-lg transition">&times;</button>
             </div>
             
             <form id="add-form" onsubmit="submitCard(event)" class="space-y-3">
                 <div>
-                    <label class="text-xs font-semibold text-slate-300">ชื่อการ์ด</label>
-                    <input type="text" id="card-name" required placeholder="เช่น Charizard ex" class="w-full mt-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                    <label class="text-[11px] font-semibold text-slate-400">ชื่อการ์ด</label>
+                    <input type="text" id="card-name" required placeholder="เช่น Charizard ex" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
                 </div>
                 <div>
-                    <label class="text-xs font-semibold text-slate-300">ซีรีส์ / ชุด (Set)</label>
-                    <input type="text" id="card-set" required placeholder="เช่น SV3s" class="w-full mt-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                    <label class="text-[11px] font-semibold text-slate-400">ซีรีส์ / ชุด (Set)</label>
+                    <input type="text" id="card-set" required placeholder="เช่น SV3s" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="text-xs font-semibold text-slate-300">ราคาตลาด (บาท)</label>
-                        <input type="number" id="card-price" required placeholder="0" class="w-full mt-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                        <label class="text-[11px] font-semibold text-slate-400">ราคาตลาด (บาท)</label>
+                        <input type="number" id="card-price" required placeholder="0" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-slate-300">จำนวนที่มี</label>
-                        <input type="number" id="card-qty" required value="1" min="1" class="w-full mt-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                        <label class="text-[11px] font-semibold text-slate-400">จำนวนที่มี</label>
+                        <input type="number" id="card-qty" required value="1" min="1" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
                     </div>
                 </div>
                 <div>
-                    <label class="text-xs font-semibold text-slate-300">ลิงก์รูปภาพ (Image URL)</label>
-                    <input type="url" id="card-image" placeholder="https://..." class="w-full mt-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                    <label class="text-[11px] font-semibold text-slate-400">ลิงก์รูปภาพ (Image URL)</label>
+                    <input type="url" id="card-image" placeholder="https://..." class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
                 </div>
                 
-                <button type="submit" id="submit-btn" class="w-full py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-violet-600/30 transition duration-200 mt-4">
-                    บันทึกข้อมูล
+                <button type="submit" id="submit-btn" class="w-full py-3.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-violet-600/30 transition mt-4">
+                    บันทึกการ์ดใหม่
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-slate-800/90 backdrop-blur-md border-t border-slate-700/80 py-3 px-6 shadow-2xl max-w-md mx-auto rounded-t-2xl flex justify-around items-center z-40">
+    <!-- Bottom Navigation Bar (Floating Mobile Style) -->
+    <nav class="fixed bottom-4 left-4 right-4 bg-slate-900/90 backdrop-blur-xl border border-slate-800 py-3 px-8 shadow-2xl max-w-sm mx-auto rounded-3xl flex justify-around items-center z-40">
         <button onclick="loadData()" class="flex flex-col items-center text-violet-400">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-            <span class="text-[10px] mt-1 font-medium">หน้าแรก</span>
+            <span class="text-xl">🏠</span>
+            <span class="text-[10px] mt-0.5 font-medium">หน้าแรก</span>
         </button>
+        <div class="w-px h-6 bg-slate-800"></div>
         <button onclick="toggleAddModal(true)" class="flex flex-col items-center text-slate-400 hover:text-violet-400 transition">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-            <span class="text-[10px] mt-1 font-medium">เพิ่มการ์ด</span>
+            <span class="text-xl">➕</span>
+            <span class="text-[10px] mt-0.5 font-medium">เพิ่มการ์ด</span>
         </button>
     </nav>
 
     <!-- Script จัดการระบบ -->
     <script>
-        // ** ใส่ Web App URL ของคุณที่นี่ **
-        const API_URL = "https://script.google.com/macros/s/AKfycbyxUtqszvNC3tsfCnp2pH2dMJplBRX6KKX1f-JqzK3q57aAylJ3BOkGEFUJ0bxAI8e-/exec";
-        
-        let allCards = [];
-
-        async function loadData() {
-            const loadingEl = document.getElementById('loading');
-            loadingEl.style.display = 'flex';
-            
-            try {
-                const response = await fetch(API_URL);
-                const result = await response.json();
-                
-                if (result.status === "success") {
-                    allCards = result.data;
-                    renderCards(allCards);
-                    updateSummary(allCards);
-                } else {
-                    alert("เกิดข้อผิดพลาดในการโหลดข้อมูล: " + result.message);
-                }
-                loadingEl.style.display = 'none';
-            } catch (error) {
-                loadingEl.innerHTML = "<span class='text-red-400'>ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาตรวจสอบ API_URL</span>";
-            }
-        }
-
-        // ฟังก์ชันช่วยจัดการรูปภาพ (ปัองกันลิงก์พังหรือลิงก์เก่าจาก Google Sheets)
-        function getSafeImageUrl(url) {
-            if (!url || url.includes('via.placeholder.com')) {
-                return 'https://placehold.co/150/1e293b/94a3b8?text=No+Image';
-            }
-            return url;
-        }
-
-        function renderCards(cards) {
-            const grid = document.getElementById('card-grid');
-            grid.innerHTML = '';
-
-            if (cards.length === 0) {
-                grid.innerHTML = '<div class="col-span-2 text-center text-slate-500 py-8 text-sm">ไม่พบการ์ดในคอลเลกชัน</div>';
-                return;
-            }
-
-            cards.forEach((card, index) => {
-                const imgSrc = getSafeImageUrl(card.image);
-                grid.innerHTML += `
-                    <div onclick="openCardDetail(${index})" class="bg-slate-800/80 hover:bg-slate-800 border border-slate-700/70 hover:border-violet-500/50 p-3 rounded-2xl shadow-md flex flex-col justify-between cursor-pointer transition transform active:scale-95">
-                        <div>
-                            <div class="w-full h-36 bg-slate-900/50 rounded-xl mb-2 flex items-center justify-center p-1 overflow-hidden">
-                                <img src="${imgSrc}" alt="${card.name}" class="h-full object-contain rounded-lg pointer-events-none" onerror="this.src='https://placehold.co/150/1e293b/94a3b8?text=No+Image'">
-                            </div>
-                            <span class="text-[9px] bg-slate-700/60 text-slate-300 px-2 py-0.5 rounded-md font-medium">${card.set || '-'}</span>
-                            <h2 class="text-xs font-bold text-slate-100 truncate mt-1">${card.name}</h2>
-                        </div>
-                        <div class="flex justify-between items-center mt-3 pt-2 border-t border-slate-700/50">
-                            <span class="text-xs font-bold text-emerald-400">฿${Number(card.price || 0).toLocaleString()}</span>
-                            <span class="text-[10px] bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded-full font-medium">มี ${card.qty} ใบ</span>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function updateSummary(cards) {
-            const totalCards = cards.reduce((sum, card) => sum + Number(card.qty || 0), 0);
-            const totalPrice = cards.reduce((sum, card) => sum + (Number(card.price || 0) * Number(card.qty || 0)), 0);
-
-            document.getElementById('total-cards').innerText = `${totalCards} ใบ`;
-            document.getElementById('total-price').innerText = `฿${totalPrice.toLocaleString()}`;
-        }
-
-        function filterCards() {
-            const keyword = document.getElementById('search-input').value.toLowerCase();
-            const filtered = allCards.filter(card => 
-                String(card.name).toLowerCase().includes(keyword) || String(card.set).toLowerCase().includes(keyword)
-            );
-            renderCards(filtered);
-        }
-
-        function toggleAddModal(isOpen) {
-            const modal = document.getElementById('add-modal');
-            if (isOpen) {
-                modal.classList.remove('hidden');
-            } else {
-                modal.classList.add('hidden');
-            }
-        }
-
-        function toggleDetailModal(isOpen) {
-            const modal = document.getElementById('detail-modal');
-            if (isOpen) {
-                modal.classList.remove('hidden');
-            } else {
-                modal.classList.add('hidden');
-            }
-        }
-
-        function openCardDetail(index) {
-            const card = allCards[index];
-            if (!card) return;
-
-            document.getElementById('modal-card-name').innerText = card.name;
-            document.getElementById('modal-card-set').innerText = `SET: ${card.set || '-'}`;
-            document.getElementById('modal-card-image').src = getSafeImageUrl(card.image);
-            document.getElementById('modal-card-qty').innerText = `${card.qty} ใบ`;
-            
-            const basePrice = Number(card.price || 0);
-            document.getElementById('modal-card-price').innerText = `฿${basePrice.toLocaleString()}`;
-
-            const nmPrice = Math.round(basePrice * 1.15); 
-            const playedPrice = Math.round(basePrice * 0.75); 
-            
-            document.getElementById('fb-price-nm').innerText = `฿${nmPrice.toLocaleString()}`;
-            document.getElementById('fb-price-played').innerText = `฿${playedPrice.toLocaleString()}`;
-
-            toggleDetailModal(true);
-        }
-
-        async function submitCard(event) {
-            event.preventDefault();
-            
-            const submitBtn = document.getElementById('submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.innerText = "กำลังบันทึก...";
-
-            const newCard = {
-                name: document.getElementById('card-name').value,
-                set: document.getElementById('card-set').value,
-                price: document.getElementById('card-price').value,
-                qty: document.getElementById('card-qty').value,
-                image: document.getElementById('card-image').value
-            };
-
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newCard)
-                });
-
-                alert("บันทึกการ์ดเรียบร้อยแล้ว!");
-                document.getElementById('add-form').reset();
-                toggleAddModal(false);
-                
-                setTimeout(loadData, 1500);
-
-            } catch (error) {
-                alert("เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = "บันทึกข้อมูล";
-            }
-        }
-
-        loadData();
-    </script>
-</body>
-</html>
-```สาเหตุที่ยังเจอ Error นี้ เป็นเพราะลิงก์เก่า `via.placeholder.com` ถูก **บันทึกค้างไว้ใน Google Sheets ของคุณแล้ว** (ตรงคอลัมน์ `image` ของการ์ดที่คุณเคยเพิ่มเข้าไป) ทำให้เวลาเว็บดึงข้อมูลมาแสดง มันจึงหยิบลิงก์เก่าขึ้นมาแสดงผลครับ
-
-วิธีแก้ที่ดีที่สุดคือ ผมได้เพิ่มโค้ดป้องกันให้ **ระบบทำการแปลงลิงก์เก่าโดยอัตโนมัติทันที** ต่อให้ใน Google Sheets จะมีลิงก์เก่าค้างอยู่ ระบบก็จะเปลี่ยนเป็น `placehold.co` ให้ทันทีโดยไม่ต้องไปแก้ในชีตครับ
-
-คุณสามารถก๊อปปี้โค้ดชุดเต็มนี้ไปแทนที่ไฟล์ `index.html` ได้เลยครับ:
-
-```html
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokémon TCG Thai Collection</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Font (Prompt) -->
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Prompt', sans-serif; }
-    </style>
-</head>
-<body class="bg-slate-900 text-slate-100 min-h-screen pb-24">
-
-    <!-- Header & Summary -->
-    <header class="bg-gradient-to-r from-violet-600 to-indigo-700 text-white p-6 rounded-b-[2.5rem] shadow-xl">
-        <div class="max-w-md mx-auto">
-            <div class="flex justify-between items-center mb-4">
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight">⚡ Thai TCG Vault</h1>
-                    <p class="text-xs text-violet-200">ระบบจัดการคอลเลกชันและเช็คราคาไทย</p>
-                </div>
-                <div class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-                    <span class="text-lg">🃏</span>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 shadow-inner">
-                    <p class="text-[11px] text-violet-200">การ์ดทั้งหมด</p>
-                    <p id="total-cards" class="text-xl font-extrabold tracking-tight mt-0.5">0 ใบ</p>
-                </div>
-                <div class="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 shadow-inner">
-                    <p class="text-[11px] text-violet-200">มูลค่าตลาดรวม</p>
-                    <p id="total-price" class="text-xl font-extrabold tracking-tight mt-0.5 text-emerald-300">฿0</p>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Container -->
-    <main class="max-w-md mx-auto p-4 space-y-4">
-        <!-- Search & Filter -->
-        <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">🔍</span>
-            <input type="text" id="search-input" placeholder="ค้นหาชื่อการ์ด, ซีรีส์..." 
-                class="w-full pl-11 pr-4 py-3 bg-slate-800 text-slate-100 placeholder-slate-400 rounded-2xl shadow-sm border border-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm transition"
-                oninput="filterCards()">
-        </div>
-
-        <!-- Loading State -->
-        <div id="loading" class="text-center py-12 text-slate-400 text-sm flex flex-col items-center justify-center space-y-2">
-            <div class="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
-            <span>กำลังดึงข้อมูลจาก Google Sheets...</span>
-        </div>
-
-        <!-- Card Grid -->
-        <div id="card-grid" class="grid grid-cols-2 gap-3.5">
-            <!-- ข้อมูลการ์ดแสดงผลที่นี่ -->
-        </div>
-    </main>
-
-    <!-- Modal: รายละเอียดการ์ดและการอิงราคาตลาด FB -->
-    <div id="detail-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
-        <div class="bg-slate-800 text-slate-100 w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-5 max-h-[90vh] overflow-y-auto border border-slate-700 shadow-2xl">
-            <div class="flex justify-between items-start border-b border-slate-700 pb-4">
-                <div>
-                    <span id="modal-card-set" class="text-[10px] bg-violet-500/20 text-violet-300 px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider">Set</span>
-                    <h2 id="modal-card-name" class="font-bold text-lg text-white mt-1.5">ชื่อการ์ด</h2>
-                </div>
-                <button onclick="toggleDetailModal(false)" class="w-8 h-8 rounded-full bg-slate-700/50 flex items-center justify-center text-slate-400 hover:text-white text-lg font-bold transition">&times;</button>
-            </div>
-
-            <!-- รูปภาพขนาดใหญ่ -->
-            <div class="flex justify-center bg-slate-900/60 p-4 rounded-2xl border border-slate-700/50">
-                <img id="modal-card-image" src="" alt="Card Image" class="h-48 object-contain rounded-lg drop-shadow-lg" onerror="this.src='https://placehold.co/150/1e293b/94a3b8?text=No+Image'">
-            </div>
-
-            <!-- ข้อมูลคอลเลกชันส่วนตัว -->
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-slate-700/40 p-3 rounded-xl border border-slate-700">
-                    <p class="text-[10px] text-slate-400">จำนวนที่คุณมี</p>
-                    <p id="modal-card-qty" class="text-base font-bold text-violet-300 mt-0.5">0 ใบ</p>
-                </div>
-                <div class="bg-slate-700/40 p-3 rounded-xl border border-slate-700">
-                    <p class="text-[10px] text-slate-400">ราคาตั้งต้น / ซื้อมา</p>
-                    <p id="modal-card-price" class="text-base font-bold text-emerald-400 mt-0.5">฿0</p>
-                </div>
-            </div>
-
-            <!-- ส่วนอิงราคาตลาดจากกลุ่ม Facebook -->
-            <div class="bg-violet-950/40 border border-violet-500/30 rounded-2xl p-4 space-y-3">
-                <div class="flex items-center space-x-2">
-                    <span class="text-base">📊</span>
-                    <h3 class="text-xs font-bold text-violet-300 uppercase tracking-wide">ราคาอ้างอิงจากกลุ่มซื้อขาย Facebook</h3>
-                </div>
-                <div class="space-y-2 text-xs">
-                    <div class="flex justify-between items-center bg-slate-900/50 px-3 py-2 rounded-xl">
-                        <span class="text-slate-300">สภาพสวย (NM / Mint)</span>
-                        <span id="fb-price-nm" class="font-semibold text-emerald-400">฿0</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-slate-900/50 px-3 py-2 rounded-xl">
-                        <span class="text-slate-300">สภาพเล่น / มีตำหนิ (Played)</span>
-                        <span id="fb-price-played" class="font-semibold text-amber-400">฿0</span>
-                    </div>
-                </div>
-                <p class="text-[10px] text-violet-300/70 italic">* อ้างอิงจากราคาซื้อขายจริงในกลุ่ม Pokémon TCG Thailand Marketplace</p>
-            </div>
-
-            <button onclick="toggleDetailModal(false)" class="w-full py-3 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl font-semibold text-sm transition">
-                ปิดหน้าต่าง
-            </button>
-        </div>
-    </div>
-
-    <!-- Modal: เพิ่มการ์ดใหม่ -->
-    <div id="add-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-slate-800 text-slate-100 w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto border border-slate-700 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                <h2 class="font-bold text-base text-white">✨ เพิ่มการ์ดใหม่เข้าคอลเลกชัน</h2>
-                <button onclick="toggleAddModal(false)" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
-            </div>
-            
-            <form id="add-form" onsubmit="submitCard(event)" class="space-y-3">
-                <div>
-                    <label class="text-xs font-semibold text-slate-300">ชื่อการ์ด</label>
-                    <input type="text" id="card-name" required placeholder="เช่น Charizard ex" class="w-full mt-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
-                </div>
-                <div>
-                    <label class="text-xs font-semibold text-slate-300">ซีรีส์ / ชุด (Set)</label>
-                    <input type="text" id="card-set" required placeholder="เช่น SV3s" class="w-full mt-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="text-xs font-semibold text-slate-300">ราคาตลาด (บาท)</label>
-                        <input type="number" id="card-price" required placeholder="0" class="w-full mt-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold text-slate-300">จำนวนที่มี</label>
-                        <input type="number" id="card-qty" required value="1" min="1" class="w-full mt-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
-                    </div>
-                </div>
-                <div>
-                    <label class="text-xs font-semibold text-slate-300">ลิงก์รูปภาพ (Image URL)</label>
-                    <input type="url" id="card-image" placeholder="https://..." class="w-full mt-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
-                </div>
-                
-                <button type="submit" id="submit-btn" class="w-full py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-violet-600/30 transition duration-200 mt-4">
-                    บันทึกข้อมูล
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-slate-800/90 backdrop-blur-md border-t border-slate-700/80 py-3 px-6 shadow-2xl max-w-md mx-auto rounded-t-2xl flex justify-around items-center z-40">
-        <button onclick="loadData()" class="flex flex-col items-center text-violet-400">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-            <span class="text-[10px] mt-1 font-medium">หน้าแรก</span>
-        </button>
-        <button onclick="toggleAddModal(true)" class="flex flex-col items-center text-slate-400 hover:text-violet-400 transition">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-            <span class="text-[10px] mt-1 font-medium">เพิ่มการ์ด</span>
-        </button>
-    </nav>
-
-    <!-- Script จัดการระบบ -->
-    <script>
-        // ** ใส่ Web App URL ของคุณที่นี่ **
+        // ** ใส่ Web App URL ของ Google Apps Script ที่นี่ **
         const API_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
         
         let allCards = [];
@@ -522,15 +204,14 @@
                     renderCards(allCards);
                     updateSummary(allCards);
                 } else {
-                    alert("เกิดข้อผิดพลาดในการโหลดข้อมูล: " + result.message);
+                    alert("เกิดข้อผิดพลาด: " + result.message);
                 }
                 loadingEl.style.display = 'none';
             } catch (error) {
-                loadingEl.innerHTML = "<span class='text-red-400'>ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาตรวจสอบ API_URL</span>";
+                loadingEl.innerHTML = "<span class='text-rose-400 text-xs'>ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาตรวจสอบ API_URL</span>";
             }
         }
 
-        // ฟังก์ชันช่วยจัดการรูปภาพ (ปัองกันลิงก์พังหรือลิงก์เก่าจาก Google Sheets)
         function getSafeImageUrl(url) {
             if (!url || url.includes('via.placeholder.com')) {
                 return 'https://placehold.co/150/1e293b/94a3b8?text=No+Image';
@@ -543,24 +224,26 @@
             grid.innerHTML = '';
 
             if (cards.length === 0) {
-                grid.innerHTML = '<div class="col-span-2 text-center text-slate-500 py-8 text-sm">ไม่พบการ์ดในคอลเลกชัน</div>';
+                grid.innerHTML = '<div class="col-span-2 text-center text-slate-600 py-12 text-xs">ยังไม่มีการ์ดในคลังของคุณ กดปุ่ม + ด้านล่างเพื่อเพิ่มได้เลย</div>';
                 return;
             }
 
             cards.forEach((card, index) => {
                 const imgSrc = getSafeImageUrl(card.image);
                 grid.innerHTML += `
-                    <div onclick="openCardDetail(${index})" class="bg-slate-800/80 hover:bg-slate-800 border border-slate-700/70 hover:border-violet-500/50 p-3 rounded-2xl shadow-md flex flex-col justify-between cursor-pointer transition transform active:scale-95">
+                    <div onclick="openCardDetail(${index})" class="bg-slate-900/80 hover:bg-slate-900 border border-slate-800/80 hover:border-violet-500/50 p-3.5 rounded-3xl shadow-xl flex flex-col justify-between cursor-pointer transition transform active:scale-95 group">
                         <div>
-                            <div class="w-full h-36 bg-slate-900/50 rounded-xl mb-2 flex items-center justify-center p-1 overflow-hidden">
-                                <img src="${imgSrc}" alt="${card.name}" class="h-full object-contain rounded-lg pointer-events-none" onerror="this.src='https://placehold.co/150/1e293b/94a3b8?text=No+Image'">
+                            <div class="w-full h-36 bg-slate-950/50 rounded-2xl mb-2.5 flex items-center justify-center p-2 overflow-hidden border border-slate-800/40 group-hover:border-violet-500/30 transition">
+                                <img src="${imgSrc}" alt="${card.name}" class="h-full object-contain rounded-lg pointer-events-none drop-shadow-md" onerror="this.src='https://placehold.co/150/1e293b/94a3b8?text=No+Image'">
                             </div>
-                            <span class="text-[9px] bg-slate-700/60 text-slate-300 px-2 py-0.5 rounded-md font-medium">${card.set || '-'}</span>
-                            <h2 class="text-xs font-bold text-slate-100 truncate mt-1">${card.name}</h2>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[9px] bg-violet-500/10 text-violet-300 border border-violet-500/20 px-2 py-0.5 rounded-md font-semibold">${card.set || '-'}</span>
+                            </div>
+                            <h2 class="text-xs font-bold text-slate-100 truncate mt-1.5">${card.name}</h2>
                         </div>
-                        <div class="flex justify-between items-center mt-3 pt-2 border-t border-slate-700/50">
-                            <span class="text-xs font-bold text-emerald-400">฿${Number(card.price || 0).toLocaleString()}</span>
-                            <span class="text-[10px] bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded-full font-medium">มี ${card.qty} ใบ</span>
+                        <div class="flex justify-between items-center mt-3 pt-2.5 border-t border-slate-800/60">
+                            <span class="text-xs font-black text-emerald-400">฿${Number(card.price || 0).toLocaleString()}</span>
+                            <span class="text-[10px] bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded-full font-semibold">มี ${card.qty} ใบ</span>
                         </div>
                     </div>
                 `;
@@ -571,7 +254,7 @@
             const totalCards = cards.reduce((sum, card) => sum + Number(card.qty || 0), 0);
             const totalPrice = cards.reduce((sum, card) => sum + (Number(card.price || 0) * Number(card.qty || 0)), 0);
 
-            document.getElementById('total-cards').innerText = `${totalCards} ใบ`;
+            document.getElementById('total-cards').innerHTML = `${totalCards} <span class="text-xs font-normal text-slate-400">ใบ</span>`;
             document.getElementById('total-price').innerText = `฿${totalPrice.toLocaleString()}`;
         }
 
@@ -605,26 +288,27 @@
             const card = allCards[index];
             if (!card) return;
 
-            document.getElementById('modal-card-name').innerText = card.name;
-            document.getElementById('modal-card-set').innerText = `SET: ${card.set || '-'}`;
-            document.getElementById('modal-card-image').src = getSafeImageUrl(card.image);
-            document.getElementById('modal-card-qty').innerText = `${card.qty} ใบ`;
-            
-            const basePrice = Number(card.price || 0);
-            document.getElementById('modal-card-price').innerText = `฿${basePrice.toLocaleString()}`;
+            document.getElementById('edit-row-index').value = card.rowIndex;
+            document.getElementById('edit-card-id').value = card.id || '';
+            document.getElementById('edit-name').value = card.name || '';
+            document.getElementById('edit-set').value = card.set || '';
+            document.getElementById('edit-qty').value = card.qty || 1;
+            document.getElementById('edit-price').value = card.price || 0;
+            document.getElementById('edit-image').value = card.image || '';
+            document.getElementById('modal-preview-image').src = getSafeImageUrl(card.image);
 
-            const nmPrice = Math.round(basePrice * 1.15); 
-            const playedPrice = Math.round(basePrice * 0.75); 
-            
-            document.getElementById('fb-price-nm').innerText = `฿${nmPrice.toLocaleString()}`;
-            document.getElementById('fb-price-played').innerText = `฿${playedPrice.toLocaleString()}`;
-
+            calculateFBPricePreview();
             toggleDetailModal(true);
+        }
+
+        function calculateFBPricePreview() {
+            const price = Number(document.getElementById('edit-price').value) || 0;
+            document.getElementById('preview-nm').innerText = `฿${Math.round(price * 1.15).toLocaleString()}`;
+            document.getElementById('preview-played').innerText = `฿${Math.round(price * 0.75).toLocaleString()}`;
         }
 
         async function submitCard(event) {
             event.preventDefault();
-            
             const submitBtn = document.getElementById('submit-btn');
             submitBtn.disabled = true;
             submitBtn.innerText = "กำลังบันทึก...";
@@ -645,20 +329,480 @@
                     body: JSON.stringify(newCard)
                 });
 
-                alert("บันทึกการ์ดเรียบร้อยแล้ว!");
+                alert("เพิ่มการ์ดสำเร็จ!");
                 document.getElementById('add-form').reset();
                 toggleAddModal(false);
-                
                 setTimeout(loadData, 1500);
-
             } catch (error) {
-                alert("เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง");
+                alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = "บันทึกข้อมูล";
+                submitBtn.innerText = "บันทึกการ์ดใหม่";
             }
         }
 
+        async function updateCard(event) {
+            event.preventDefault();
+            const updateBtn = document.getElementById('update-btn');
+            updateBtn.disabled = true;
+            updateBtn.innerText = "กำลังอัปเดต...";
+
+            const updatedData = {
+                action: 'update',
+                rowIndex: document.getElementById('edit-row-index').value,
+                id: document.getElementById('edit-card-id').value,
+                name: document.getElementById('edit-name').value,
+                set: document.getElementById('edit-set').value,
+                price: document.getElementById('edit-price').value,
+                qty: document.getElementById('edit-qty').value,
+                image: document.getElementById('edit-image').value
+            };
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedData)
+                });
+
+                alert("อัปเดตข้อมูลสำเร็จ!");
+                toggleDetailModal(false);
+                setTimeout(loadData, 1500);
+            } catch (error) {
+                alert("เกิดข้อผิดพลาดในการอัปเดต");
+            } finally {
+                updateBtn.disabled = false;
+                updateBtn.innerText = "บันทึกการแก้ไข";
+            }
+        }
+
+        async function deleteCard() {
+            if (!confirm("คุณต้องการลบการ์ดใบนี้ออกจากคลังใช่หรือไม่?")) return;
+
+            const rowIndex = document.getElementById('edit-row-index').value;
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete', rowIndex: rowIndex })
+                });
+
+                alert("ลบการ์ดสำเร็จ!");
+                toggleDetailModal(false);
+                setTimeout(loadData, 1500);
+            } catch (error) {
+                alert("เกิดข้อผิดพลาดในการลบข้อมูล");
+            }
+        }
+
+        // โหลดข้อมูลเริ่มต้น
+        loadData();
+    </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon TCG Thai Vault</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font (Prompt) -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Prompt', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-28 selection:bg-violet-500 selection:text-white">
+
+    <!-- Header & Summary Dashboard -->
+    <header class="relative bg-gradient-to-br from-violet-900 via-indigo-950 to-slate-900 text-white p-6 rounded-b-[2.5rem] shadow-2xl border-b border-violet-500/20">
+        <div class="max-w-md mx-auto">
+            <div class="flex justify-between items-center mb-5">
+                <div>
+                    <span class="text-[10px] uppercase tracking-widest text-violet-400 font-semibold bg-violet-500/10 px-2.5 py-1 rounded-full border border-violet-500/20">Thai Collection</span>
+                    <h1 class="text-2xl font-extrabold tracking-tight mt-1 bg-gradient-to-r from-white via-slate-200 to-violet-300 bg-clip-text text-transparent">⚡ TCG Vault</h1>
+                </div>
+                <button onclick="loadData()" class="w-10 h-10 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition active:scale-95 shadow-inner">
+                    <span class="text-sm">🔄</span>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3.5">
+                <div class="bg-white/[0.07] backdrop-blur-xl p-4 rounded-3xl border border-white/10 shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-violet-500/10 text-5xl font-bold">📦</div>
+                    <p class="text-[11px] text-violet-200 font-medium">การ์ดทั้งหมดในคลัง</p>
+                    <p id="total-cards" class="text-2xl font-black tracking-tight mt-1 text-white">0 <span class="text-xs font-normal text-slate-300">ใบ</span></p>
+                </div>
+                <div class="bg-white/[0.07] backdrop-blur-xl p-4 rounded-3xl border border-white/10 shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-emerald-500/10 text-5xl font-bold">💎</div>
+                    <p class="text-[11px] text-violet-200 font-medium">มูลค่าประเมินรวม</p>
+                    <p id="total-price" class="text-2xl font-black tracking-tight mt-1 text-emerald-400">฿0</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-md mx-auto p-4 space-y-4">
+        <!-- Search Bar -->
+        <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">🔍</span>
+            <input type="text" id="search-input" placeholder="ค้นหาชื่อการ์ด หรือซีรีส์ชุด..." 
+                class="w-full pl-11 pr-4 py-3.5 bg-slate-900/90 text-slate-100 placeholder-slate-500 rounded-2xl shadow-inner border border-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm transition"
+                oninput="filterCards()">
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="text-center py-16 text-slate-400 text-sm flex flex-col items-center justify-center space-y-3">
+            <div class="w-8 h-8 border-3 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-xs text-slate-400 font-medium">กำลังซิงค์ข้อมูลจาก Google Sheets...</span>
+        </div>
+
+        <!-- Card Grid -->
+        <div id="card-grid" class="grid grid-cols-2 gap-3.5">
+            <!-- ข้อมูลการ์ดแสดงผลที่นี่ -->
+        </div>
+    </main>
+
+    <!-- Modal: รายละเอียด & แก้ไขข้อมูลการ์ด -->
+    <div id="detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+        <div class="bg-slate-900 text-slate-100 w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-4 max-h-[92vh] overflow-y-auto border border-slate-800 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h2 class="font-bold text-base text-white flex items-center gap-2">🛠️ จัดการข้อมูลการ์ด</h2>
+                <button onclick="toggleDetailModal(false)" class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white text-lg transition">&times;</button>
+            </div>
+
+            <!-- รูปภาพการ์ดตัวอย่าง -->
+            <div class="flex justify-center bg-slate-950/60 p-3 rounded-2xl border border-slate-800/80">
+                <img id="modal-preview-image" src="" alt="Card Preview" class="h-40 object-contain rounded-lg shadow-md" onerror="this.src='https://placehold.co/150/1e293b/94a3b8?text=No+Image'">
+            </div>
+
+            <!-- ฟอร์มแก้ไขข้อมูล -->
+            <form id="edit-form" onsubmit="updateCard(event)" class="space-y-3">
+                <input type="hidden" id="edit-row-index">
+                <input type="hidden" id="edit-card-id">
+
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-400">ชื่อการ์ด</label>
+                    <input type="text" id="edit-name" required class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400">ซีรีส์ / ชุด (Set)</label>
+                        <input type="text" id="edit-set" required class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400">จำนวนที่มี</label>
+                        <input type="number" id="edit-qty" required min="1" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-400">ราคาตลาด / ราคาซื้อ (บาท)</label>
+                    <input type="number" id="edit-price" required class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500" oninput="calculateFBPricePreview()">
+                </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-400">ลิงก์รูปภาพ (Image URL)</label>
+                    <input type="url" id="edit-image" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500" oninput="document.getElementById('modal-preview-image').src = getSafeImageUrl(this.value)">
+                </div>
+
+                <!-- กล่องแสดงราคาอ้างอิง Facebook -->
+                <div class="bg-violet-950/30 border border-violet-500/20 rounded-2xl p-3.5 space-y-2">
+                    <p class="text-[10px] font-bold text-violet-300 uppercase tracking-wide">📊 ราคาอ้างอิงตลาดกลุ่ม Facebook</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+                            <span class="text-[10px] text-slate-400 block">สภาพสวย (NM)</span>
+                            <span id="preview-nm" class="font-bold text-emerald-400">฿0</span>
+                        </div>
+                        <div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+                            <span class="text-[10px] text-slate-400 block">มีตำหนิ (Played)</span>
+                            <span id="preview-played" class="font-bold text-amber-400">฿0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="deleteCard()" class="w-1/3 py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl font-semibold text-xs transition">
+                        ลบการ์ด
+                    </button>
+                    <button type="submit" id="update-btn" class="w-2/3 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-semibold text-xs shadow-lg shadow-violet-600/30 transition">
+                        บันทึกการแก้ไข
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: เพิ่มการ์ดใหม่ -->
+    <div id="add-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-slate-900 text-slate-100 w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-4 max-h-[92vh] overflow-y-auto border border-slate-800 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h2 class="font-bold text-base text-white">✨ เพิ่มการ์ดใหม่เข้าคอลเลกชัน</h2>
+                <button onclick="toggleAddModal(false)" class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white text-lg transition">&times;</button>
+            </div>
+            
+            <form id="add-form" onsubmit="submitCard(event)" class="space-y-3">
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-400">ชื่อการ์ด</label>
+                    <input type="text" id="card-name" required placeholder="เช่น Charizard ex" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-400">ซีรีส์ / ชุด (Set)</label>
+                    <input type="text" id="card-set" required placeholder="เช่น SV3s" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400">ราคาตลาด (บาท)</label>
+                        <input type="number" id="card-price" required placeholder="0" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400">จำนวนที่มี</label>
+                        <input type="number" id="card-qty" required value="1" min="1" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-400">ลิงก์รูปภาพ (Image URL)</label>
+                    <input type="url" id="card-image" placeholder="https://..." class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                
+                <button type="submit" id="submit-btn" class="w-full py-3.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-violet-600/30 transition mt-4">
+                    บันทึกการ์ดใหม่
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar (Floating Mobile Style) -->
+    <nav class="fixed bottom-4 left-4 right-4 bg-slate-900/90 backdrop-blur-xl border border-slate-800 py-3 px-8 shadow-2xl max-w-sm mx-auto rounded-3xl flex justify-around items-center z-40">
+        <button onclick="loadData()" class="flex flex-col items-center text-violet-400">
+            <span class="text-xl">🏠</span>
+            <span class="text-[10px] mt-0.5 font-medium">หน้าแรก</span>
+        </button>
+        <div class="w-px h-6 bg-slate-800"></div>
+        <button onclick="toggleAddModal(true)" class="flex flex-col items-center text-slate-400 hover:text-violet-400 transition">
+            <span class="text-xl">➕</span>
+            <span class="text-[10px] mt-0.5 font-medium">เพิ่มการ์ด</span>
+        </button>
+    </nav>
+
+    <!-- Script จัดการระบบ -->
+    <script>
+        // ** ใส่ Web App URL ของ Google Apps Script ที่นี่ **
+        const API_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+        
+        let allCards = [];
+
+        async function loadData() {
+            const loadingEl = document.getElementById('loading');
+            loadingEl.style.display = 'flex';
+            
+            try {
+                const response = await fetch(API_URL);
+                const result = await response.json();
+                
+                if (result.status === "success") {
+                    allCards = result.data;
+                    renderCards(allCards);
+                    updateSummary(allCards);
+                } else {
+                    alert("เกิดข้อผิดพลาด: " + result.message);
+                }
+                loadingEl.style.display = 'none';
+            } catch (error) {
+                loadingEl.innerHTML = "<span class='text-rose-400 text-xs'>ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาตรวจสอบ API_URL</span>";
+            }
+        }
+
+        function getSafeImageUrl(url) {
+            if (!url || url.includes('via.placeholder.com')) {
+                return 'https://placehold.co/150/1e293b/94a3b8?text=No+Image';
+            }
+            return url;
+        }
+
+        function renderCards(cards) {
+            const grid = document.getElementById('card-grid');
+            grid.innerHTML = '';
+
+            if (cards.length === 0) {
+                grid.innerHTML = '<div class="col-span-2 text-center text-slate-600 py-12 text-xs">ยังไม่มีการ์ดในคลังของคุณ กดปุ่ม + ด้านล่างเพื่อเพิ่มได้เลย</div>';
+                return;
+            }
+
+            cards.forEach((card, index) => {
+                const imgSrc = getSafeImageUrl(card.image);
+                grid.innerHTML += `
+                    <div onclick="openCardDetail(${index})" class="bg-slate-900/80 hover:bg-slate-900 border border-slate-800/80 hover:border-violet-500/50 p-3.5 rounded-3xl shadow-xl flex flex-col justify-between cursor-pointer transition transform active:scale-95 group">
+                        <div>
+                            <div class="w-full h-36 bg-slate-950/50 rounded-2xl mb-2.5 flex items-center justify-center p-2 overflow-hidden border border-slate-800/40 group-hover:border-violet-500/30 transition">
+                                <img src="${imgSrc}" alt="${card.name}" class="h-full object-contain rounded-lg pointer-events-none drop-shadow-md" onerror="this.src='https://placehold.co/150/1e293b/94a3b8?text=No+Image'">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[9px] bg-violet-500/10 text-violet-300 border border-violet-500/20 px-2 py-0.5 rounded-md font-semibold">${card.set || '-'}</span>
+                            </div>
+                            <h2 class="text-xs font-bold text-slate-100 truncate mt-1.5">${card.name}</h2>
+                        </div>
+                        <div class="flex justify-between items-center mt-3 pt-2.5 border-t border-slate-800/60">
+                            <span class="text-xs font-black text-emerald-400">฿${Number(card.price || 0).toLocaleString()}</span>
+                            <span class="text-[10px] bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded-full font-semibold">มี ${card.qty} ใบ</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateSummary(cards) {
+            const totalCards = cards.reduce((sum, card) => sum + Number(card.qty || 0), 0);
+            const totalPrice = cards.reduce((sum, card) => sum + (Number(card.price || 0) * Number(card.qty || 0)), 0);
+
+            document.getElementById('total-cards').innerHTML = `${totalCards} <span class="text-xs font-normal text-slate-400">ใบ</span>`;
+            document.getElementById('total-price').innerText = `฿${totalPrice.toLocaleString()}`;
+        }
+
+        function filterCards() {
+            const keyword = document.getElementById('search-input').value.toLowerCase();
+            const filtered = allCards.filter(card => 
+                String(card.name).toLowerCase().includes(keyword) || String(card.set).toLowerCase().includes(keyword)
+            );
+            renderCards(filtered);
+        }
+
+        function toggleAddModal(isOpen) {
+            const modal = document.getElementById('add-modal');
+            if (isOpen) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function toggleDetailModal(isOpen) {
+            const modal = document.getElementById('detail-modal');
+            if (isOpen) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function openCardDetail(index) {
+            const card = allCards[index];
+            if (!card) return;
+
+            document.getElementById('edit-row-index').value = card.rowIndex;
+            document.getElementById('edit-card-id').value = card.id || '';
+            document.getElementById('edit-name').value = card.name || '';
+            document.getElementById('edit-set').value = card.set || '';
+            document.getElementById('edit-qty').value = card.qty || 1;
+            document.getElementById('edit-price').value = card.price || 0;
+            document.getElementById('edit-image').value = card.image || '';
+            document.getElementById('modal-preview-image').src = getSafeImageUrl(card.image);
+
+            calculateFBPricePreview();
+            toggleDetailModal(true);
+        }
+
+        function calculateFBPricePreview() {
+            const price = Number(document.getElementById('edit-price').value) || 0;
+            document.getElementById('preview-nm').innerText = `฿${Math.round(price * 1.15).toLocaleString()}`;
+            document.getElementById('preview-played').innerText = `฿${Math.round(price * 0.75).toLocaleString()}`;
+        }
+
+        async function submitCard(event) {
+            event.preventDefault();
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "กำลังบันทึก...";
+
+            const newCard = {
+                name: document.getElementById('card-name').value,
+                set: document.getElementById('card-set').value,
+                price: document.getElementById('card-price').value,
+                qty: document.getElementById('card-qty').value,
+                image: document.getElementById('card-image').value
+            };
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newCard)
+                });
+
+                alert("เพิ่มการ์ดสำเร็จ!");
+                document.getElementById('add-form').reset();
+                toggleAddModal(false);
+                setTimeout(loadData, 1500);
+            } catch (error) {
+                alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "บันทึกการ์ดใหม่";
+            }
+        }
+
+        async function updateCard(event) {
+            event.preventDefault();
+            const updateBtn = document.getElementById('update-btn');
+            updateBtn.disabled = true;
+            updateBtn.innerText = "กำลังอัปเดต...";
+
+            const updatedData = {
+                action: 'update',
+                rowIndex: document.getElementById('edit-row-index').value,
+                id: document.getElementById('edit-card-id').value,
+                name: document.getElementById('edit-name').value,
+                set: document.getElementById('edit-set').value,
+                price: document.getElementById('edit-price').value,
+                qty: document.getElementById('edit-qty').value,
+                image: document.getElementById('edit-image').value
+            };
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedData)
+                });
+
+                alert("อัปเดตข้อมูลสำเร็จ!");
+                toggleDetailModal(false);
+                setTimeout(loadData, 1500);
+            } catch (error) {
+                alert("เกิดข้อผิดพลาดในการอัปเดต");
+            } finally {
+                updateBtn.disabled = false;
+                updateBtn.innerText = "บันทึกการแก้ไข";
+            }
+        }
+
+        async function deleteCard() {
+            if (!confirm("คุณต้องการลบการ์ดใบนี้ออกจากคลังใช่หรือไม่?")) return;
+
+            const rowIndex = document.getElementById('edit-row-index').value;
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete', rowIndex: rowIndex })
+                });
+
+                alert("ลบการ์ดสำเร็จ!");
+                toggleDetailModal(false);
+                setTimeout(loadData, 1500);
+            } catch (error) {
+                alert("เกิดข้อผิดพลาดในการลบข้อมูล");
+            }
+        }
+
+        // โหลดข้อมูลเริ่มต้น
         loadData();
     </script>
 </body>

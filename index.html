@@ -12,6 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="TCG Vault">
     <meta name="theme-color" content="#f9fafb">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTgxOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTElIiBmaWxsPSIjZmZmZmZmIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAwIiBmb250LXdlaWdodD0iYm9sZCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VENHPC90ZXh0Pjwvc3ZnPg==">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTgxOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTElIiBmaWxsPSIjZmZmZmZmIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAwIiBmb250LXdlaWdodD0iYm9sZCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VENHPC90ZXh0Pjwvc3ZnPg==">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -21,6 +22,8 @@
         ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        /* สไตล์สำหรับ input ตอนโดนล็อคให้คนทั่วไปดู */
+        input:disabled, select:disabled { background-color: #f9fafb !important; opacity: 1 !important; color: #4b5563 !important; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen pb-28 selection:bg-gray-200 selection:text-gray-900">
@@ -40,6 +43,9 @@
                     <h1 class="text-2xl font-extrabold tracking-tight mt-2 text-gray-900">TCG Vault</h1>
                 </div>
                 <div class="flex gap-2">
+                    <button id="auth-btn-login" onclick="loginAdmin()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition text-sm">🔒</button>
+                    <button id="auth-btn-logout" onclick="logoutAdmin()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-red-50 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 hover:text-red-500 transition text-sm hidden">🔓</button>
+                    
                     <button onclick="openStatsModal()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition">📊</button>
                     <button onclick="loadData()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition">🔄</button>
                 </div>
@@ -91,19 +97,17 @@
         <div id="card-grid" class="grid grid-cols-2 gap-4 hidden"></div>
     </main>
 
-    <!-- Modals (Add/Edit) -->
+    <!-- Modals (Add/Edit/View) -->
     <div id="detail-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
         <div class="bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl relative">
             
-            <!-- Overlay Loading สำหรับตอนกำลังเซฟรูป -->
             <div id="upload-overlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 hidden flex-col items-center justify-center rounded-[2.5rem]">
                 <div class="w-10 h-10 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin mb-3"></div>
-                <p class="text-sm font-bold text-gray-700">กำลังอัปโหลดรูปภาพ...</p>
-                <p class="text-xs text-gray-500">อาจใช้เวลาสักครู่</p>
+                <p class="text-sm font-bold text-gray-700">กำลังย่อและอัปโหลดรูป...</p>
             </div>
 
             <div class="flex justify-between items-center pb-2">
-                <h2 id="modal-title" class="font-bold text-lg text-gray-900">จัดการ การ์ด</h2>
+                <h2 id="modal-title" class="font-bold text-lg text-gray-900">รายละเอียดการ์ด</h2>
                 <button onclick="toggleModal(false)" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 text-lg transition">&times;</button>
             </div>
 
@@ -116,30 +120,30 @@
 
                 <div>
                     <label class="text-[11px] font-semibold text-gray-500">ชื่อการ์ด</label>
-                    <input type="text" id="form-name" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                    <input type="text" id="form-name" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
                 </div>
                 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">ชุด / ซีรีส์</label>
-                        <input type="text" id="form-set" list="set-list" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                        <input type="text" id="form-set" list="set-list" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
                     </div>
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">ลำดับการ์ด (เช่น 054/130)</label>
-                        <input type="text" id="form-cardNumber" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                        <input type="text" id="form-cardNumber" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">ความหายาก</label>
-                        <select id="form-rarity" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                        <select id="form-rarity" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
                             <option value="-">-</option><option value="UR">UR</option><option value="SAR">SAR</option><option value="SR">SR</option><option value="AR">AR</option><option value="RR">RR</option><option value="R">R</option><option value="U">U</option><option value="C">C</option>
                         </select>
                     </div>
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">ภาษา</label>
-                        <select id="form-lang" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                        <select id="form-lang" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
                             <option value="TH">ไทย (TH)</option><option value="JP">ญี่ปุ่น (JP)</option><option value="EN">อังกฤษ (EN)</option>
                         </select>
                     </div>
@@ -148,48 +152,46 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">ราคา (บาท)</label>
-                        <input type="number" id="form-price" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                        <input type="number" id="form-price" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
                     </div>
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">จำนวน</label>
-                        <input type="number" id="form-qty" required min="1" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                        <input type="number" id="form-qty" required min="1" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
                     </div>
                 </div>
 
                 <div>
                     <label class="text-[11px] font-semibold text-gray-500">สภาพการ์ด</label>
-                    <select id="form-condition" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                    <select id="form-condition" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 transition">
                         <option value="NM">NM (สวยไม่มีตำหนิ)</option><option value="LP">LP (มีรอยขนแมว/ขอบขาวนิดหน่อย)</option>
                         <option value="MP">MP (มีรอยชัดเจน)</option><option value="HP">HP (ตำหนิหนัก/หัก/งอ)</option><option value="Graded">Graded (มีเกรด)</option>
                     </select>
                 </div>
                 
-                <label class="flex items-center space-x-2 mt-2 bg-gray-100 p-3 rounded-xl border border-gray-200">
+                <label id="wishlist-wrapper" class="flex items-center space-x-2 mt-2 bg-gray-100 p-3 rounded-xl border border-gray-200 transition">
                     <input type="checkbox" id="form-wishlist" class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 border-gray-300">
                     <span class="text-xs font-semibold text-gray-700">🎯 บันทึกเป็น Wishlist (การ์ดที่กำลังตามหา)</span>
                 </label>
 
-                <div class="bg-gray-50 border border-gray-200 rounded-xl p-3">
+                <!-- ซ่อนส่วนอัปโหลดถ้ายูสเซอร์ไม่มีรหัสผ่าน (ไม่ใช่แอดมิน) -->
+                <div id="image-upload-section" class="bg-gray-50 border border-gray-200 rounded-xl p-3">
                     <label class="text-[11px] font-semibold text-gray-500 mb-2 block">รูปภาพการ์ด</label>
-                    
-                    <!-- อัปโหลดไฟล์ -->
-                    <input type="file" id="form-file" accept="image/*" class="text-xs w-full file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-black transition cursor-pointer text-gray-500 mb-2" onchange="uploadImageToDrive(event)">
-                    
+                    <input type="file" id="form-file" accept="image/*" class="text-xs w-full file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-black transition cursor-pointer text-gray-500 mb-2" onchange="compressAndUploadImage(event)">
                     <div class="flex items-center gap-2">
                         <span class="text-[10px] text-gray-400">หรือ URL:</span>
                         <input type="url" id="form-image" placeholder="https://..." class="flex-1 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-gray-900" oninput="document.getElementById('modal-image-preview').src = getSafeImageUrl(this.value)">
                     </div>
                 </div>
 
-                <div class="flex gap-3 pt-4">
+                <div id="form-actions-wrapper" class="flex gap-3 pt-4">
                     <button type="button" id="btn-delete" onclick="deleteCard()" class="w-1/3 py-3.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 rounded-xl font-semibold text-sm transition hidden">ลบ</button>
-                    <button type="submit" class="flex-1 py-3.5 bg-gray-900 hover:bg-black text-white rounded-xl font-semibold text-sm shadow-md transition">บันทึกข้อมูล</button>
+                    <button type="submit" id="btn-save" class="flex-1 py-3.5 bg-gray-900 hover:bg-black text-white rounded-xl font-semibold text-sm shadow-md transition">บันทึกข้อมูล</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Stats Modal & Lightbox... (คงเดิม) -->
+    <!-- Stats Modal & Lightbox... -->
     <div id="stats-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 transition-all">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-100">
             <div class="flex justify-between items-center pb-4 border-b border-gray-100 mb-4">
@@ -199,7 +201,6 @@
             <div id="stats-content" class="space-y-4"></div>
         </div>
     </div>
-
     <div id="image-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[70] hidden flex items-center justify-center p-4 transition-all" onclick="toggleImageModal(false)">
         <img id="lightbox-img" src="" class="max-h-[80vh] w-auto object-contain rounded-2xl shadow-2xl">
     </div>
@@ -211,15 +212,51 @@
             <span class="text-[10px] font-semibold">หน้าแรก</span>
         </button>
         <div class="w-px h-8 bg-gray-200"></div>
-        <button onclick="openAddForm()" class="flex flex-col items-center text-gray-400 hover:text-gray-900 transition">
+        <button id="nav-add-btn" onclick="openAddForm()" class="flex flex-col items-center text-gray-400 hover:text-gray-900 transition hidden">
             <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
             <span class="text-[10px] font-semibold">เพิ่มการ์ด</span>
+        </button>
+        <button id="nav-login-hint" onclick="loginAdmin()" class="flex flex-col items-center text-gray-400 hover:text-gray-900 transition">
+            <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            <span class="text-[10px] font-semibold">แอดมิน</span>
         </button>
     </nav>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyxUtqszvNC3tsfCnp2pH2dMJplBRX6KKX1f-JqzK3q57aAylJ3BOkGEFUJ0bxAI8e-/exec"; 
         let allCards = []; let currentFiltered = [];
+        let adminPin = localStorage.getItem('tcg_pin') || '';
+
+        // 🌟 ระบบ Authentication (UI Check)
+        function checkAuthUI() {
+            const isAuth = adminPin.length > 0;
+            document.getElementById('nav-add-btn').classList.toggle('hidden', !isAuth);
+            document.getElementById('nav-login-hint').classList.toggle('hidden', isAuth);
+            document.getElementById('auth-btn-login').classList.toggle('hidden', isAuth);
+            document.getElementById('auth-btn-logout').classList.toggle('hidden', !isAuth);
+            
+            // ล็อค/ปลดล็อค Form Input
+            const formInputs = document.querySelectorAll('#card-form input:not(#form-mode):not(#form-rowIndex):not(#form-id), #card-form select');
+            formInputs.forEach(input => input.disabled = !isAuth);
+            
+            document.getElementById('image-upload-section').classList.toggle('hidden', !isAuth);
+            document.getElementById('form-actions-wrapper').classList.toggle('hidden', !isAuth);
+            document.getElementById('wishlist-wrapper').style.opacity = isAuth ? '1' : '0.7';
+            document.getElementById('wishlist-wrapper').style.pointerEvents = isAuth ? 'auto' : 'none';
+        }
+
+        function loginAdmin() {
+            const pin = prompt("🔐 กรุณาใส่รหัสผ่านผู้ดูแลระบบ (Admin PIN):");
+            if (pin) {
+                adminPin = pin; localStorage.setItem('tcg_pin', pin);
+                checkAuthUI(); showToast("จำลองเข้าสู่ระบบแล้ว (ลองกดแก้ข้อมูลดู)");
+            }
+        }
+
+        function logoutAdmin() {
+            adminPin = ''; localStorage.removeItem('tcg_pin');
+            checkAuthUI(); showToast("ออกจากระบบผู้ดูแล"); toggleModal(false);
+        }
 
         function showToast(message, type = "success") {
             const toast = document.getElementById('toast');
@@ -236,6 +273,7 @@
         }
 
         async function loadData() {
+            checkAuthUI(); // รันเช็คสถานะ Auth
             document.getElementById('loading').style.display = 'grid'; document.getElementById('card-grid').style.display = 'none';
             const cachedData = localStorage.getItem('tcg_cards');
             if (cachedData && allCards.length === 0) { allCards = JSON.parse(cachedData); updateSetDatalist(); applyFilters(); updateSummary(allCards); }
@@ -250,66 +288,60 @@
             }
         }
 
-                function getSafeImageUrl(url) { 
-            if (!url || url.includes('via.placeholder.com')) {
-                return 'https://placehold.co/150/f9fafb/9ca3af?text=No+Image'; 
-            }
-            // ระบบแปลงลิงก์ Google Drive แบบเก่า ให้เป็นแบบ Thumbnail อัตโนมัติ (แก้รูประบบเก่าที่พัง)
+        function getSafeImageUrl(url) { 
+            if (!url || url.includes('via.placeholder.com')) return 'https://placehold.co/150/f9fafb/9ca3af?text=No+Image'; 
             if (url.includes('drive.google.com/uc')) {
                 const match = url.match(/id=([a-zA-Z0-9_-]+)/);
-                if (match && match[1]) {
-                    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
-                }
+                if (match && match[1]) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
             }
             return url; 
         }
 
-        // 🌟 อัปโหลดรูปไป Google Drive
-        function uploadImageToDrive(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
+        // 🌟 ระบบบีบอัดรูปภาพ (Client-Side Compression) ก่อนอัปโหลด
+        function compressAndUploadImage(event) {
+            const file = event.target.files[0]; if (!file) return;
             const overlay = document.getElementById('upload-overlay');
             const urlInput = document.getElementById('form-image');
             const preview = document.getElementById('modal-image-preview');
 
-            overlay.classList.remove('hidden'); // โชว์หน้าโหลด
-            overlay.classList.add('flex');
+            overlay.classList.remove('hidden'); overlay.classList.add('flex');
 
             const reader = new FileReader();
-            reader.onload = async function(e) {
-                const base64Data = e.target.result.split(',')[1];
-                
-                try {
-                    // ใช้ text/plain เพื่อไม่ให้ติดปัญหา CORS กับ Google Apps Script
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify({
-                            action: 'uploadImage',
-                            fileName: file.name,
-                            mimeType: file.type,
-                            base64: base64Data
-                        })
-                    });
-                    
-                    const result = await response.json();
-                    if (result.status === 'success') {
-                        urlInput.value = result.url;
-                        preview.src = result.url;
-                        showToast('อัปโหลดรูปลง Google Drive สำเร็จ!');
-                    } else {
-                        showToast('อัปโหลดล้มเหลว: ' + result.message, 'error');
-                    }
-                } catch (error) {
-                    showToast('อัปโหลดล้มเหลว กรุณาลองใหม่', 'error');
-                } finally {
-                    overlay.classList.add('hidden'); // ปิดหน้าโหลด
-                    overlay.classList.remove('flex');
-                    event.target.value = ''; // เคลียร์ input
-                }
-            };
             reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = async () => {
+                    // กำหนดขนาดสูงสุด (800px กำลังสวย โหลดไว)
+                    const MAX_SIZE = 800; let width = img.width; let height = img.height;
+                    if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
+                    else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // บีบอัดเป็น JPEG (ลดขนาดไฟล์เหลือไม่ถึง 150KB)
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                    const base64Data = dataUrl.split(',')[1];
+                    
+                    try {
+                        const response = await fetch(API_URL, {
+                            method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify({ action: 'uploadImage', pin: adminPin, fileName: file.name, mimeType: 'image/jpeg', base64: base64Data })
+                        });
+                        const result = await response.json();
+                        if (result.status === 'success') {
+                            urlInput.value = result.url; preview.src = result.url; showToast('บีบอัดและอัปโหลดสำเร็จ!');
+                        } else {
+                            showToast('อัปโหลดล้มเหลว: ' + result.message, 'error');
+                            if(result.message.includes('Unauthorized')) logoutAdmin(); // ถ้ารหัสผิด ให้เตะออก
+                        }
+                    } catch (error) { showToast('อัปโหลดล้มเหลว', 'error'); } 
+                    finally { overlay.classList.add('hidden'); overlay.classList.remove('flex'); event.target.value = ''; }
+                };
+            };
         }
 
         // --- Core Functions ---
@@ -324,7 +356,6 @@
                 const isW = String(card.isWishlist) === 'true';
                 if(status === 'owned' && isW) return false;
                 if(status === 'wishlist' && !isW) return false;
-
                 const matchKeyword = String(card.name).toLowerCase().includes(keyword) || String(card.set).toLowerCase().includes(keyword) || String(card.cardNumber || '').toLowerCase().includes(keyword);
                 const matchRarity = filterRarity === 'all' || card.rarity === filterRarity;
                 return matchKeyword && matchRarity;
@@ -351,12 +382,13 @@
                 const cNum = card.cardNumber ? `<span class="text-[9px] bg-gray-50 text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded">No.${card.cardNumber}</span>` : '';
                 const rarityBadge = card.rarity && card.rarity !== '-' ? `<span class="text-[9px] bg-gray-900 text-white px-1.5 py-0.5 rounded font-bold">${card.rarity}</span>` : '';
                 
+                // 🌟 เพิ่ม loading="lazy" ให้รูปภาพ เพื่อความรวดเร็วในการเปิดเว็บ
                 grid.innerHTML += `
                     <div class="bg-white border ${isW ? 'border-amber-200 bg-amber-50/30' : 'border-gray-200 hover:border-gray-300'} p-3.5 rounded-3xl shadow-sm flex flex-col justify-between group relative">
                         ${isW ? '<div class="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10 animate-pulse">🎯 WANTED</div>' : ''}
                         <div onclick="openEditForm('${card.id}')" class="cursor-pointer ${isW ? 'opacity-80' : ''}">
                             <div class="w-full h-36 bg-gray-50 rounded-2xl mb-3 flex items-center justify-center p-2 border border-gray-100 relative">
-                                <img src="${imgSrc}" class="h-full object-contain rounded-lg drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
+                                <img src="${imgSrc}" loading="lazy" class="h-full object-contain rounded-lg drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
                             </div>
                             <div class="flex flex-wrap gap-1 mb-1.5">
                                 <span class="text-[9px] bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded font-semibold">${card.set || '-'}</span>
@@ -409,8 +441,7 @@
                 let pct = total > 0 ? (lCounts[k] / total * 100).toFixed(0) : 0;
                 html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-emerald-500 h-full rounded-full" style="width:${pct}%"></div></div><span class="w-8 text-right text-gray-500">${lCounts[k]}</span></div>`;
             });
-            document.getElementById('stats-content').innerHTML = html;
-            document.getElementById('stats-modal').classList.remove('hidden');
+            document.getElementById('stats-content').innerHTML = html; document.getElementById('stats-modal').classList.remove('hidden');
         }
 
         function toggleModal(isOpen) { document.getElementById('detail-modal').classList.toggle('hidden', !isOpen); }
@@ -418,6 +449,7 @@
         function openImageLightbox(imgUrl) { document.getElementById('lightbox-img').src = getSafeImageUrl(imgUrl); toggleImageModal(true); }
 
         function openAddForm() {
+            if(!adminPin) return loginAdmin(); // ป้องกันคนเข้าผ่าน console
             document.getElementById('card-form').reset();
             document.getElementById('form-mode').value = 'add';
             document.getElementById('modal-title').innerText = '✨ เพิ่มการ์ดใหม่';
@@ -441,15 +473,19 @@
             document.getElementById('form-condition').value = card.condition || 'NM';
             document.getElementById('form-image').value = card.image || '';
             document.getElementById('form-wishlist').checked = String(card.isWishlist) === 'true';
-            document.getElementById('modal-title').innerText = '🛠️ แก้ไขข้อมูลการ์ด';
-            document.getElementById('btn-delete').classList.remove('hidden');
+            
+            document.getElementById('modal-title').innerText = adminPin ? '🛠️ แก้ไขข้อมูล' : '🔍 รายละเอียดการ์ด';
+            document.getElementById('btn-delete').classList.toggle('hidden', !adminPin); // ซ่อนปุ่มลบถ้าไม่ใช่แอดมิน
             document.getElementById('modal-image-preview').src = getSafeImageUrl(card.image);
             toggleModal(true);
         }
 
         async function submitForm(e) {
             e.preventDefault();
+            if(!adminPin) return showToast('สิทธิ์ถูกปฏิเสธ กรุณาล็อกอิน', 'error');
+
             const dataObj = {
+                pin: adminPin, // ส่งรหัสผ่านไปเช็คที่ Google Apps Script
                 name: document.getElementById('form-name').value, set: document.getElementById('form-set').value,
                 cardNumber: document.getElementById('form-cardNumber').value, price: Number(document.getElementById('form-price').value),
                 qty: Number(document.getElementById('form-qty').value), rarity: document.getElementById('form-rarity').value,
@@ -457,26 +493,43 @@
                 image: document.getElementById('form-image').value, isWishlist: document.getElementById('form-wishlist').checked
             };
 
-            if(document.getElementById('form-mode').value === 'add') {
-                dataObj.id = "CARD-" + Date.now(); dataObj.rowIndex = allCards.length + 2; allCards.unshift(dataObj); showToast("เพิ่มการ์ดสำเร็จ!");
-            } else {
-                dataObj.action = 'update'; dataObj.rowIndex = Number(document.getElementById('form-rowIndex').value);
-                dataObj.id = document.getElementById('form-id').value;
-                const i = allCards.findIndex(c => c.rowIndex === dataObj.rowIndex); if(i !== -1) allCards[i] = { ...allCards[i], ...dataObj };
-                showToast("อัปเดตข้อมูลสำเร็จ!");
-            }
+            const isAdd = document.getElementById('form-mode').value === 'add';
+            if(isAdd) { dataObj.id = "CARD-" + Date.now(); dataObj.rowIndex = allCards.length + 2; } 
+            else { dataObj.action = 'update'; dataObj.rowIndex = Number(document.getElementById('form-rowIndex').value); dataObj.id = document.getElementById('form-id').value; }
+            
+            // อัปเดต UI ชั่วคราวก่อน (เพื่อให้แอปดูไว)
+            if(isAdd) allCards.unshift(dataObj);
+            else { const i = allCards.findIndex(c => c.rowIndex === dataObj.rowIndex); if(i !== -1) allCards[i] = { ...allCards[i], ...dataObj }; }
+            
             updateSetDatalist(); applyFilters(); updateSummary(allCards); localStorage.setItem('tcg_cards', JSON.stringify(allCards));
-            toggleModal(false);
-            fetch(API_URL, { method: 'POST', body: JSON.stringify(dataObj) }); // ใช้ standard body ไม่ต้อง no-cors
+            toggleModal(false); showToast(isAdd ? "เพิ่มการ์ดแล้ว กำลังซิงค์..." : "อัปเดตข้อมูลแล้ว กำลังซิงค์...");
+
+            // ส่งข้อมูลไปเซิร์ฟเวอร์
+            try {
+                const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dataObj) });
+                const result = await response.json();
+                if(result.status === 'error') {
+                    showToast('เกิดข้อผิดพลาด: ' + result.message, 'error');
+                    if(result.message.includes('Unauthorized')) logoutAdmin(); // ถ้ารหัสผิด เตะออก
+                }
+            } catch (err) {}
         }
 
         async function deleteCard() {
             if (!confirm("ลบการ์ดใบนี้ออกจากคลัง?")) return;
             const rowIndex = Number(document.getElementById('form-rowIndex').value);
+            
+            // อัปเดต UI
             allCards = allCards.filter(c => c.rowIndex !== rowIndex);
             updateSetDatalist(); applyFilters(); updateSummary(allCards); localStorage.setItem('tcg_cards', JSON.stringify(allCards));
             toggleModal(false); showToast("ลบการ์ดแล้ว");
-            fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowIndex: rowIndex }) });
+
+            // ส่งข้อมูลลบไปเซิร์ฟเวอร์
+            try {
+                const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'delete', rowIndex: rowIndex, pin: adminPin }) });
+                const result = await response.json();
+                if(result.status === 'error' && result.message.includes('Unauthorized')) logoutAdmin();
+            } catch (err) {}
         }
         
         loadData();

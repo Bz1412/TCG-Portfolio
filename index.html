@@ -10,138 +10,135 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Prompt', sans-serif; }
+        /* ซ่อน Scrollbar ให้ดูสะอาดตาขึ้นเวลาเลื่อน */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen pb-28 selection:bg-violet-500 selection:text-white">
+<body class="bg-gray-50 text-gray-900 min-h-screen pb-28 selection:bg-gray-200 selection:text-gray-900">
 
-    <!-- Toast Notification (แจ้งเตือนลอยแบบไม่ขัดจังหวะ) -->
-    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-900/95 text-slate-100 px-5 py-3 rounded-2xl shadow-2xl text-xs font-semibold z-50 transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2.5 border border-violet-500/30 backdrop-blur-xl">
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-white text-gray-800 px-5 py-3 rounded-2xl shadow-xl text-xs font-semibold z-50 transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2.5 border border-gray-100">
         <span id="toast-icon" class="text-sm">✨</span>
         <span id="toast-message">ดำเนินการสำเร็จเรียบร้อย</span>
     </div>
 
     <!-- Header & Summary Dashboard -->
-    <header class="relative bg-gradient-to-br from-violet-900 via-indigo-950 to-slate-900 text-white p-6 rounded-b-[2.5rem] shadow-2xl border-b border-violet-500/20">
+    <header class="relative bg-white pt-8 pb-6 px-6 rounded-b-[2.5rem] shadow-sm border-b border-gray-200 z-10">
         <div class="max-w-md mx-auto">
-            <div class="flex justify-between items-center mb-5">
+            <div class="flex justify-between items-center mb-6">
                 <div>
-                    <span class="text-[10px] uppercase tracking-widest text-violet-400 font-semibold bg-violet-500/10 px-2.5 py-1 rounded-full border border-violet-500/20">Thai Collection</span>
-                    <h1 class="text-2xl font-extrabold tracking-tight mt-1 bg-gradient-to-r from-white via-slate-200 to-violet-300 bg-clip-text text-transparent">⚡ TCG Vault</h1>
+                    <span class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold bg-gray-100 px-3 py-1 rounded-full border border-gray-200">Thai Collection</span>
+                    <h1 class="text-2xl font-extrabold tracking-tight mt-2 text-gray-900">TCG Vault</h1>
                 </div>
-                <button onclick="loadData()" class="w-10 h-10 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition active:scale-95 shadow-inner">
+                <button onclick="loadData()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 transition active:scale-95 shadow-sm text-gray-600">
                     <span class="text-sm">🔄</span>
                 </button>
             </div>
             
             <div class="grid grid-cols-2 gap-3.5">
-                <div class="bg-white/[0.07] backdrop-blur-xl p-4 rounded-3xl border border-white/10 shadow-lg relative overflow-hidden">
-                    <div class="absolute -right-4 -bottom-4 text-violet-500/10 text-5xl font-bold">📦</div>
-                    <p class="text-[11px] text-violet-200 font-medium">การ์ดทั้งหมดในคลัง</p>
-                    <p id="total-cards" class="text-2xl font-black tracking-tight mt-1 text-white">0 <span class="text-xs font-normal text-slate-300">ใบ</span></p>
+                <div class="bg-gray-50 p-4 rounded-3xl border border-gray-200 relative overflow-hidden">
+                    <p class="text-[11px] text-gray-500 font-medium">การ์ดทั้งหมดในคลัง</p>
+                    <p id="total-cards" class="text-2xl font-black tracking-tight mt-1 text-gray-900">0 <span class="text-xs font-normal text-gray-500">ใบ</span></p>
                 </div>
-                <div class="bg-white/[0.07] backdrop-blur-xl p-4 rounded-3xl border border-white/10 shadow-lg relative overflow-hidden">
-                    <div class="absolute -right-4 -bottom-4 text-emerald-500/10 text-5xl font-bold">💎</div>
-                    <p class="text-[11px] text-violet-200 font-medium">มูลค่าประเมินรวม</p>
-                    <p id="total-price" class="text-2xl font-black tracking-tight mt-1 text-emerald-400">฿0</p>
+                <div class="bg-gray-50 p-4 rounded-3xl border border-gray-200 relative overflow-hidden">
+                    <p class="text-[11px] text-gray-500 font-medium">มูลค่าประเมินรวม</p>
+                    <p id="total-price" class="text-2xl font-black tracking-tight mt-1 text-emerald-600">฿0</p>
                 </div>
             </div>
         </div>
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-md mx-auto p-4 space-y-4">
+    <main class="max-w-md mx-auto p-5 space-y-5">
         <!-- Search Bar -->
         <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">🔍</span>
+            <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400">🔍</span>
             <input type="text" id="search-input" placeholder="ค้นหาชื่อการ์ด หรือซีรีส์ชุด..." 
-                class="w-full pl-11 pr-4 py-3.5 bg-slate-900/90 text-slate-100 placeholder-slate-500 rounded-2xl shadow-inner border border-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm transition"
+                class="w-full pl-11 pr-4 py-3.5 bg-white text-gray-900 placeholder-gray-400 rounded-2xl shadow-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm transition"
                 oninput="filterCards()">
         </div>
 
         <!-- Loading State -->
-        <div id="loading" class="text-center py-16 text-slate-400 text-sm flex flex-col items-center justify-center space-y-3">
-            <div class="w-8 h-8 border-3 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
-            <span class="text-xs text-slate-400 font-medium">กำลังซิงค์ข้อมูลจาก Google Sheets...</span>
+        <div id="loading" class="text-center py-16 flex flex-col items-center justify-center space-y-3">
+            <div class="w-8 h-8 border-3 border-gray-200 border-t-gray-800 rounded-full animate-spin"></div>
+            <span class="text-xs text-gray-500 font-medium">กำลังโหลดข้อมูล...</span>
         </div>
 
         <!-- Card Grid -->
-        <div id="card-grid" class="grid grid-cols-2 gap-3.5">
+        <div id="card-grid" class="grid grid-cols-2 gap-4">
             <!-- ข้อมูลการ์ดแสดงผลที่นี่ -->
         </div>
     </main>
 
-    <!-- Modal: ขยายดูรูปภาพการ์ดแบบเต็มจอ (Lightbox) -->
-    <div id="image-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[60] hidden flex items-center justify-center p-4 transition-all" onclick="toggleImageModal(false)">
+    <!-- Modal: Lightbox รูปภาพ -->
+    <div id="image-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 transition-all" onclick="toggleImageModal(false)">
         <div class="relative max-w-sm w-full flex flex-col items-center" onclick="event.stopPropagation()">
-            <button onclick="toggleImageModal(false)" class="absolute -top-12 right-0 w-10 h-10 rounded-full bg-slate-800/80 text-white flex items-center justify-center text-xl font-bold hover:bg-slate-700 transition">&times;</button>
-            <img id="lightbox-img" src="" alt="Zoomed Card" class="max-h-[80vh] w-auto object-contain rounded-2xl shadow-2xl border border-slate-700">
-            <p class="text-xs text-slate-400 mt-3">แตะบริเวณว่างเพื่อปิด</p>
+            <button onclick="toggleImageModal(false)" class="absolute -top-12 right-0 w-10 h-10 rounded-full bg-white text-gray-900 flex items-center justify-center text-xl font-bold hover:bg-gray-100 transition shadow-lg">&times;</button>
+            <img id="lightbox-img" src="" alt="Zoomed Card" class="max-h-[80vh] w-auto object-contain rounded-2xl shadow-2xl">
         </div>
     </div>
 
-    <!-- Modal: รายละเอียด & แก้ไขข้อมูลการ์ด -->
-    <div id="detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
-        <div class="bg-slate-900 text-slate-100 w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-4 max-h-[92vh] overflow-y-auto border border-slate-800 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <h2 class="font-bold text-base text-white flex items-center gap-2">🛠️ จัดการข้อมูลการ์ด</h2>
-                <button onclick="toggleDetailModal(false)" class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white text-lg transition">&times;</button>
+    <!-- Modal: รายละเอียด & แก้ไข -->
+    <div id="detail-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+        <div class="bg-white text-gray-900 w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-center pb-2">
+                <h2 class="font-bold text-lg text-gray-900">จัดการข้อมูลการ์ด</h2>
+                <button onclick="toggleDetailModal(false)" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 text-lg transition">&times;</button>
             </div>
 
-            <!-- รูปภาพการ์ดตัวอย่าง (คลิกเพื่อขยายได้) -->
-            <div class="flex justify-center bg-slate-950/60 p-3 rounded-2xl border border-slate-800/85 relative group cursor-pointer" onclick="openImageLightbox(document.getElementById('modal-preview-image').src)">
-                <img id="modal-preview-image" src="" alt="Card Preview" class="h-40 object-contain rounded-lg shadow-md transition group-hover:scale-105" onerror="this.src='https://placehold.co/150/1e293b/94a3b8?text=No+Image'">
-                <span class="absolute bottom-2 right-2 bg-slate-900/80 text-violet-300 text-[10px] px-2 py-0.5 rounded-md border border-slate-700">🔍 แตะเพื่อขยาย</span>
+            <div class="flex justify-center bg-gray-50 p-4 rounded-2xl border border-gray-100 relative group cursor-pointer" onclick="openImageLightbox(document.getElementById('modal-preview-image').src)">
+                <img id="modal-preview-image" src="" alt="Card Preview" class="h-44 object-contain rounded-lg drop-shadow-sm transition group-hover:scale-105" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
+                <span class="absolute bottom-3 right-3 bg-white/90 text-gray-600 text-[10px] px-2 py-1 rounded-lg border border-gray-200 shadow-sm backdrop-blur-sm">🔍 แตะเพื่อขยาย</span>
             </div>
 
-            <!-- ฟอร์มแก้ไขข้อมูล -->
-            <form id="edit-form" onsubmit="updateCard(event)" class="space-y-3">
+            <form id="edit-form" onsubmit="updateCard(event)" class="space-y-3.5 pt-2">
                 <input type="hidden" id="edit-row-index">
                 <input type="hidden" id="edit-card-id">
 
                 <div>
-                    <label class="text-[11px] font-semibold text-slate-400">ชื่อการ์ด</label>
-                    <input type="text" id="edit-name" required class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                    <label class="text-[11px] font-semibold text-gray-500">ชื่อการ์ด</label>
+                    <input type="text" id="edit-name" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
                 </div>
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-[11px] font-semibold text-slate-400">ซีรีส์ / ชุด (Set)</label>
-                        <input type="text" id="edit-set" required class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                        <label class="text-[11px] font-semibold text-gray-500">ซีรีส์ / ชุด</label>
+                        <input type="text" id="edit-set" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
                     </div>
                     <div>
-                        <label class="text-[11px] font-semibold text-slate-400">จำนวนที่มี</label>
-                        <input type="number" id="edit-qty" required min="1" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                        <label class="text-[11px] font-semibold text-gray-500">จำนวน</label>
+                        <input type="number" id="edit-qty" required min="1" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
                     </div>
                 </div>
                 <div>
-                    <label class="text-[11px] font-semibold text-slate-400">ราคาตลาด / ราคาซื้อ (บาท)</label>
-                    <input type="number" id="edit-price" required class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500" oninput="calculateFBPricePreview()">
+                    <label class="text-[11px] font-semibold text-gray-500">ราคาประเมิน (บาท)</label>
+                    <input type="number" id="edit-price" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition" oninput="calculateFBPricePreview()">
                 </div>
                 <div>
-                    <label class="text-[11px] font-semibold text-slate-400">ลิงก์รูปภาพ (Image URL)</label>
-                    <input type="url" id="edit-image" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500" oninput="document.getElementById('modal-preview-image').src = getSafeImageUrl(this.value)">
+                    <label class="text-[11px] font-semibold text-gray-500">ลิงก์รูปภาพ</label>
+                    <input type="url" id="edit-image" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition" oninput="document.getElementById('modal-preview-image').src = getSafeImageUrl(this.value)">
                 </div>
 
-                <!-- กล่องแสดงราคาอ้างอิง Facebook -->
-                <div class="bg-violet-950/30 border border-violet-500/20 rounded-2xl p-3.5 space-y-2">
-                    <p class="text-[10px] font-bold text-violet-300 uppercase tracking-wide">📊 ราคาอ้างอิงตลาดกลุ่ม Facebook</p>
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800">
-                            <span class="text-[10px] text-slate-400 block">สภาพสวย (NM)</span>
-                            <span id="preview-nm" class="font-bold text-emerald-400">฿0</span>
+                <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 mt-2">
+                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">📊 ราคาตลาดโดยประมาณ</p>
+                    <div class="grid grid-cols-2 gap-3 text-xs">
+                        <div class="bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm">
+                            <span class="text-[10px] text-gray-500 block mb-0.5">สภาพสวย (NM)</span>
+                            <span id="preview-nm" class="font-bold text-emerald-600">฿0</span>
                         </div>
-                        <div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800">
-                            <span class="text-[10px] text-slate-400 block">มีตำหนิ (Played)</span>
-                            <span id="preview-played" class="font-bold text-amber-400">฿0</span>
+                        <div class="bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm">
+                            <span class="text-[10px] text-gray-500 block mb-0.5">มีตำหนิ (Played)</span>
+                            <span id="preview-played" class="font-bold text-amber-500">฿0</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="deleteCard()" class="w-1/3 py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl font-semibold text-xs transition">
-                        ลบการ์ด
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="deleteCard()" class="w-1/3 py-3.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 rounded-xl font-semibold text-sm transition">
+                        ลบ
                     </button>
-                    <button type="submit" id="update-btn" class="w-2/3 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-semibold text-xs shadow-lg shadow-violet-600/30 transition">
-                        บันทึกการแก้ไข
+                    <button type="submit" id="update-btn" class="w-2/3 py-3.5 bg-gray-900 hover:bg-black text-white rounded-xl font-semibold text-sm shadow-md transition">
+                        บันทึก
                     </button>
                 </div>
             </form>
@@ -149,60 +146,59 @@
     </div>
 
     <!-- Modal: เพิ่มการ์ดใหม่ -->
-    <div id="add-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-slate-900 text-slate-100 w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-4 max-h-[92vh] overflow-y-auto border border-slate-800 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <h2 class="font-bold text-base text-white">✨ เพิ่มการ์ดใหม่เข้าคอลเลกชัน</h2>
-                <button onclick="toggleAddModal(false)" class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white text-lg transition">&times;</button>
+    <div id="add-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white text-gray-900 w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-center pb-2">
+                <h2 class="font-bold text-lg text-gray-900">เพิ่มการ์ดใหม่</h2>
+                <button onclick="toggleAddModal(false)" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 text-lg transition">&times;</button>
             </div>
             
-            <form id="add-form" onsubmit="submitCard(event)" class="space-y-3">
+            <form id="add-form" onsubmit="submitCard(event)" class="space-y-3.5 pt-2">
                 <div>
-                    <label class="text-[11px] font-semibold text-slate-400">ชื่อการ์ด</label>
-                    <input type="text" id="card-name" required placeholder="เช่น Charizard ex" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                    <label class="text-[11px] font-semibold text-gray-500">ชื่อการ์ด</label>
+                    <input type="text" id="card-name" required placeholder="เช่น Charizard ex" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
                 </div>
                 <div>
-                    <label class="text-[11px] font-semibold text-slate-400">ซีรีส์ / ชุด (Set)</label>
-                    <input type="text" id="card-set" required placeholder="เช่น SV3s" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                    <label class="text-[11px] font-semibold text-gray-500">ซีรีส์ / ชุด</label>
+                    <input type="text" id="card-set" required placeholder="เช่น SV3s" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
                 </div>
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-[11px] font-semibold text-slate-400">ราคาตลาด (บาท)</label>
-                        <input type="number" id="card-price" required placeholder="0" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                        <label class="text-[11px] font-semibold text-gray-500">ราคาตลาด (บาท)</label>
+                        <input type="number" id="card-price" required placeholder="0" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
                     </div>
                     <div>
-                        <label class="text-[11px] font-semibold text-slate-400">จำนวนที่มี</label>
-                        <input type="number" id="card-qty" required value="1" min="1" class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                        <label class="text-[11px] font-semibold text-gray-500">จำนวน</label>
+                        <input type="number" id="card-qty" required value="1" min="1" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
                     </div>
                 </div>
                 <div>
-                    <label class="text-[11px] font-semibold text-slate-400">ลิงก์รูปภาพ (Image URL)</label>
-                    <input type="url" id="card-image" placeholder="https://..." class="w-full mt-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                    <label class="text-[11px] font-semibold text-gray-500">ลิงก์รูปภาพ (URL)</label>
+                    <input type="url" id="card-image" placeholder="https://..." class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
                 </div>
                 
-                <button type="submit" id="submit-btn" class="w-full py-3.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-violet-600/30 transition mt-4">
-                    บันทึกการ์ดใหม่
+                <button type="submit" id="submit-btn" class="w-full py-4 bg-gray-900 hover:bg-black text-white rounded-xl font-semibold text-sm shadow-md transition mt-6">
+                    บันทึกการ์ด
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Bottom Navigation Bar (Floating Mobile Style) -->
-    <nav class="fixed bottom-4 left-4 right-4 bg-slate-900/90 backdrop-blur-xl border border-slate-800 py-3 px-8 shadow-2xl max-w-sm mx-auto rounded-3xl flex justify-around items-center z-40">
-        <button onclick="loadData()" class="flex flex-col items-center text-violet-400">
-            <span class="text-xl">🏠</span>
-            <span class="text-[10px] mt-0.5 font-medium">หน้าแรก</span>
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-5 left-5 right-5 bg-white/90 backdrop-blur-xl border border-gray-200 py-3.5 px-8 shadow-[0_4px_30px_rgba(0,0,0,0.08)] max-w-sm mx-auto rounded-[2rem] flex justify-around items-center z-40">
+        <button onclick="loadData()" class="flex flex-col items-center text-gray-900">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+            <span class="text-[10px] font-semibold">หน้าแรก</span>
         </button>
-        <div class="w-px h-6 bg-slate-800"></div>
-        <button onclick="toggleAddModal(true)" class="flex flex-col items-center text-slate-400 hover:text-violet-400 transition">
-            <span class="text-xl">➕</span>
-            <span class="text-[10px] mt-0.5 font-medium">เพิ่มการ์ด</span>
+        <div class="w-px h-8 bg-gray-200"></div>
+        <button onclick="toggleAddModal(true)" class="flex flex-col items-center text-gray-400 hover:text-gray-900 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+            <span class="text-[10px] font-semibold">เพิ่มการ์ด</span>
         </button>
     </nav>
 
-    <!-- Script จัดการระบบ -->
+    <!-- Script -->
     <script>
-        // ** ใส่ Web App URL ของ Google Apps Script ที่นี่ **
         const API_URL = "https://script.google.com/macros/s/AKfycbyxUtqszvNC3tsfCnp2pH2dMJplBRX6KKX1f-JqzK3q57aAylJ3BOkGEFUJ0bxAI8e-/exec";
         
         let allCards = [];
@@ -249,13 +245,13 @@
                 }
                 loadingEl.style.display = 'none';
             } catch (error) {
-                loadingEl.innerHTML = "<span class='text-rose-400 text-xs'>โหลดข้อมูลจากเซิร์ฟเวอร์ไม่สำเร็จ กำลังใช้ข้อมูลสำรองในเครื่อง</span>";
+                loadingEl.innerHTML = "<span class='text-red-500 text-xs'>โหลดข้อมูลล้มเหลว กำลังใช้ข้อมูลออฟไลน์</span>";
             }
         }
 
         function getSafeImageUrl(url) {
             if (!url || url.includes('via.placeholder.com')) {
-                return 'https://placehold.co/150/1e293b/94a3b8?text=No+Image';
+                return 'https://placehold.co/150/f9fafb/9ca3af?text=No+Image';
             }
             return url;
         }
@@ -265,27 +261,27 @@
             grid.innerHTML = '';
 
             if (cards.length === 0) {
-                grid.innerHTML = '<div class="col-span-2 text-center text-slate-600 py-12 text-xs">ยังไม่มีการ์ดในคลังของคุณ กดปุ่ม + ด้านล่างเพื่อเพิ่มได้เลย</div>';
+                grid.innerHTML = '<div class="col-span-2 text-center text-gray-500 py-12 text-xs">ยังไม่มีการ์ดในคลัง กดปุ่มด้านล่างเพื่อเพิ่ม</div>';
                 return;
             }
 
             cards.forEach((card, index) => {
                 const imgSrc = getSafeImageUrl(card.image);
                 grid.innerHTML += `
-                    <div class="bg-slate-900/80 hover:bg-slate-900 border border-slate-800/80 hover:border-violet-500/50 p-3.5 rounded-3xl shadow-xl flex flex-col justify-between transition group">
+                    <div class="bg-white hover:shadow-md border border-gray-200 hover:border-gray-300 p-3.5 rounded-3xl shadow-sm flex flex-col justify-between transition-all duration-300 group">
                         <div>
-                            <div onclick="openCardDetail(${index})" class="w-full h-36 bg-slate-950/50 rounded-2xl mb-2.5 flex items-center justify-center p-2 overflow-hidden border border-slate-800/40 group-hover:border-violet-500/30 transition cursor-pointer relative">
-                                <img src="${imgSrc}" alt="${card.name}" class="h-full object-contain rounded-lg drop-shadow-md" onerror="this.src='https://placehold.co/150/1e293b/94a3b8?text=No+Image'">
-                                <button onclick="event.stopPropagation(); openImageLightbox('${imgSrc}')" class="absolute bottom-2 right-2 bg-slate-900/80 hover:bg-violet-600 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs backdrop-blur-sm transition shadow">
+                            <div onclick="openCardDetail(${index})" class="w-full h-36 bg-gray-50 rounded-2xl mb-3 flex items-center justify-center p-2 overflow-hidden border border-gray-100 transition cursor-pointer relative">
+                                <img src="${imgSrc}" alt="${card.name}" class="h-full object-contain rounded-lg drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
+                                <button onclick="event.stopPropagation(); openImageLightbox('${imgSrc}')" class="absolute bottom-2 right-2 bg-white/90 hover:bg-gray-900 text-gray-600 hover:text-white w-7 h-7 flex items-center justify-center rounded-full text-xs backdrop-blur-sm transition shadow-sm border border-gray-200">
                                     🔍
                                 </button>
                             </div>
-                            <span class="text-[9px] bg-violet-500/10 text-violet-300 border border-violet-500/20 px-2 py-0.5 rounded-md font-semibold">${card.set || '-'}</span>
-                            <h2 onclick="openCardDetail(${index})" class="text-xs font-bold text-slate-100 truncate mt-1.5 cursor-pointer hover:text-violet-300 transition">${card.name}</h2>
+                            <span class="text-[9px] bg-gray-100 text-gray-500 border border-gray-200 px-2 py-0.5 rounded-md font-semibold">${card.set || '-'}</span>
+                            <h2 onclick="openCardDetail(${index})" class="text-xs font-bold text-gray-900 truncate mt-1.5 cursor-pointer hover:text-gray-600 transition">${card.name}</h2>
                         </div>
-                        <div onclick="openCardDetail(${index})" class="flex justify-between items-center mt-3 pt-2.5 border-t border-slate-800/60 cursor-pointer">
-                            <span class="text-xs font-black text-emerald-400">฿${Number(card.price || 0).toLocaleString()}</span>
-                            <span class="text-[10px] bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded-full font-semibold">มี ${card.qty} ใบ</span>
+                        <div onclick="openCardDetail(${index})" class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 cursor-pointer">
+                            <span class="text-xs font-black text-emerald-600">฿${Number(card.price || 0).toLocaleString()}</span>
+                            <span class="text-[10px] bg-gray-100 text-gray-500 border border-gray-200 px-2.5 py-0.5 rounded-full font-semibold">x${card.qty}</span>
                         </div>
                     </div>
                 `;
@@ -296,7 +292,7 @@
             const totalCards = cards.reduce((sum, card) => sum + Number(card.qty || 0), 0);
             const totalPrice = cards.reduce((sum, card) => sum + (Number(card.price || 0) * Number(card.qty || 0)), 0);
 
-            document.getElementById('total-cards').innerHTML = `${totalCards} <span class="text-xs font-normal text-slate-400">ใบ</span>`;
+            document.getElementById('total-cards').innerHTML = `${totalCards} <span class="text-xs font-normal text-gray-500">ใบ</span>`;
             document.getElementById('total-price').innerText = `฿${totalPrice.toLocaleString()}`;
         }
 
@@ -368,7 +364,7 @@
             
             document.getElementById('add-form').reset();
             toggleAddModal(false);
-            showToast("เพิ่มการ์ดสำเร็จเรียบร้อย!");
+            showToast("เพิ่มการ์ดสำเร็จ!");
 
             fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newCard) });
         }
@@ -397,13 +393,13 @@
             updateSummary(allCards);
             localStorage.setItem('tcg_cards', JSON.stringify(allCards));
             toggleDetailModal(false);
-            showToast("อัปเดตข้อมูลสำเร็จเรียบร้อย!");
+            showToast("อัปเดตข้อมูลสำเร็จ!");
 
             fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedCard) });
         }
 
         async function deleteCard() {
-            if (!confirm("คุณต้องการลบการ์ดใบนี้ออกจากคลังใช่หรือไม่?")) return;
+            if (!confirm("ลบการ์ดใบนี้ออกจากคลัง?")) return;
 
             const rowIndex = Number(document.getElementById('edit-row-index').value);
             
@@ -412,7 +408,7 @@
             updateSummary(allCards);
             localStorage.setItem('tcg_cards', JSON.stringify(allCards));
             toggleDetailModal(false);
-            showToast("ลบการ์ดสำเร็จเรียบร้อย!", "warning");
+            showToast("ลบการ์ดแล้ว", "warning");
 
             fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', rowIndex: rowIndex }) });
         }

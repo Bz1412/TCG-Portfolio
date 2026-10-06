@@ -14,6 +14,12 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen pb-28 selection:bg-violet-500 selection:text-white">
 
+    <!-- Toast Notification (แจ้งเตือนลอยแบบไม่ขัดจังหวะ) -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-900/95 text-slate-100 px-5 py-3 rounded-2xl shadow-2xl text-xs font-semibold z-50 transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2.5 border border-violet-500/30 backdrop-blur-xl">
+        <span id="toast-icon" class="text-sm">✨</span>
+        <span id="toast-message">ดำเนินการสำเร็จเรียบร้อย</span>
+    </div>
+
     <!-- Header & Summary Dashboard -->
     <header class="relative bg-gradient-to-br from-violet-900 via-indigo-950 to-slate-900 text-white p-6 rounded-b-[2.5rem] shadow-2xl border-b border-violet-500/20">
         <div class="max-w-md mx-auto">
@@ -64,6 +70,15 @@
         </div>
     </main>
 
+    <!-- Modal: ขยายดูรูปภาพการ์ดแบบเต็มจอ (Lightbox) -->
+    <div id="image-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[60] hidden flex items-center justify-center p-4 transition-all" onclick="toggleImageModal(false)">
+        <div class="relative max-w-sm w-full flex flex-col items-center" onclick="event.stopPropagation()">
+            <button onclick="toggleImageModal(false)" class="absolute -top-12 right-0 w-10 h-10 rounded-full bg-slate-800/80 text-white flex items-center justify-center text-xl font-bold hover:bg-slate-700 transition">&times;</button>
+            <img id="lightbox-img" src="" alt="Zoomed Card" class="max-h-[80vh] w-auto object-contain rounded-2xl shadow-2xl border border-slate-700">
+            <p class="text-xs text-slate-400 mt-3">แตะบริเวณว่างเพื่อปิด</p>
+        </div>
+    </div>
+
     <!-- Modal: รายละเอียด & แก้ไขข้อมูลการ์ด -->
     <div id="detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
         <div class="bg-slate-900 text-slate-100 w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-4 max-h-[92vh] overflow-y-auto border border-slate-800 shadow-2xl">
@@ -72,9 +87,10 @@
                 <button onclick="toggleDetailModal(false)" class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white text-lg transition">&times;</button>
             </div>
 
-            <!-- รูปภาพการ์ดตัวอย่าง -->
-            <div class="flex justify-center bg-slate-950/60 p-3 rounded-2xl border border-slate-800/80">
-                <img id="modal-preview-image" src="" alt="Card Preview" class="h-40 object-contain rounded-lg shadow-md" onerror="this.src='https://placehold.co/150/1e293b/94a3b8?text=No+Image'">
+            <!-- รูปภาพการ์ดตัวอย่าง (คลิกเพื่อขยายได้) -->
+            <div class="flex justify-center bg-slate-950/60 p-3 rounded-2xl border border-slate-800/85 relative group cursor-pointer" onclick="openImageLightbox(document.getElementById('modal-preview-image').src)">
+                <img id="modal-preview-image" src="" alt="Card Preview" class="h-40 object-contain rounded-lg shadow-md transition group-hover:scale-105" onerror="this.src='https://placehold.co/150/1e293b/94a3b8?text=No+Image'">
+                <span class="absolute bottom-2 right-2 bg-slate-900/80 text-violet-300 text-[10px] px-2 py-0.5 rounded-md border border-slate-700">🔍 แตะเพื่อขยาย</span>
             </div>
 
             <!-- ฟอร์มแก้ไขข้อมูล -->
@@ -191,9 +207,35 @@
         
         let allCards = [];
 
+        function showToast(message, type = "success") {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.innerText = message;
+            toastIcon.innerText = type === "success" ? "✨" : "⚠️";
+
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2500);
+        }
+
         async function loadData() {
             const loadingEl = document.getElementById('loading');
-            loadingEl.style.display = 'flex';
+            
+            const cachedData = localStorage.getItem('tcg_cards');
+            if (cachedData && allCards.length === 0) {
+                allCards = JSON.parse(cachedData);
+                renderCards(allCards);
+                updateSummary(allCards);
+                loadingEl.style.display = 'none';
+            } else if (allCards.length === 0) {
+                loadingEl.style.display = 'flex';
+            }
             
             try {
                 const response = await fetch(API_URL);
@@ -201,14 +243,13 @@
                 
                 if (result.status === "success") {
                     allCards = result.data;
+                    localStorage.setItem('tcg_cards', JSON.stringify(allCards));
                     renderCards(allCards);
                     updateSummary(allCards);
-                } else {
-                    alert("เกิดข้อผิดพลาด: " + result.message);
                 }
                 loadingEl.style.display = 'none';
             } catch (error) {
-                loadingEl.innerHTML = "<span class='text-rose-400 text-xs'>ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาตรวจสอบ API_URL</span>";
+                loadingEl.innerHTML = "<span class='text-rose-400 text-xs'>โหลดข้อมูลจากเซิร์ฟเวอร์ไม่สำเร็จ กำลังใช้ข้อมูลสำรองในเครื่อง</span>";
             }
         }
 
@@ -231,17 +272,18 @@
             cards.forEach((card, index) => {
                 const imgSrc = getSafeImageUrl(card.image);
                 grid.innerHTML += `
-                    <div onclick="openCardDetail(${index})" class="bg-slate-900/80 hover:bg-slate-900 border border-slate-800/80 hover:border-violet-500/50 p-3.5 rounded-3xl shadow-xl flex flex-col justify-between cursor-pointer transition transform active:scale-95 group">
+                    <div class="bg-slate-900/80 hover:bg-slate-900 border border-slate-800/80 hover:border-violet-500/50 p-3.5 rounded-3xl shadow-xl flex flex-col justify-between transition group">
                         <div>
-                            <div class="w-full h-36 bg-slate-950/50 rounded-2xl mb-2.5 flex items-center justify-center p-2 overflow-hidden border border-slate-800/40 group-hover:border-violet-500/30 transition">
-                                <img src="${imgSrc}" alt="${card.name}" class="h-full object-contain rounded-lg pointer-events-none drop-shadow-md" onerror="this.src='https://placehold.co/150/1e293b/94a3b8?text=No+Image'">
+                            <div onclick="openCardDetail(${index})" class="w-full h-36 bg-slate-950/50 rounded-2xl mb-2.5 flex items-center justify-center p-2 overflow-hidden border border-slate-800/40 group-hover:border-violet-500/30 transition cursor-pointer relative">
+                                <img src="${imgSrc}" alt="${card.name}" class="h-full object-contain rounded-lg drop-shadow-md" onerror="this.src='https://placehold.co/150/1e293b/94a3b8?text=No+Image'">
+                                <button onclick="event.stopPropagation(); openImageLightbox('${imgSrc}')" class="absolute bottom-2 right-2 bg-slate-900/80 hover:bg-violet-600 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs backdrop-blur-sm transition shadow">
+                                    🔍
+                                </button>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-[9px] bg-violet-500/10 text-violet-300 border border-violet-500/20 px-2 py-0.5 rounded-md font-semibold">${card.set || '-'}</span>
-                            </div>
-                            <h2 class="text-xs font-bold text-slate-100 truncate mt-1.5">${card.name}</h2>
+                            <span class="text-[9px] bg-violet-500/10 text-violet-300 border border-violet-500/20 px-2 py-0.5 rounded-md font-semibold">${card.set || '-'}</span>
+                            <h2 onclick="openCardDetail(${index})" class="text-xs font-bold text-slate-100 truncate mt-1.5 cursor-pointer hover:text-violet-300 transition">${card.name}</h2>
                         </div>
-                        <div class="flex justify-between items-center mt-3 pt-2.5 border-t border-slate-800/60">
+                        <div onclick="openCardDetail(${index})" class="flex justify-between items-center mt-3 pt-2.5 border-t border-slate-800/60 cursor-pointer">
                             <span class="text-xs font-black text-emerald-400">฿${Number(card.price || 0).toLocaleString()}</span>
                             <span class="text-[10px] bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded-full font-semibold">มี ${card.qty} ใบ</span>
                         </div>
@@ -267,21 +309,20 @@
         }
 
         function toggleAddModal(isOpen) {
-            const modal = document.getElementById('add-modal');
-            if (isOpen) {
-                modal.classList.remove('hidden');
-            } else {
-                modal.classList.add('hidden');
-            }
+            document.getElementById('add-modal').classList.toggle('hidden', !isOpen);
         }
 
         function toggleDetailModal(isOpen) {
-            const modal = document.getElementById('detail-modal');
-            if (isOpen) {
-                modal.classList.remove('hidden');
-            } else {
-                modal.classList.add('hidden');
-            }
+            document.getElementById('detail-modal').classList.toggle('hidden', !isOpen);
+        }
+
+        function toggleImageModal(isOpen) {
+            document.getElementById('image-modal').classList.toggle('hidden', !isOpen);
+        }
+
+        function openImageLightbox(imgUrl) {
+            document.getElementById('lightbox-img').src = getSafeImageUrl(imgUrl);
+            toggleImageModal(true);
         }
 
         function openCardDetail(index) {
@@ -309,95 +350,73 @@
 
         async function submitCard(event) {
             event.preventDefault();
-            const submitBtn = document.getElementById('submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.innerText = "กำลังบันทึก...";
-
+            
             const newCard = {
+                id: "CARD-" + Date.now(),
                 name: document.getElementById('card-name').value,
                 set: document.getElementById('card-set').value,
-                price: document.getElementById('card-price').value,
-                qty: document.getElementById('card-qty').value,
-                image: document.getElementById('card-image').value
+                price: Number(document.getElementById('card-price').value),
+                qty: Number(document.getElementById('card-qty').value),
+                image: document.getElementById('card-image').value,
+                rowIndex: allCards.length + 2
             };
 
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newCard)
-                });
+            allCards.unshift(newCard);
+            renderCards(allCards);
+            updateSummary(allCards);
+            localStorage.setItem('tcg_cards', JSON.stringify(allCards));
+            
+            document.getElementById('add-form').reset();
+            toggleAddModal(false);
+            showToast("เพิ่มการ์ดสำเร็จเรียบร้อย!");
 
-                alert("เพิ่มการ์ดสำเร็จ!");
-                document.getElementById('add-form').reset();
-                toggleAddModal(false);
-                setTimeout(loadData, 1500);
-            } catch (error) {
-                alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = "บันทึกการ์ดใหม่";
-            }
+            fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newCard) });
         }
 
         async function updateCard(event) {
             event.preventDefault();
-            const updateBtn = document.getElementById('update-btn');
-            updateBtn.disabled = true;
-            updateBtn.innerText = "กำลังอัปเดต...";
-
-            const updatedData = {
+            
+            const rowIndex = Number(document.getElementById('edit-row-index').value);
+            const updatedCard = {
                 action: 'update',
-                rowIndex: document.getElementById('edit-row-index').value,
+                rowIndex: rowIndex,
                 id: document.getElementById('edit-card-id').value,
                 name: document.getElementById('edit-name').value,
                 set: document.getElementById('edit-set').value,
-                price: document.getElementById('edit-price').value,
-                qty: document.getElementById('edit-qty').value,
+                price: Number(document.getElementById('edit-price').value),
+                qty: Number(document.getElementById('edit-qty').value),
                 image: document.getElementById('edit-image').value
             };
 
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatedData)
-                });
-
-                alert("อัปเดตข้อมูลสำเร็จ!");
-                toggleDetailModal(false);
-                setTimeout(loadData, 1500);
-            } catch (error) {
-                alert("เกิดข้อผิดพลาดในการอัปเดต");
-            } finally {
-                updateBtn.disabled = false;
-                updateBtn.innerText = "บันทึกการแก้ไข";
+            const index = allCards.findIndex(c => c.rowIndex === rowIndex);
+            if (index !== -1) {
+                allCards[index] = { ...allCards[index], ...updatedCard };
             }
+
+            renderCards(allCards);
+            updateSummary(allCards);
+            localStorage.setItem('tcg_cards', JSON.stringify(allCards));
+            toggleDetailModal(false);
+            showToast("อัปเดตข้อมูลสำเร็จเรียบร้อย!");
+
+            fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedCard) });
         }
 
         async function deleteCard() {
             if (!confirm("คุณต้องการลบการ์ดใบนี้ออกจากคลังใช่หรือไม่?")) return;
 
-            const rowIndex = document.getElementById('edit-row-index').value;
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'delete', rowIndex: rowIndex })
-                });
+            const rowIndex = Number(document.getElementById('edit-row-index').value);
+            
+            allCards = allCards.filter(c => c.rowIndex !== rowIndex);
+            renderCards(allCards);
+            updateSummary(allCards);
+            localStorage.setItem('tcg_cards', JSON.stringify(allCards));
+            toggleDetailModal(false);
+            showToast("ลบการ์ดสำเร็จเรียบร้อย!", "warning");
 
-                alert("ลบการ์ดสำเร็จ!");
-                toggleDetailModal(false);
-                setTimeout(loadData, 1500);
-            } catch (error) {
-                alert("เกิดข้อผิดพลาดในการลบข้อมูล");
-            }
+            fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', rowIndex: rowIndex }) });
         }
 
-        // โหลดข้อมูลเริ่มต้น
         loadData();
     </script>
 </body>

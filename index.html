@@ -250,7 +250,19 @@
             }
         }
 
-        function getSafeImageUrl(url) { return (!url || url.includes('via.placeholder.com')) ? 'https://placehold.co/150/f9fafb/9ca3af?text=No+Image' : url; }
+                function getSafeImageUrl(url) { 
+            if (!url || url.includes('via.placeholder.com')) {
+                return 'https://placehold.co/150/f9fafb/9ca3af?text=No+Image'; 
+            }
+            // ระบบแปลงลิงก์ Google Drive แบบเก่า ให้เป็นแบบ Thumbnail อัตโนมัติ (แก้รูประบบเก่าที่พัง)
+            if (url.includes('drive.google.com/uc')) {
+                const match = url.match(/id=([a-zA-Z0-9_-]+)/);
+                if (match && match[1]) {
+                    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+                }
+            }
+            return url; 
+        }
 
         // 🌟 อัปโหลดรูปไป Google Drive
         function uploadImageToDrive(event) {

@@ -648,52 +648,87 @@
     binderSlots = [];
 
     if (totalCards > 0) {
-        // --- สร้าง Map ของการ์ดทั้งหมดในชุดนี้ โดย Key = เลขการ์ด ---
+        // สร้าง Map ของการ์ดทั้งหมด Key = เลขการ์ด
         const cardMap = {};
         setCards.forEach(c => {
             const n = parseCardNum(c.cardNumber);
             if (n !== null) cardMap[n] = c;
         });
 
-        // 1. สร้างช่อง 1 ถึง totalCards (การ์ดปกติ)
+        // --- กลุ่ม 1: การ์ดปกติ เลข 1 ถึง totalCards ---
         for (let i = 1; i <= totalCards; i++) {
             binderSlots.push({ num: i, card: cardMap[i] || null });
         }
 
-        // 2. นำการ์ดพิเศษ (เลขเกิน totalCards) มาต่อท้าย เรียงตามเลข
-        const specialCards = setCards
+        // --- กลุ่ม 2: การ์ดพิเศษตัวเลข (เลขเกิน totalCards) ---
+        const specialNumCards = setCards
             .filter(c => {
                 const n = parseCardNum(c.cardNumber);
                 return n !== null && n > totalCards;
             })
             .sort((a, b) => parseCardNum(a.cardNumber) - parseCardNum(b.cardNumber));
 
-        if (specialCards.length > 0) {
-            // ใส่เส้นแบ่ง "การ์ดพิเศษ" (null slot พิเศษ)
-            // เติมให้หน้าปัจจุบันเต็มก่อน แล้วค่อยขึ้นหน้าใหม่
-            const remainder = binderSlots.length % CARDS_PER_PAGE;
-            if (remainder !== 0) {
-                for (let i = 0; i < (CARDS_PER_PAGE - remainder); i++) {
-                    binderSlots.push({ num: null, card: null, isFiller: true });
+        // --- กลุ่ม 3: การ์ดไม่ใช่ตัวเลข (PROMO, PR-001, A, SP ฯลฯ) ---
+        const nonNumCards = setCards
+            .filter(c => {
+                const raw = String(c.cardNumber || '').trim();
+                if (!raw) return false;
+                const n = parseCardNum(raw);
+                // ถือว่า "ไม่ใช่ตัวเลข" ถ้า parse ไม่ได้ หรือ ตัวเลขน้อยมาก
+                // แต่ raw มีตัวอักษรอยู่ด้วย (เช่น PR-001 จะมีตัวอักษร P, R)
+                return n === null || /[a-zA-Z]/.test(raw.split('/')[0]);
+            })
+            .sort((a, b) => String(a.cardNumber).localeCompare(String(b.cardNumber)));
+
+        // Helper: เติม filler ให้หน้าปัจจุบันเต็ม แล้วค่อยใส่ header หน้าใหม่
+        const padToNextPage = () => {
+            const rem = binderSlots.length % CARDS_PER_PAGE;
+            if (rem !== 0) {
+                for (let i = 0; i < (CARDS_PER_PAGE - rem); i++) {
+                    binderSlots.push({ isFiller: true });
                 }
             }
-            // ใส่ header บอกว่าเป็นช่วงการ์ดพิเศษ
-            binderSlots.push({ num: null, card: null, isSpecialHeader: true });
-            // เติม filler ให้ครบ 1 หน้าที่เหลือ
-            for (let i = 1; i < CARDS_PER_PAGE; i++) {
-                binderSlots.push({ num: null, card: null, isFiller: true });
-            }
-            // ใส่การ์ดพิเศษจริงๆ (ไม่มีช่องว่าง เรียงต่อกันเลย)
-            specialCards.forEach(c => {
+        };
+
+        // ใส่กลุ่ม 2 (ตัวเลขพิเศษ)
+        if (specialNumCards.length > 0) {
+            padToNextPage();
+            // Header บอกว่าเป็นการ์ดพิเศษ
+            binderSlots.push({ isSpecialHeader: true, label: '⭐ การ์ดพิเศษ', sublabel: 'Secret / Extra' });
+            for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
+            specialNumCards.forEach(c => {
                 binderSlots.push({ num: parseCardNum(c.cardNumber), card: c, isSpecial: true });
             });
         }
 
+        // ใส่กลุ่ม 3 (ไม่ใช่ตัวเลข)
+        if (nonNumCards.length > 0) {
+            padToNextPage();
+            binderSlots.push({ isSpecialHeader: true, label: '🎴 การ์ดพิเศษ', sublabel: 'Promo / Non-Numbered' });
+            for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
+            nonNumCards.forEach(c => {
+                binderSlots.push({ num: null, numLabel: String(c.cardNumber || '?'), card: c, isSpecial: true });
+            });
+        }
+
     } else {
-        // ไม่มี cardNumber → เรียงตามลำดับที่มี
-        binderSlots = setCards
-            .sort((a, b) => parseCardNum(a.cardNumber) - parseCardNum(b.cardNumber))
-            .map(c => ({ num: parseCardNum(c.cardNumber), card: c }));
+        // ไม่มีจำนวนรวม → แบ่งเป็นตัวเลข vs ไม่ใช่ตัวเลขแล้วเรียงต่อกัน
+        const numCards = setCards
+            .filter(c => parseCardNum(c.cardNumber) !== null && !/[a-zA-Z]/.test(String(c.cardNumber||'').split('/')[0]))
+            .sort((a, b) => parseCardNum(a.cardNumber) - parseCardNum(b.cardNumber));
+        const nonNum = setCards
+            .filter(c => parseCardNum(c.cardNumber) === null || /[a-zA-Z]/.test(String(c.cardNumber||'').split('/')[0]))
+            .sort((a, b) => String(a.cardNumber).localeCompare(String(b.cardNumber)));
+
+        numCards.forEach(c => binderSlots.push({ num: parseCardNum(c.cardNumber), card: c }));
+
+        if (nonNum.length > 0) {
+            const rem = binderSlots.length % CARDS_PER_PAGE;
+            if (rem !== 0) for (let i = 0; i < (CARDS_PER_PAGE - rem); i++) binderSlots.push({ isFiller: true });
+            binderSlots.push({ isSpecialHeader: true, label: '🎴 การ์ดพิเศษ', sublabel: 'Promo / Non-Numbered' });
+            for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
+            nonNum.forEach(c => binderSlots.push({ num: null, numLabel: String(c.cardNumber || '?'), card: c, isSpecial: true }));
+        }
     }
 
     binderPage = 0;
@@ -720,38 +755,46 @@
     for (let i = 0; i < CARDS_PER_PAGE; i++) {
         const slot = pageSlots[i];
 
-        // ช่องที่ไม่มีข้อมูล (padding ท้ายหน้า)
         if (!slot) {
             grid.innerHTML += `<div class="card-slot" style="visibility:hidden"></div>`;
             continue;
         }
 
-        // 🌟 Header บอก "การ์ดพิเศษ" — แสดงเป็น Banner คาดทั้งหน้า
+        // Header บอกประเภทการ์ดพิเศษ
         if (slot.isSpecialHeader) {
             grid.innerHTML += `
                 <div class="card-slot flex items-center justify-center bg-gray-900 rounded-xl border-0" style="aspect-ratio:unset; min-height:0">
-                    <div class="text-center text-white">
-                        <div style="font-size:20px">⭐</div>
-                        <div class="font-extrabold text-[11px] mt-1">การ์ดพิเศษ</div>
-                        <div class="text-[9px] opacity-60">Secret Rare</div>
+                    <div class="text-center text-white px-2">
+                        <div style="font-size:20px">${slot.label?.split(' ')[0] || '⭐'}</div>
+                        <div class="font-extrabold text-[11px] mt-1 leading-tight">${slot.label?.split(' ').slice(1).join(' ') || 'การ์ดพิเศษ'}</div>
+                        <div class="text-[9px] opacity-60 mt-0.5">${slot.sublabel || ''}</div>
                     </div>
                 </div>`;
             continue;
         }
 
-        // ช่อง Filler (padding ก่อนหน้าการ์ดพิเศษ)
+        // Filler ช่องว่างที่ซ่อน
         if (slot.isFiller) {
             grid.innerHTML += `<div class="card-slot" style="visibility:hidden"></div>`;
             continue;
         }
 
         const card = slot.card;
-        const numLabel = slot.num !== null
-            ? `<span class="slot-number">${String(slot.num).padStart(3, '0')}${slot.isSpecial ? ' ★' : ''}</span>`
+
+        // สร้าง label สำหรับเลขบนการ์ด
+        // slot.numLabel = ตัวอักษร (PR-001), slot.num = ตัวเลข, null = ไม่มีเลข
+        let displayNum = '';
+        if (slot.numLabel) {
+            displayNum = slot.numLabel; // ตัวอักษรพิเศษ เช่น PR-001
+        } else if (slot.num !== null && slot.num !== undefined) {
+            displayNum = String(slot.num).padStart(3, '0'); // เลขปกติ เช่น 054
+        }
+
+        const numLabel = displayNum
+            ? `<span class="slot-number">${displayNum}${slot.isSpecial ? ' ★' : ''}</span>`
             : '';
 
         if (!card) {
-            // ช่องว่าง — ยังไม่มีการ์ดใบนี้
             grid.innerHTML += `
                 <div class="card-slot is-missing">
                     ${numLabel}

@@ -224,7 +224,7 @@
                         <option value="newest">🔥 ล่าสุด</option><option value="price_desc">💰 ราคา ↓</option><option value="price_asc">📉 ราคา ↑</option><option value="name_asc">🔤 ชื่อ A-Z</option>
                     </select>
                     <select id="filter-rarity" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
-                        <option value="all">ระดับทั้งหมด</option><option value="UR">UR</option><option value="SAR">SAR</option><option value="SR">SR</option><option value="AR">AR</option><option value="RR">RR</option>
+                        <option value="all">ระดับทั้งหมด</option><option value="RGB">RGB</option><option value="FUR">FUR</option><option value="UR">UR</option><option value="SAR">SAR</option><option value="SR">SR</option><option value="AR">AR</option><option value="RR">RR</option><option value="R">R</option><option value="U">U</option><option value="C">C</option>
                     </select>
                 </div>
             </div>
@@ -694,7 +694,7 @@
         if (specialNumCards.length > 0) {
             padToNextPage();
             // Header บอกว่าเป็นการ์ดพิเศษ
-            binderSlots.push({ isSpecialHeader: true, label: '⭐ การ์ดพิเศษ', sublabel: 'Secret / Extra' });
+            binderSlots.push({ isSpecialHeader: true, label: '⭐ การ์ดพิเศษ (AR,SAR,UR,FUR,RGB)', sublabel: 'Secret / Extra' });
             for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
             specialNumCards.forEach(c => {
                 binderSlots.push({ num: parseCardNum(c.cardNumber), card: c, isSpecial: true });
@@ -704,7 +704,7 @@
         // ใส่กลุ่ม 3 (ไม่ใช่ตัวเลข)
         if (nonNumCards.length > 0) {
             padToNextPage();
-            binderSlots.push({ isSpecialHeader: true, label: '🎴 การ์ดพิเศษ', sublabel: 'Promo / Non-Numbered' });
+            binderSlots.push({ isSpecialHeader: true, label: '🎴 การ์ดพิเศษ (Energy,etc.)', sublabel: 'Promo / Non-Numbered' });
             for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
             nonNumCards.forEach(c => {
                 binderSlots.push({ num: null, numLabel: String(c.cardNumber || '?'), card: c, isSpecial: true });

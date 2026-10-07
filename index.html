@@ -1,857 +1,1374 @@
 <!DOCTYPE html>
-<html lang="th" class="h-full bg-slate-900">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pokémon TCG Vault</title>
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="TCG Vault">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#f9fafb">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTgxOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTElIiBmaWxsPSIjZmZmZmZmIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAwIiBmb250LXdlaWdodD0iYm9sZCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VENHPC90ZXh0Pjwvc3ZnPg==">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTgxOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTElIiBmaWxsPSIjZmZmZmZmIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAwIiBmb250LXdlaWdodD0iYm9sZCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VENHPC90ZXh0Pjwvc3ZnPg==">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { 
-            font-family: 'Prompt', sans-serif; 
-            overscroll-behavior-y: none;
-            background-color: #f8fafc;
-        }
-        ::-webkit-scrollbar { display: none; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        input:disabled, select:disabled { 
-            background-color: #f1f5f9 !important; opacity: 0.8 !important; color: #64748b !important; 
-        }
+        input:disabled, select:disabled { background-color: #f9fafb !important; opacity: 1 !important; color: #4b5563 !important; }
 
         /* ===== BINDER STYLES ===== */
         #view-binder {
-            display: none; flex-direction: column; height: 100dvh; overflow: hidden;
-            background: #0f172a; padding-bottom: max(5rem, calc(4.5rem + env(safe-area-inset-bottom)));
+            display: none;
+            flex-direction: column;
+            height: 100dvh;
+            overflow: hidden;
+            background: #f3f4f6;
+            padding-bottom: 80px; /* ให้พ้น bottom nav */
         }
         #view-binder.active { display: flex; }
 
         .binder-book {
-            flex: 1; display: flex; overflow: hidden; position: relative;
-            touch-action: pan-y; padding: 8px 12px 0 12px;
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+            touch-action: pan-y;
         }
 
+        /* สันปก (binding spine) */
         .binder-spine {
-            width: 16px; flex-shrink: 0; background: linear-gradient(to right, #334155, #64748b, #334155);
-            border-radius: 8px 0 0 8px; display: flex; flex-direction: column;
-            align-items: center; justify-content: space-around; padding: 12px 0;
-            box-shadow: inset -2px 0 4px rgba(0,0,0,0.4); z-index: 10;
+            width: 18px;
+            flex-shrink: 0;
+            background: linear-gradient(to right, #9ca3af, #d1d5db, #9ca3af);
+            border-radius: 6px 0 0 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            padding: 16px 0;
+            box-shadow: inset -3px 0 6px rgba(0,0,0,0.15);
         }
         .binder-ring {
-            width: 12px; height: 12px; background: radial-gradient(circle at 35% 35%, #f1f5f9, #475569);
-            border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            width: 14px; height: 14px;
+            background: radial-gradient(circle at 35% 35%, #e5e7eb, #6b7280);
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
+        /* หน้ากระดาษ */
         .binder-page-content {
-            flex: 1; background: #ffffff; overflow: hidden; display: flex; flex-direction: column;
-            border-radius: 0 16px 16px 0; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+            flex: 1;
+            background: white;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: 0 12px 12px 0;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.08), inset 8px 0 16px rgba(0,0,0,0.04);
         }
 
+        /* Grid การ์ด 4 แถวแนวนอน x 2 แนวตั้ง = 8 ช่อง */
         .binder-grid {
-            flex: 1; display: grid; grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(4, 1fr); gap: 6px; padding: 8px; overflow: hidden;
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 8px;
+            padding: 12px;
+            overflow: hidden;
         }
 
         .card-slot {
-            border-radius: 10px; overflow: hidden; position: relative;
-            border: 1.5px dashed #cbd5e1; background: #f8fafc; cursor: pointer;
-            transition: all 0.15s ease; display: flex; align-items: center; justify-content: center;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            border: 1.5px dashed #d1d5db;
+            background: #f9fafb;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            aspect-ratio: 2.5 / 3.5;
         }
-        .card-slot:active { transform: scale(0.96); }
-        .card-slot.has-card { border: 1px solid #e2e8f0; background: #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        .card-slot:active { transform: scale(0.95); }
+        .card-slot.has-card {
+            border: 1.5px solid #e5e7eb;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .card-slot.has-card:active { box-shadow: 0 0 0 2px #111; }
         .card-slot.is-missing {
-            background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 6px, #f1f5f9 6px, #f1f5f9 12px);
+            background: repeating-linear-gradient(
+                45deg, #f9fafb, #f9fafb 4px, #f3f4f6 4px, #f3f4f6 8px
+            );
+            cursor: default;
         }
-        .card-slot img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
 
+        .card-slot img {
+            width: 100%; height: 100%;
+            object-fit: contain;
+            padding: 2px;
+        }
         .slot-number {
-            position: absolute; top: 3px; left: 3px; background: rgba(15, 23, 42, 0.75); color: #ffffff;
-            font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 4px; z-index: 5;
+            position: absolute; top: 2px; left: 2px;
+            background: rgba(0,0,0,0.6); color: white;
+            font-size: 8px; font-weight: 700;
+            padding: 1px 4px; border-radius: 4px;
+            line-height: 1.4;
         }
         .slot-qty {
-            position: absolute; bottom: 3px; right: 3px; background: #0f172a; color: #ffffff;
-            font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 4px; z-index: 5;
+            position: absolute; bottom: 2px; right: 2px;
+            background: #111827; color: white;
+            font-size: 8px; font-weight: 700;
+            padding: 1px 4px; border-radius: 4px;
+        }
+        .slot-wanted-badge {
+            position: absolute; inset: 0;
+            background: rgba(251, 191, 36, 0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
         }
         .slot-missing-label {
-            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-            font-size: 10px; color: #94a3b8; font-weight: 600; flex-direction: column; gap: 2px;
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; color: #9ca3af; font-weight: 600;
+            flex-direction: column; gap: 2px;
         }
 
+        /* Pagination bar */
         .binder-pagination {
-            flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
-            padding: 6px 12px; border-top: 1px solid #f1f5f9; background: #ffffff;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 14px;
+            border-top: 1px solid #f3f4f6;
+            background: white;
         }
+        .page-btn {
+            padding: 6px 14px;
+            background: #f3f4f6;
+            border-radius: 10px;
+            font-size: 12px; font-weight: 700;
+            color: #374151;
+            transition: background 0.15s;
+            border: none; cursor: pointer;
+        }
+        .page-btn:active { background: #e5e7eb; }
+        .page-btn:disabled { opacity: 0.35; cursor: default; }
 
-        /* Holo 3D Effect */
-        .card-holo {
-            position: relative; overflow: hidden; transform-style: preserve-3d;
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-        }
-        .card-holo::after {
-            content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0;
-            background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.5) 35%, rgba(236,72,153,0.3) 45%, rgba(6,182,212,0.3) 55%, transparent 80%);
-            mix-blend-mode: color-dodge; transition: opacity 0.3s ease; border-radius: inherit;
-        }
-        .card-holo.active-tilt::after { opacity: 1; }
+.card-holo {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+.card-holo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        115deg, 
+        transparent 20%, 
+        rgba(255, 255, 255, 0.4) 35%, 
+        rgba(255, 0, 128, 0.25) 45%, 
+        rgba(0, 255, 255, 0.25) 55%, 
+        rgba(255, 255, 0, 0.25) 65%, 
+        transparent 80%
+    );
+    opacity: 0;
+    mix-blend-mode: color-dodge;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    border-radius: inherit;
+}
+.card-holo:hover::after {
+    opacity: 1;
+}
 
-        @keyframes slideLeft { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes slideRight { from { transform: translateX(-40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .slide-in-left { animation: slideLeft 0.18s ease-out; }
-        .slide-in-right { animation: slideRight 0.18s ease-out; }
+        @keyframes slideLeft { from { transform: translateX(60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideRight { from { transform: translateX(-60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .slide-in-left { animation: slideLeft 0.2s ease; }
+        .slide-in-right { animation: slideRight 0.2s ease; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-900 selection:bg-indigo-500 selection:text-white">
+<body class="bg-gray-50 text-gray-900 selection:bg-gray-200 selection:text-gray-900">
 
     <datalist id="set-list"></datalist>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-md text-white px-5 py-2.5 rounded-full shadow-2xl text-xs font-semibold z-[100] transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2 border border-slate-700/50">
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-full shadow-2xl text-xs font-semibold z-[100] transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2">
         <span id="toast-icon">✨</span> <span id="toast-message">ดำเนินการสำเร็จ</span>
     </div>
 
     <!-- ===================== VIEW: HOME ===================== -->
-    <div id="view-home" class="min-h-screen bg-slate-50 pb-[calc(6rem+env(safe-area-inset-bottom))] block">
-        <!-- Header -->
-        <header class="bg-slate-900 pt-[calc(1rem+env(safe-area-inset-top))] pb-7 px-5 rounded-b-[2rem] shadow-xl text-white relative overflow-hidden">
-            <div class="absolute -top-12 -right-12 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="max-w-md mx-auto relative z-10">
-                <div class="flex justify-between items-center mb-5">
+    <div id="view-home" class="min-h-screen pb-28">
+        <header class="bg-white pt-8 pb-6 px-6 rounded-b-[2.5rem] shadow-sm border-b border-gray-200">
+            <div class="max-w-md mx-auto">
+                <div class="flex justify-between items-center mb-6">
                     <div>
-                        <span class="text-[9px] uppercase tracking-widest text-indigo-300 font-bold bg-indigo-950/80 px-2.5 py-0.5 rounded-full border border-indigo-800/60">Thai Collection</span>
-                        <h1 class="text-xl font-black tracking-tight mt-1 text-white flex items-center gap-1.5">
-                            TCG Vault <span class="text-xs font-normal text-slate-400">⚡</span>
-                        </h1>
+                        <span class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold bg-gray-100 px-3 py-1 rounded-full border border-gray-200">Thai Collection</span>
+                        <h1 class="text-2xl font-extrabold tracking-tight mt-2 text-gray-900">TCG Vault</h1>
                     </div>
-                    <div class="flex gap-1.5">
-                        <button id="auth-btn-login" onclick="loginAdmin()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center border border-slate-700/60 text-slate-300 transition text-xs">🔒</button>
-                        <button id="auth-btn-logout" onclick="logoutAdmin()" class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center border border-slate-700/60 text-slate-300 hover:text-red-400 transition text-xs hidden">🔓</button>
-                        <button onclick="openStatsModal()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center border border-slate-700/60 text-slate-300 transition text-xs">📊</button>
-                        <button onclick="loadData()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center border border-slate-700/60 text-slate-300 transition text-xs">🔄</button>
+                    <div class="flex gap-2">
+                        <button id="auth-btn-login" onclick="loginAdmin()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition text-sm">🔒</button>
+                        <button id="auth-btn-logout" onclick="logoutAdmin()" class="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 hover:text-red-500 transition text-sm hidden">🔓</button>
+                        <button onclick="openStatsModal()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition">📊</button>
+                        <button onclick="loadData()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition">🔄</button>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-slate-800/90 backdrop-blur-sm p-3.5 rounded-2xl border border-slate-700/60 shadow-inner">
-                        <p class="text-[10px] text-slate-400 font-medium">การ์ดในคลัง</p>
-                        <p id="total-cards" class="text-xl font-black mt-0.5 text-white">0</p>
+                <div class="grid grid-cols-2 gap-3.5">
+                    <div class="bg-gray-50 p-4 rounded-3xl border border-gray-200">
+                        <p class="text-[11px] text-gray-500 font-medium">การ์ดทั้งหมดในคลัง</p>
+                        <p id="total-cards" class="text-2xl font-black mt-1 text-gray-900">0 <span class="text-xs font-normal text-gray-500">ใบ</span></p>
                     </div>
-                    <div class="bg-slate-800/90 backdrop-blur-sm p-3.5 rounded-2xl border border-slate-700/60 shadow-inner">
-                        <p class="text-[10px] text-slate-400 font-medium">มูลค่ารวม</p>
-                        <p id="total-price" class="text-xl font-black mt-0.5 text-emerald-400">฿0</p>
+                    <div class="bg-gray-50 p-4 rounded-3xl border border-gray-200">
+                        <p class="text-[11px] text-gray-500 font-medium">มูลค่าประเมินรวม</p>
+                        <p id="total-price" class="text-2xl font-black mt-1 text-emerald-600">฿0</p>
                     </div>
                 </div>
             </div>
         </header>
 
-        <main class="max-w-md mx-auto px-4 pt-4 space-y-4">
-            <!-- Search & Filters -->
-            <div class="space-y-2.5">
+        <main class="max-w-md mx-auto p-5 space-y-4">
+            <div class="space-y-3">
                 <div class="relative flex items-center">
-                    <span class="absolute left-3.5 text-slate-400 text-xs">🔍</span>
-                    <input type="text" id="search-input" placeholder="ค้นหาชื่อการ์ด, ซีรีส์..." class="w-full pl-9 pr-9 py-2.5 bg-white placeholder-slate-400 rounded-xl shadow-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-medium" oninput="applyFilters()">
-                    <button id="clear-search-btn" onclick="clearSearch()" class="absolute right-3 text-slate-400 text-xs hidden hover:text-slate-700">✕</button>
+                    <span class="absolute left-4 text-gray-400">🔍</span>
+                    <input type="text" id="search-input" placeholder="ค้นหาการ์ด, ซีรีส์..." class="w-full pl-11 pr-10 py-3.5 bg-white placeholder-gray-400 rounded-2xl shadow-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm" oninput="applyFilters()">
+                    <button id="clear-search-btn" onclick="clearSearch()" class="absolute right-4 text-gray-400 hidden">✕</button>
                 </div>
-                <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-                    <button onclick="exportForSale()" class="bg-slate-900 text-white text-[11px] font-semibold rounded-xl px-3 py-1.5 flex-shrink-0 shadow-sm">📋 โพสต์ขาย</button>
-                    <button onclick="openWTSGenerator()" class="bg-indigo-600 text-white text-[11px] font-semibold rounded-xl px-3 py-1.5 flex-shrink-0 shadow-sm">🖼️ สร้างรูปภาพ</button>
-                    <select id="filter-set" onchange="applyFilters()" class="bg-white border border-slate-200 text-[11px] font-semibold rounded-xl px-2.5 py-1.5 flex-shrink-0 outline-none"><option value="">📁 ทุกชุด</option></select>
-                    <select id="filter-status" onchange="applyFilters()" class="bg-white border border-slate-200 text-[11px] rounded-xl px-2.5 py-1.5 flex-shrink-0 outline-none">
-                        <option value="all">ทั้งหมด</option><option value="owned">✅ มีในคลัง</option><option value="wishlist">🎯 Wishlist</option>
+                <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                    <button onclick="exportForSale()" class="bg-gray-900 text-white text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-black">📋 โพสต์ขาย</button>
+                    <button onclick="openWTSGenerator()" class="bg-indigo-600 text-white text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-indigo-700 shadow-sm">🖼️ สร้างรูปภาพ</button>
+                    <!-- 🌟 Dropdown กรองตาม Set -->
+                    <select id="filter-set" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none min-w-0 max-w-[130px]">
+                        <option value="">📁 ทุกชุด</option>
                     </select>
-                    <select id="sort-select" onchange="applyFilters()" class="bg-white border border-slate-200 text-[11px] rounded-xl px-2.5 py-1.5 flex-shrink-0 outline-none">
-                        <option value="newest">🔥 ล่าสุด</option><option value="price_desc">💰 ราคา ↓</option><option value="price_asc">📉 ราคา ↑</option>
+                    <select id="filter-status" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
+                        <option value="all">สถานะทั้งหมด</option><option value="owned">✅ มีในคลัง</option><option value="wishlist">🎯 Wishlist</option>
+                    </select>
+                    <select id="sort-select" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
+                        <option value="newest">🔥 ล่าสุด</option><option value="price_desc">💰 ราคา ↓</option><option value="price_asc">📉 ราคา ↑</option><option value="name_asc">🔤 ชื่อ A-Z</option>
+                    </select>
+                    <select id="filter-rarity" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
+                        <option value="all">ระดับทั้งหมด</option><option value="RGB">RGB</option><option value="FUR">FUR</option><option value="UR">UR</option><option value="SAR">SAR</option><option value="SR">SR</option><option value="AR">AR</option><option value="RR">RR</option><option value="R">R</option><option value="U">U</option><option value="C">C</option>
+                    </select>
+                    <select id="filter-lang" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
+                        <option value="all">ทุกภาษา</option><option value="TH">ไทย (TH)</option><option value="JP">ญี่ปุ่น (JP)</option><option value="EN">อังกฤษ (EN)</option>
+                    </select>
+                    <select id="filter-condition" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
+                        <option value="all">ทุกสภาพ</option><option value="NM">NM</option><option value="LP">LP</option><option value="MP">MP</option><option value="HP">HP</option><option value="Graded">Graded</option>
                     </select>
                 </div>
-            </div>
-
-            <!-- Loading -->
-            <div id="loading" class="hidden flex-col justify-center items-center py-10 space-y-3">
-                <div class="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-                <p class="text-xs text-slate-500 font-medium animate-pulse">กำลังโหลดข้อมูล...</p>
-            </div>
-
-            <!-- Grid Container -->
-            <div id="card-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 pb-4"></div>
-        </main>
-    </div>
+                <div id="showcase-section" class="mb-6 space-y-4">
+                    <div id="card-of-the-day-container" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-4 text-white shadow-xl border border-indigo-500/30 flex items-center gap-4 relative overflow-hidden">
+                        <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                        <div id="cotd-img-box" class="w-20 h-28 bg-black/40 rounded-xl flex-shrink-0 flex items-center justify-center border border-white/10 p-1">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5 mb-1">
+                                <span class="text-[10px] font-extrabold bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full uppercase tracking-wider">🌟 Card of the Day</span>
+                            </div>
+                            <h3 id="cotd-name" class="font-bold text-sm truncate text-amber-200">กำลังสุ่มการ์ดเด่น...</h3>
+                            <p id="cotd-details" class="text-xs text-slate-300 mt-0.5 truncate">-</p>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span id="cotd-price" class="text-sm font-black text-emerald-400">฿0</span>
+                                <span id="cotd-rarity" class="text-[10px] bg-white/10 px-2 py-0.5 rounded border border-white/10 text-slate-300">UR</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h2 class="text-xs font-bold text-gray-700 flex items-center gap-1">
+                                <span>🏆 Top Valued Cards</span>
+                                <span class="text-[10px] text-gray-400 font-normal">(สุดยอดการ์ดประจำคลัง)</span>
+                            </h2>
+                        </div>
+                        <div id="hall-of-fame-grid" class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                        </div>
+                    </div>
+                </div>
+                            </div>
+                            <div id="loading" class="grid grid-cols-2 gap-4">
+                                <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-56"></div>
+                                <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-56"></div>
+                            </div>
+                            <div id="card-grid" class="grid grid-cols-2 gap-4 hidden"></div>
+                        </main>
+                    </div>
 
     <!-- ===================== VIEW: BINDER ===================== -->
     <div id="view-binder">
-        <header class="bg-slate-900 pt-[calc(1rem+env(safe-area-inset-top))] pb-3 px-4 text-white flex items-center justify-between shadow-md z-20">
-            <h2 class="text-sm font-bold flex items-center gap-2"><span class="text-lg">📖</span> Binder View</h2>
-            <select id="binder-set-select" onchange="initBinder()" class="bg-slate-800 border border-slate-700 text-white text-[11px] rounded-lg px-2 py-1 outline-none max-w-[140px] truncate"></select>
-        </header>
+        <!-- Binder Header -->
+        <div class="bg-white px-4 pt-10 pb-3 flex items-center gap-3 border-b border-gray-100 shadow-sm flex-shrink-0">
+            <div class="flex-1 min-w-0">
+                <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">แฟ้มสะสมการ์ด</p>
+                <select id="binder-set-select" onchange="loadBinderSet()" class="w-full bg-transparent text-sm font-extrabold text-gray-900 outline-none mt-0.5 truncate border-0 p-0">
+                    <option value="">-- เลือกชุดการ์ด (Set) --</option>
+                </select>
+            </div>
+            <div id="binder-stats" class="flex-shrink-0 w-2/5">
+                <div class="flex justify-between items-end mb-1">
+                    <p class="text-[10px] text-gray-400 font-semibold">ความคืบหน้า</p>
+                    <p id="binder-owned-count" class="text-xs font-extrabold text-emerald-600">0/0 (0%)</p>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2">
+                    <div id="binder-progress-bar" class="bg-emerald-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <button onclick="showMissingCards()" class="w-full bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100 text-[10px] font-bold py-1.5 rounded-lg transition shadow-sm">
+                    🔍 ลิสต์ใบที่ขาด
+                </button>
+            </div>
+        </div>
 
-        <div class="binder-book" id="binder-touch-area">
+        <!-- Binder Book -->
+        <div class="binder-book" id="binder-book">
+            <!-- Spine -->
             <div class="binder-spine">
-                <div class="binder-ring"></div><div class="binder-ring"></div><div class="binder-ring"></div>
+                <div class="binder-ring"></div>
+                <div class="binder-ring"></div>
+                <div class="binder-ring"></div>
+                <div class="binder-ring"></div>
+                <div class="binder-ring"></div>
+                <div class="binder-ring"></div>
             </div>
-            <div class="binder-page-content" id="binder-page-content">
-                <div id="binder-grid" class="binder-grid">
-                    <!-- Slots rendered by JS -->
+            <!-- Page -->
+            <div class="binder-page-content">
+                <div class="binder-grid" id="binder-grid">
+                    <!-- การ์ดแสดงผลที่นี่ -->
                 </div>
+                <!-- Pagination -->
                 <div class="binder-pagination">
-                    <button id="btn-prev-page" class="page-btn" onclick="changeBinderPage(-1)">◀ ก่อนหน้า</button>
-                    <span id="binder-page-indicator" class="text-[10px] font-bold text-slate-500">หน้า 1 / 1</span>
-                    <button id="btn-next-page" class="page-btn" onclick="changeBinderPage(1)">ถัดไป ▶</button>
+                    <button class="page-btn" id="binder-prev" onclick="changePage(-1)">◀ ก่อนหน้า</button>
+                    <div class="text-center">
+                        <span id="binder-page-info" class="text-xs font-bold text-gray-700">หน้า 1 / 1</span>
+                        <div id="binder-page-dots" class="flex gap-1 justify-center mt-1"></div>
+                    </div>
+                    <button class="page-btn" id="binder-next" onclick="changePage(1)">ถัดไป ▶</button>
                 </div>
             </div>
+        </div>
+
+        <p class="text-center text-[10px] text-gray-400 py-1 flex-shrink-0">⬜ = ยังไม่มี | ปัดซ้าย/ขวาเพื่อเปลี่ยนหน้า</p>
+    </div>
+
+    <!-- ===================== MODAL: Add/Edit ===================== -->
+    <div id="detail-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl relative">
+            <div id="upload-overlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 hidden flex-col items-center justify-center rounded-[2.5rem]">
+                <div class="w-10 h-10 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin mb-3"></div>
+                <p class="text-sm font-bold text-gray-700">กำลังย่อและอัปโหลดรูป...</p>
+            </div>
+            <div class="flex justify-between items-center pb-2">
+                <h2 id="modal-title" class="font-bold text-lg text-gray-900">จัดการการ์ด</h2>
+                <button onclick="toggleModal(false)" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 text-lg">&times;</button>
+            </div>
+            <div class="flex justify-center bg-gray-50 p-4 rounded-2xl border border-gray-100 cursor-pointer" onclick="openImageLightbox(document.getElementById('modal-image-preview').src)">
+                <img id="modal-image-preview" src="" class="h-40 object-contain rounded-lg drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
+            </div>
+            <form id="card-form" onsubmit="submitForm(event)" class="space-y-3.5 pt-2">
+                <input type="hidden" id="form-mode"> <input type="hidden" id="form-rowIndex"> <input type="hidden" id="form-id">
+                <div>
+                    <label class="text-[11px] font-semibold text-gray-500">ชื่อการ์ด</label>
+                    <input type="text" id="form-name" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">ชุด / ซีรีส์</label>
+                        <input type="text" id="form-set" list="set-list" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">ลำดับการ์ด</label>
+                        <input type="text" id="form-cardNumber" placeholder="เช่น 054/130" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">ความหายาก</label>
+                        <select id="form-rarity" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                            <option value="-">-</option><option value="RGB">RGB</option><option value="FUR">FUR</option><option value="UR">UR</option><option value="SAR">SAR</option><option value="SR">SR</option><option value="AR">AR</option><option value="RR">RR</option><option value="R">R</option><option value="U">U</option><option value="C">C</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">ภาษา</label>
+                        <select id="form-lang" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                            <option value="TH">ไทย (TH)</option><option value="JP">ญี่ปุ่น (JP)</option><option value="EN">อังกฤษ (EN)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">ต้นทุนซื้อ (บาท)</label>
+                        <input type="number" id="form-buyPrice" placeholder="0" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">ราคาประเมิน/ขาย (บาท)</label>
+                        <input type="number" id="form-price" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">จำนวน</label>
+                        <input type="number" id="form-qty" required min="1" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-gray-500">สภาพการ์ด</label>
+                    <select id="form-condition" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                        <option value="NM">NM (สวยไม่มีตำหนิ)</option><option value="LP">LP (มีรอยขนแมว)</option><option value="MP">MP (มีรอยชัดเจน)</option><option value="HP">HP (ตำหนิหนัก)</option><option value="Graded">Graded (มีเกรด)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-gray-500">แท็ก (คั่นด้วยลูกน้ำ)</label>
+                    <input type="text" id="form-tags" placeholder="เช่น #Pikachu, Promo, #Charizard" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                </div>
+                <label id="wishlist-wrapper" class="flex items-center space-x-2 bg-gray-100 p-3 rounded-xl border border-gray-200 cursor-pointer">
+                    <input type="checkbox" id="form-wishlist" class="w-4 h-4 rounded border-gray-300">
+                    <span class="text-xs font-semibold text-gray-700">🎯 บันทึกเป็น Wishlist (การ์ดที่กำลังตามหา)</span>
+                </label>
+                <div id="image-upload-section" class="bg-gray-50 border border-gray-200 rounded-xl p-3">
+                    <label class="text-[11px] font-semibold text-gray-500 mb-2 block">รูปภาพการ์ด</label>
+                    <input type="file" id="form-file" accept="image/*" class="text-xs w-full file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-black cursor-pointer text-gray-500 mb-2" onchange="compressAndUploadImage(event)">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] text-gray-400">หรือ URL:</span>
+                        <input type="url" id="form-image" placeholder="https://..." class="flex-1 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-gray-900" oninput="document.getElementById('modal-image-preview').src = getSafeImageUrl(this.value)">
+                    </div>
+                </div>
+                <div id="form-actions-wrapper" class="flex gap-3 pt-4">
+                    <button type="button" id="btn-delete" onclick="deleteCard()" class="w-1/3 py-3.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 rounded-xl font-semibold text-sm transition hidden">ลบ</button>
+                    <button type="submit" class="flex-1 py-3.5 bg-gray-900 hover:bg-black text-white rounded-xl font-semibold text-sm shadow-md transition">บันทึกข้อมูล</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- ===================== BOTTOM DOCK ===================== -->
-    <nav class="fixed bottom-0 w-full bg-white/80 backdrop-blur-xl border-t border-slate-200/50 pb-[env(safe-area-inset-bottom)] z-40">
-        <div class="max-w-md mx-auto flex justify-around items-center h-16 px-2 relative">
-            <button onclick="switchView('home')" class="nav-btn w-14 flex flex-col items-center justify-center gap-1 text-indigo-600 transition">
-                <span class="text-xl">📱</span><span class="text-[9px] font-bold">แกลลอรี่</span>
-            </button>
-            <div class="relative -top-5">
-                <button onclick="openAddModal()" class="w-14 h-14 bg-indigo-600 rounded-full text-white flex items-center justify-center shadow-lg shadow-indigo-600/30 border-4 border-white hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all">
-                    <span class="text-2xl leading-none mb-1">+</span>
-                </button>
+    <!-- Missing Cards Modal -->
+    <div id="missing-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-100">
+            <div class="flex justify-between items-center pb-3 border-b border-gray-100 mb-4">
+                <h2 class="font-bold text-lg text-gray-900 flex items-center gap-2">🔍 ใบที่ขาด</h2>
+                <button onclick="document.getElementById('missing-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-900 text-2xl">&times;</button>
             </div>
-            <button onclick="switchView('binder')" class="nav-btn w-14 flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-700 transition">
-                <span class="text-xl">📖</span><span class="text-[9px] font-bold">แฟ้มการ์ด</span>
+            <p class="text-xs text-gray-500 mb-2">ชุด: <span id="missing-set-name" class="font-bold text-gray-900"></span></p>
+            <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 max-h-40 overflow-y-auto mb-4 scrollbar-hide">
+                <p id="missing-list-text" class="text-sm font-mono text-gray-700 break-words leading-relaxed"></p>
+            </div>
+            <button onclick="copyMissingList()" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl hover:bg-black transition text-sm">
+                📋 คัดลอกไปโพสต์รับซื้อ (WTB)
             </button>
         </div>
-    </nav>
+    </div>
 
-    <!-- ===================== MODALS ===================== -->
-    
-    <!-- Add/Edit Modal -->
-    <div id="card-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex-col justify-end sm:justify-center items-center sm:p-4">
-        <div class="bg-white w-full max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
-                <h2 id="modal-title" class="text-sm font-bold text-slate-800">✨ เพิ่มการ์ดใหม่</h2>
-                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold">✕</button>
+    <!-- WTS/WTB Generator Modal -->
+    <div id="wts-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl border border-gray-100 max-h-[92vh] overflow-y-auto">
+            <div class="flex justify-between items-center pb-2 border-b border-gray-100 mb-3">
+                <h2 class="font-bold text-base text-gray-900">🖼️ สร้างรูปภาพ WTS / WTB</h2>
+                <button onclick="document.getElementById('wts-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-900 text-2xl">&times;</button>
             </div>
-            <div class="p-5 overflow-y-auto space-y-4">
-                <input type="hidden" id="card-id">
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="col-span-2">
-                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">รูปภาพ (URL) *</label>
-                        <input type="url" id="image-url" required placeholder="https://..." class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-                    <div class="col-span-2">
-                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">ชื่อการ์ด *</label>
-                        <input type="text" id="card-name" required placeholder="Pikachu" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+            
+            <div class="space-y-3">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-500">ประเภท</label>
+                        <select id="wts-mode" onchange="generateWTSCanvas()" class="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold">
+                            <option value="WTS">🔥 WTS (ขาย)</option>
+                            <option value="WTB">🎯 WTB (ตั้งรับ)</option>
+                        </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">เลขซีรีส์</label>
-                        <input type="text" id="series-code" list="set-list" placeholder="sv4a" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">เลขการ์ด (ลำดับ/ทั้งหมด)</label>
-                        <input type="text" id="card-number" placeholder="342/190" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">ระดับความหายาก</label>
-                        <input type="text" id="rarity" placeholder="AR, SAR, UR" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none uppercase">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">ราคาประเมิน (บาท)</label>
-                        <input type="number" id="price" placeholder="0" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none">
-                    </div>
-                    <div class="col-span-2">
-                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">สถานะ</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="flex items-center gap-2 p-2 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
-                                <input type="radio" name="status" value="owned" checked class="text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-xs font-semibold">✅ มีในคลัง</span>
-                            </label>
-                            <label class="flex items-center gap-2 p-2 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
-                                <input type="radio" name="status" value="wishlist" class="text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-xs font-semibold">🎯 Wishlist</span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-span-2">
-                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">จำนวน</label>
-                        <input type="number" id="quantity" value="1" min="1" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none">
+                        <label class="text-[10px] font-bold text-gray-500">ชื่อผู้ขาย/ช่องทางติดต่อ</label>
+                        <input type="text" id="wts-contact" placeholder="FB: MyName / Tel" oninput="generateWTSCanvas()" class="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs">
                     </div>
                 </div>
-            </div>
-            <div class="p-4 border-t border-slate-100 bg-slate-50 flex gap-2 justify-end pb-[calc(1rem+env(safe-area-inset-bottom))]">
-                <button type="button" id="btn-delete" onclick="deleteCard()" class="hidden bg-red-100 text-red-600 px-4 py-2 rounded-xl text-xs font-bold">ลบ</button>
-                <button type="button" onclick="closeModal()" class="bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-xs font-bold">ยกเลิก</button>
-                <button type="button" onclick="saveCard()" class="bg-indigo-600 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-md shadow-indigo-200">บันทึกข้อมูล</button>
+
+                <div class="border border-gray-200 rounded-2xl p-2 bg-gray-50 flex justify-center">
+                    <canvas id="wts-canvas" width="600" height="750" class="w-full h-auto rounded-xl shadow-sm border border-gray-200"></canvas>
+                </div>
+
+                <button onclick="downloadWTSImage()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center gap-2">
+                    <span>💾 ดาวน์โหลดรูปภาพ (PNG)</span>
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Stats Modal -->
-    <div id="stats-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex-col justify-end sm:justify-center items-center sm:p-4">
-        <div class="bg-white w-full max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl p-5 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-sm font-bold text-slate-800">📊 สถิติแบบละเอียด</h2>
-                <button onclick="closeStatsModal()" class="text-slate-400 font-bold">✕</button>
+    <div id="stats-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-100">
+            <div class="flex justify-between items-center pb-4 border-b border-gray-100 mb-4">
+                <h2 class="font-bold text-lg text-gray-900">📊 สถิติคอลเลกชัน</h2>
+                <button onclick="document.getElementById('stats-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-900 text-2xl">&times;</button>
             </div>
-            <div id="stats-content" class="space-y-3 text-xs text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                <!-- Injected via JS -->
-            </div>
+            <div id="stats-content" class="space-y-4"></div>
         </div>
     </div>
 
-    <!-- WTS / WTB Generator Modal -->
-    <div id="wts-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 hidden flex-col justify-center items-center p-4">
-        <div class="bg-white w-full max-w-[400px] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-            <div class="flex justify-between items-center p-3 border-b bg-slate-50">
-                <h2 class="text-sm font-bold">🖼️ WTS / WTB Generator</h2>
-                <button onclick="closeWTSGenerator()" class="text-slate-400 font-bold text-sm">✕</button>
-            </div>
-            <div class="p-3 bg-slate-100 flex justify-center">
-                <canvas id="wts-canvas" width="1080" height="1080" class="w-full max-w-[300px] h-auto rounded-xl shadow-md border border-slate-200 bg-white"></canvas>
-            </div>
-            <div class="p-4 space-y-3">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500">พิมพ์หัวข้อ (เช่น WTS, WTB)</label>
-                    <input type="text" id="wts-title" value="WTS - ปล่อยการ์ด" class="w-full border rounded-lg px-2 py-1.5 text-xs mt-1" oninput="drawCanvas()">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500">ข้อความเพิ่มเติม / เครดิต</label>
-                    <input type="text" id="wts-sub" value="Facebook: TCG Vault" class="w-full border rounded-lg px-2 py-1.5 text-xs mt-1" oninput="drawCanvas()">
-                </div>
-                <button onclick="downloadCanvas()" class="w-full bg-indigo-600 text-white py-2 rounded-xl text-xs font-bold shadow-md">ดาวน์โหลดรูปภาพ</button>
-            </div>
-        </div>
+    <!-- Lightbox -->
+    <div id="image-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[70] hidden flex items-center justify-center p-4" onclick="toggleImageModal(false)">
+        <img id="lightbox-img" src="" class="max-h-[80vh] w-auto object-contain rounded-2xl shadow-2xl">
     </div>
 
-    <!-- ===================== JAVASCRIPT ===================== -->
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-5 left-5 right-5 bg-white/95 backdrop-blur-xl border border-gray-200 py-3 px-6 shadow-[0_10px_40px_rgba(0,0,0,0.1)] max-w-sm mx-auto rounded-[2rem] flex justify-around items-center z-40">
+        <button onclick="switchTab('home')" id="nav-btn-home" class="flex flex-col items-center text-gray-900 transition">
+            <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+            <span class="text-[10px] font-semibold">หน้าแรก</span>
+        </button>
+        <div class="w-px h-8 bg-gray-200"></div>
+        <button onclick="switchTab('binder')" id="nav-btn-binder" class="flex flex-col items-center text-gray-400 hover:text-gray-900 transition">
+            <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+            <span class="text-[10px] font-semibold">แฟ้มการ์ด</span>
+        </button>
+        <div class="w-px h-8 bg-gray-200"></div>
+        <button id="nav-add-btn" onclick="openAddForm()" class="flex flex-col items-center text-gray-400 hover:text-gray-900 transition hidden">
+            <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+            <span class="text-[10px] font-semibold">เพิ่มการ์ด</span>
+        </button>
+        <button id="nav-login-hint" onclick="loginAdmin()" class="flex flex-col items-center text-gray-400 hover:text-gray-900 transition">
+            <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            <span class="text-[10px] font-semibold">ผู้ดูแล</span>
+        </button>
+    </nav>
+
     <script>
-        // Configuration
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyxUtqszvNC3tsfCnp2pH2dMJplBRX6KKX1f-JqzK3q57aAylJ3BOkGEFUJ0bxAI8e-/exec';
-        const ADMIN_PIN = '001412';
-        
-        // State Variables
-        let cardsData = [];
-        let filteredCards = [];
-        let isAdmin = localStorage.getItem('isAdmin') === 'true';
-        
-        // Binder State
-        let binderSet = "";
-        let binderCards = [];
-        let currentBinderPage = 0;
-        let totalBinderPages = 1;
+        // ===== PWA Manifest =====
+        const manifest = { "name": "Pokémon TCG Vault", "short_name": "TCG Vault", "display": "standalone", "background_color": "#f9fafb", "theme_color": "#f9fafb", "icons": [{ "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTgxOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTElIiBmaWxsPSIjZmZmZmZmIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAwIiBmb250LXdlaWdodD0iYm9sZCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VENHPC90ZXh0Pjwvc3ZnPg==", "sizes": "512x512", "type": "image/svg+xml" }] };
+        const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+        document.head.insertAdjacentHTML('beforeend', `<link rel="manifest" href="${URL.createObjectURL(blob)}">`);
 
-        // Elements
-        const DOM = {
-            grid: document.getElementById('card-grid'),
-            loading: document.getElementById('loading'),
-            totalCards: document.getElementById('total-cards'),
-            totalPrice: document.getElementById('total-price'),
-            searchInput: document.getElementById('search-input'),
-            clearBtn: document.getElementById('clear-search-btn'),
-            setFilter: document.getElementById('filter-set'),
-            authLogin: document.getElementById('auth-btn-login'),
-            authLogout: document.getElementById('auth-btn-logout'),
-            views: { home: document.getElementById('view-home'), binder: document.getElementById('view-binder') }
-        };
+        // ===== Config =====
+        const API_URL = "https://script.google.com/macros/s/AKfycbyxUtqszvNC3tsfCnp2pH2dMJplBRX6KKX1f-JqzK3q57aAylJ3BOkGEFUJ0bxAI8e-/exec";
+        const CARDS_PER_PAGE = 8;
+        let allCards = [], currentFiltered = [];
+        let adminPin = localStorage.getItem('tcg_pin') || '';
+        let binderSlots = [];      // [{num, card|null}] ช่องทั้งหมดในแฟ้ม
+        let binderPage = 0;
+        let touchStartX = 0;
 
-        // Initialize App
-        window.onload = () => {
-            checkAuthUI();
-            const localData = localStorage.getItem('tcg_data');
-            if (localData) {
-                cardsData = JSON.parse(localData);
-                updateFiltersAndUI();
-            }
-            loadData();
-        };
-
-        function showToast(msg, icon="✨") {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-message').innerText = msg;
-            document.getElementById('toast-icon').innerText = icon;
-            toast.classList.remove('opacity-0', 'pointer-events-none');
-            toast.classList.add('opacity-100', '-translate-y-2');
-            setTimeout(() => {
-                toast.classList.remove('opacity-100', '-translate-y-2');
-                toast.classList.add('opacity-0', 'pointer-events-none');
-            }, 3000);
+        // ===== Auth =====
+        function checkAuthUI() {
+            const ok = adminPin === "001412"; 
+            document.getElementById('nav-add-btn').classList.toggle('hidden', !ok);
+            document.getElementById('nav-login-hint').classList.toggle('hidden', ok);
+            document.getElementById('auth-btn-login').classList.toggle('hidden', ok);
+            document.getElementById('auth-btn-logout').classList.toggle('hidden', !ok);
+            document.querySelectorAll('#card-form input:not([type=hidden]), #card-form select').forEach(el => el.disabled = !ok);
+            document.getElementById('image-upload-section').classList.toggle('hidden', !ok);
+            document.getElementById('form-actions-wrapper').classList.toggle('hidden', !ok);
+            ['opacity','pointerEvents'].forEach(p => document.getElementById('wishlist-wrapper').style[p] = ok ? '' : p === 'opacity' ? '0.6' : 'none');
         }
-
-        // --- AUTH ---
+        
         function loginAdmin() {
-            const pin = prompt('Enter Admin PIN:');
-            if (pin === ADMIN_PIN) {
-                isAdmin = true;
-                localStorage.setItem('isAdmin', 'true');
-                checkAuthUI();
-                showToast('เข้าสู่ระบบ Admin สำเร็จ', '🔓');
+            const pin = prompt("🔐 รหัสผ่านผู้ดูแลระบบ:");
+            if (pin === "001412") { 
+                adminPin = pin; 
+                localStorage.setItem('tcg_pin', pin); 
+                checkAuthUI(); 
+                showToast("ปลดล็อกโหมดผู้ดูแลแล้ว"); 
             } else if (pin !== null) {
-                alert('PIN ไม่ถูกต้อง');
+                showToast("รหัสผ่านไม่ถูกต้อง", "error");
             }
         }
         function logoutAdmin() {
-            isAdmin = false;
-            localStorage.setItem('isAdmin', 'false');
-            checkAuthUI();
-            showToast('ออกจากระบบ', '🔒');
-        }
-        function checkAuthUI() {
-            DOM.authLogin.classList.toggle('hidden', isAdmin);
-            DOM.authLogout.classList.toggle('hidden', !isAdmin);
+            adminPin = ''; localStorage.removeItem('tcg_pin'); checkAuthUI(); showToast("ออกจากระบบแล้ว"); toggleModal(false);
         }
 
-        // --- DATA FETCHING ---
+        // ===== Toast =====
+        function showToast(msg, type = "success") {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            document.getElementById('toast-icon').innerText = type === "success" ? "✨" : "⚠️";
+            t.classList.remove('opacity-0','pointer-events-none','bg-gray-900','bg-red-500');
+            t.classList.add('opacity-100', type === "success" ? 'bg-gray-900' : 'bg-red-500');
+            setTimeout(() => { t.classList.remove('opacity-100'); t.classList.add('opacity-0','pointer-events-none'); }, 2500);
+        }
+
+        // ===== Image =====
+        function getSafeImageUrl(url) {
+            if (!url || url.trim() === '' || url.includes('via.placeholder')) return 'https://placehold.co/150/f9fafb/9ca3af?text=?';
+            if (url.includes('drive.google.com/uc')) {
+                const m = url.match(/id=([a-zA-Z0-9_-]+)/);
+                if (m) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
+            }
+            return url;
+        }
+
+        // ===== Datalist & Dropdowns =====
+        function updateSetDropdowns() {
+            // 🌟 KEY FIX: ใช้ .trim() ตอนดึงชื่อ Set เพื่อกันช่องว่างซ่อน
+            const uniqueSets = [...new Set(allCards.map(c => String(c.set || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'th'));
+            document.getElementById('set-list').innerHTML = uniqueSets.map(s => `<option value="${s}">`).join('');
+
+            // Filter set (หน้าแรก)
+            const fs = document.getElementById('filter-set');
+            const prev = fs.value;
+            fs.innerHTML = '<option value="">📁 ทุกชุด</option>' + uniqueSets.map(s => `<option value="${s}">${s}</option>`).join('');
+            if (uniqueSets.includes(prev)) fs.value = prev;
+
+            // Binder set select
+            const bs = document.getElementById('binder-set-select');
+            const prevB = bs.value;
+            bs.innerHTML = '<option value="">-- เลือกชุดการ์ด --</option>' + uniqueSets.map(s => `<option value="${s}">${s}</option>`).join('');
+            if (uniqueSets.includes(prevB)) { bs.value = prevB; }
+        }
+
+        // ===== Load Data =====
         async function loadData() {
-            DOM.grid.innerHTML = '';
-            DOM.loading.style.display = 'flex';
-            if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
-                DOM.loading.style.display = 'none';
-                showToast('กรุณาใส่ SCRIPT_URL ในโค้ดก่อน', '⚠️');
-                return;
+    checkAuthUI();
+    document.getElementById('loading').style.display = 'grid';
+    document.getElementById('card-grid').style.display = 'none';
+
+    const cache = localStorage.getItem('tcg_cards');
+    if (cache) {
+        try {
+            allCards = JSON.parse(cache);
+            updateSetDropdowns(); applyFilters(); updateSummary();
+            renderCardOfTheDay();
+            renderHallOfFame();
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('card-grid').style.display = 'grid';
+        } catch(e) { localStorage.removeItem('tcg_cards'); }
+    }
+
+    const fetchWithTimeout = (url, ms = 12000) => {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), ms);
+        return fetch(url, { signal: ctrl.signal })
+            .finally(() => clearTimeout(timer));
+    };
+
+    const tryFetch = async (attempt = 1) => {
+        try {
+            showToast(attempt > 1 ? `กำลังลองใหม่ครั้งที่ ${attempt}...` : '🔄 ซิงค์ข้อมูล...', 'success');
+            const r = await fetchWithTimeout(API_URL);
+            const j = await r.json();
+            if (j.status === "success") {
+                allCards = j.data;
+                localStorage.setItem('tcg_cards', JSON.stringify(allCards));
+                updateSetDropdowns(); applyFilters(); updateSummary();
+                renderCardOfTheDay();
+                renderHallOfFame(); 
+                showToast(`✅ โหลดสำเร็จ (${allCards.length} ใบ)`);
+                if (document.getElementById('binder-set-select').value) loadBinderSet();
             }
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=read`);
-                const data = await res.json();
-                if(data.status === 'success') {
-                    cardsData = data.data;
-                    localStorage.setItem('tcg_data', JSON.stringify(cardsData));
-                    updateFiltersAndUI();
-                    showToast('อัปเดตข้อมูลล่าสุดแล้ว', '🔄');
-                }
-            } catch (err) {
-                console.error(err);
-                if(cardsData.length > 0) showToast('โหลดออฟไลน์ (เชื่อมต่อล้มเหลว)', '📶');
-            } finally {
-                DOM.loading.style.display = 'none';
-            }
-        }
-
-        // --- FILTERS & RENDER HOME ---
-        function updateFiltersAndUI() {
-            const sets = [...new Set(cardsData.map(c => c.series).filter(Boolean))].sort();
-            const setHtml = '<option value="">📁 ทุกชุด</option>' + sets.map(s => `<option value="${s}">${s}</option>`).join('');
-            DOM.setFilter.innerHTML = setHtml;
-            document.getElementById('binder-set-select').innerHTML = setHtml;
-            document.getElementById('set-list').innerHTML = sets.map(s => `<option value="${s}">`).join('');
-            applyFilters();
-        }
-
-        function clearSearch() {
-            DOM.searchInput.value = '';
-            DOM.clearBtn.classList.add('hidden');
-            applyFilters();
-        }
-
-        function applyFilters() {
-            const q = DOM.searchInput.value.toLowerCase();
-            const set = DOM.setFilter.value;
-            const status = document.getElementById('filter-status').value;
-            const sort = document.getElementById('sort-select').value;
-
-            DOM.clearBtn.classList.toggle('hidden', q === '');
-
-            filteredCards = cardsData.filter(c => {
-                const mSearch = !q || c.name.toLowerCase().includes(q) || (c.series && c.series.toLowerCase().includes(q)) || (c.rarity && c.rarity.toLowerCase().includes(q));
-                const mSet = !set || c.series === set;
-                const mStatus = status === 'all' || c.status === status;
-                return mSearch && mSet && mStatus;
-            });
-
-            // Sorting
-            filteredCards.sort((a, b) => {
-                if (sort === 'price_desc') return (b.price||0) - (a.price||0);
-                if (sort === 'price_asc') return (a.price||0) - (b.price||0);
-                if (sort === 'name_asc') return a.name.localeCompare(b.name);
-                return new Date(b.id) - new Date(a.id); // newest (id = timestamp)
-            });
-
-            renderGrid();
-        }
-
-        function renderGrid() {
-            let totalVal = 0, totalQty = 0;
-            DOM.grid.innerHTML = filteredCards.map(c => {
-                if(c.status === 'owned') {
-                    totalVal += (Number(c.price) || 0) * (Number(c.qty) || 1);
-                    totalQty += Number(c.qty) || 1;
-                }
-                const isOwned = c.status === 'owned';
-                return `
-                    <div class="card-holo group relative bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer" onclick="openEditModal('${c.id}')">
-                        <div class="absolute top-2 right-2 flex flex-col gap-1 z-10 items-end">
-                            ${isOwned ? `<span class="bg-emerald-500/90 text-white text-[9px] font-bold px-1.5 py-0.5 rounded backdrop-blur-md">มี ${c.qty||1}</span>` 
-                                      : `<span class="bg-rose-500/90 text-white text-[9px] font-bold px-1.5 py-0.5 rounded backdrop-blur-md">WANT</span>`}
-                            ${c.rarity ? `<span class="bg-slate-900/80 text-white text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">${c.rarity}</span>` : ''}
-                        </div>
-                        <div class="aspect-[63/88] p-2 bg-slate-50 flex items-center justify-center">
-                            <img src="${c.imageUrl}" alt="${c.name}" class="w-full h-full object-contain filter ${!isOwned ? 'grayscale opacity-60' : 'drop-shadow-md'}" loading="lazy">
-                        </div>
-                        <div class="p-2 border-t border-slate-100">
-                            <h3 class="text-[10px] font-bold text-slate-800 truncate">${c.name}</h3>
-                            <div class="flex justify-between items-center mt-1">
-                                <span class="text-[9px] font-medium text-slate-400">${c.series||'-'} ${c.cardNumber ? `(${c.cardNumber})` : ''}</span>
-                                <span class="text-[10px] font-bold text-indigo-600">฿${c.price||0}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('') || `<div class="col-span-full py-10 text-center text-xs text-slate-400">ไม่พบการ์ดที่ค้นหา</div>`;
-
-            DOM.totalCards.innerText = totalQty;
-            DOM.totalPrice.innerText = `฿${totalVal.toLocaleString()}`;
-            
-            // Apply Holo 3D Touch/Mouse Logic
-            document.querySelectorAll('.card-holo').forEach(card => {
-                const handleMove = (e) => {
-                    const rect = card.getBoundingClientRect();
-                    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-                    const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-                    const rx = -(y / rect.height - 0.5) * 20; 
-                    const ry = (x / rect.width - 0.5) * 20;
-                    card.style.transform = `perspective(600px) rotateX(${rx}deg) rotateY(${ry}deg) scale3d(1.02, 1.02, 1.02)`;
-                    card.classList.add('active-tilt');
-                };
-                const handleLeave = () => {
-                    card.style.transform = `perspective(600px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)`;
-                    card.classList.remove('active-tilt');
-                };
-                card.addEventListener('mousemove', handleMove);
-                card.addEventListener('mouseleave', handleLeave);
-                card.addEventListener('touchmove', handleMove, {passive: true});
-                card.addEventListener('touchend', handleLeave);
-            });
-        }
-
-        // --- NAVIGATION ---
-        function switchView(view) {
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('text-indigo-600'));
-            if(view === 'home') {
-                DOM.views.home.style.display = 'block';
-                DOM.views.binder.classList.remove('active');
-                document.querySelectorAll('.nav-btn')[0].classList.add('text-indigo-600');
+        } catch(err) {
+            if (attempt < 2) {
+                // ลองใหม่ 1 ครั้งหลังรอ 2 วินาที
+                await new Promise(res => setTimeout(res, 2000));
+                return tryFetch(attempt + 1);
             } else {
-                DOM.views.home.style.display = 'none';
-                DOM.views.binder.classList.add('active');
-                document.querySelectorAll('.nav-btn')[1].classList.add('text-indigo-600');
-                if(!binderSet) {
-                    const setSelect = document.getElementById('binder-set-select');
-                    if(setSelect.options.length > 1) {
-                        setSelect.selectedIndex = 1;
-                        initBinder();
-                    }
-                }
+                // ลองทุกอย่างแล้วยังไม่ได้ แสดงข้อความแต่ไม่ค้าง
+                showToast(cache ? '⚠️ ใช้ข้อมูล Cache (ออฟไลน์)' : '❌ โหลดไม่ได้ กรุณา 🔄', 'error');
             }
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('card-grid').style.display = 'grid';
+        }
+    };
+
+    await tryFetch();
+}
+
+        // ===== Summary =====
+        function updateSummary() {
+            const owned = allCards.filter(c => String(c.isWishlist) !== 'true');
+            document.getElementById('total-cards').innerHTML = `${owned.reduce((s,c) => s+Number(c.qty||0),0)} <span class="text-xs text-gray-500">ใบ</span>`;
+            document.getElementById('total-price').innerText = `฿${owned.reduce((s,c) => s+(Number(c.price||0)*Number(c.qty||0)),0).toLocaleString()}`;
         }
 
-        // --- BINDER VIEW LOGIC ---
-        function initBinder() {
-            binderSet = document.getElementById('binder-set-select').value;
-            if(!binderSet) return;
-            binderCards = cardsData.filter(c => c.series === binderSet);
-            // Sort by card number string (basic extraction)
-            binderCards.sort((a,b) => {
-                const numA = parseInt((a.cardNumber||"0").split('/')[0]) || 0;
-                const numB = parseInt((b.cardNumber||"0").split('/')[0]) || 0;
-                return numA - numB;
+        // ===== Filters (Home) =====
+        function applyFilters() {
+            const kw = document.getElementById('search-input').value.toLowerCase().trim();
+            const sort = document.getElementById('sort-select').value;
+            const rarity = document.getElementById('filter-rarity').value;
+            const status = document.getElementById('filter-status').value;
+            const filterSetVal = document.getElementById('filter-set').value.trim();
+            const lang = document.getElementById('filter-lang').value;
+            const condition = document.getElementById('filter-condition').value;
+
+            document.getElementById('clear-search-btn').classList.toggle('hidden', kw.length === 0);
+
+            currentFiltered = allCards.filter(card => {
+                const isW = String(card.isWishlist) === 'true';
+                if (status === 'owned' && isW) return false;
+                if (status === 'wishlist' && !isW) return false;
+                if (filterSetVal && String(card.set || '').trim() !== filterSetVal) return false;
+
+                if (lang !== 'all' && card.language !== lang) return false;
+                if (condition !== 'all' && card.condition !== condition) return false;
+
+                const matchKw = !kw || String(card.name).toLowerCase().includes(kw) || String(card.set).toLowerCase().includes(kw) || String(card.cardNumber||'').toLowerCase().includes(kw) || String(card.tags||'').toLowerCase().includes(kw);
+                
+                return matchKw && (rarity === 'all' || card.rarity === rarity);
             });
-            
-            // Assume 8 slots per page (4x2 layout fit for mobile)
-            totalBinderPages = Math.max(1, Math.ceil(binderCards.length / 8));
-            currentBinderPage = 0;
-            renderBinderPage('none');
+            currentFiltered.sort((a,b) => {
+                if (sort === 'price_desc') return (Number(b.price)||0) - (Number(a.price)||0);
+                if (sort === 'price_asc') return (Number(a.price)||0) - (Number(b.price)||0);
+                if (sort === 'name_asc') return String(a.name).localeCompare(String(b.name));
+                return 0;
+            });
+            renderCards(currentFiltered);
         }
 
-        function renderBinderPage(animClass) {
-            const grid = document.getElementById('binder-grid');
-            const start = currentBinderPage * 8;
-            const pageCards = binderCards.slice(start, start + 8);
-            
-            grid.className = `binder-grid ${animClass}`;
-            
-            let html = '';
-            for(let i=0; i<8; i++) {
-                const c = pageCards[i];
-                if(c) {
-                    const isMissing = c.status === 'wishlist';
-                    html += `
-                        <div class="card-slot ${isMissing ? 'is-missing' : 'has-card'}" onclick="openEditModal('${c.id}')">
-                            <span class="slot-number">${start + i + 1}</span>
-                            ${c.qty > 1 && !isMissing ? `<span class="slot-qty">x${c.qty}</span>` : ''}
-                            <img src="${c.imageUrl}" class="${isMissing ? 'opacity-30 grayscale' : ''}" loading="lazy">
-                            ${isMissing ? `<div class="slot-wanted-badge">🎯</div>` : ''}
+        function clearSearch() { document.getElementById('search-input').value = ''; applyFilters(); }
+
+        function renderCards(cards) {
+            const g = document.getElementById('card-grid'); g.innerHTML = '';
+            if (!cards.length) return g.innerHTML = '<div class="col-span-2 text-center text-gray-400 py-12 text-xs">ไม่พบการ์ดที่ค้นหา</div>';
+            cards.forEach(card => {
+                const img = getSafeImageUrl(card.image);
+                const isW = String(card.isWishlist) === 'true';
+                const cNum = card.cardNumber ? `<span class="text-[9px] bg-gray-50 text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded">No.${card.cardNumber}</span>` : '';
+                const rb = card.rarity && card.rarity !== '-' ? `<span class="text-[9px] bg-gray-900 text-white px-1.5 py-0.5 rounded font-bold">${card.rarity}</span>` : '';
+                const tagHtml = card.tags ? String(card.tags).split(',').map(t => `<span class="text-[9px] bg-blue-50 text-blue-600 border border-blue-200 px-1.5 py-0.5 rounded-md inline-block mr-1 mt-1">${t.trim()}</span>`).join('') : '';
+
+                g.innerHTML += `
+                    <div class="bg-white border ${isW?'border-amber-200 bg-amber-50/30':'border-gray-200 hover:border-gray-300'} p-3.5 rounded-3xl shadow-sm flex flex-col justify-between relative">
+                        ${isW ? '<div class="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10 animate-pulse">🎯 WANTED</div>' : ''}
+                        <div onclick="openEditForm('${card.id}')" class="cursor-pointer">
+                            <div class="w-full h-36 bg-gray-50 rounded-2xl mb-3 flex items-center justify-center p-2 border border-gray-100">
+                                <img src="${img}" loading="lazy" class="h-full object-contain rounded-lg drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
+                            </div>
+                            <div class="flex flex-wrap gap-1 mb-1.5">
+                                <span class="text-[9px] bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded font-semibold">${card.set||'-'}</span>
+                                ${cNum} ${rb}
+                            </div>
+                            <h2 class="text-xs font-bold text-gray-900 truncate">${card.name}</h2>
+                            <p class="text-[10px] text-gray-500 mt-0.5">สภาพ: ${card.condition||'NM'} • ${card.language||'TH'}</p>
+                            ${tagHtml ? `<div class="mt-1">${tagHtml}</div>` : ''} <!-- 🌟 แสดงแท็กตรงนี้ -->
                         </div>
-                    `;
-                } else {
-                    html += `<div class="card-slot"><div class="slot-missing-label"><span>Empty</span><span>Slot</span></div></div>`;
+                        <div onclick="openEditForm('${card.id}')" class="flex justify-between items-center mt-3 pt-3 border-t ${isW?'border-amber-200':'border-gray-100'} cursor-pointer">
+                            <span class="text-xs font-black text-emerald-600">฿${Number(card.price||0).toLocaleString()}</span>
+                            ${!isW ? `<span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full font-semibold">x${card.qty}</span>` : '<span class="text-[10px] text-amber-600 font-semibold">อยากได้</span>'}
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // 🌟 1. ฟังก์ชัน Card of the Day (สุ่มการ์ดเด่นตามวันที่)
+function renderCardOfTheDay() {
+    const owned = allCards.filter(c => String(c.isWishlist) !== 'true');
+    if (!owned.length) return;
+
+    // ใช้ วันที่ (YYYY-MM-DD) เป็น Seed สุ่มเพื่อให้การ์ดเปลี่ยนวันละ 1 ครั้ง
+    const todayStr = new Date().toISOString().split('T')[0];
+    let hash = 0;
+    for (let i = 0; i < todayStr.length; i++) {
+        hash = todayStr.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const idx = Math.abs(hash) % owned.length;
+    const card = owned[idx];
+
+    document.getElementById('cotd-name').textContent = card.name;
+    document.getElementById('cotd-details').textContent = `${card.set || '-'} • No.${card.cardNumber || '-'} (${card.condition || 'NM'})`;
+    document.getElementById('cotd-price').textContent = `฿${Number(card.price || 0).toLocaleString()}`;
+    document.getElementById('cotd-rarity').textContent = card.rarity || 'RARE';
+    document.getElementById('cotd-img-box').innerHTML = `
+        <img src="${getSafeImageUrl(card.image)}" class="h-full object-contain rounded-md card-holo shadow-lg" onerror="this.src='https://placehold.co/100/f9fafb/9ca3af?text=Card'">
+    `;
+}
+
+        initCardTiltEffect();
+
+// 🏆 2. ฟังก์ชัน Hall of Fame (แสดงการ์ดที่แพงที่สุด 5 อันดับแรก)
+function renderHallOfFame() {
+    const hofGrid = document.getElementById('hall-of-fame-grid');
+    if (!hofGrid) return;
+
+    const topCards = [...allCards]
+        .filter(c => String(c.isWishlist) !== 'true')
+        .sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0))
+        .slice(0, 5);
+
+    if (!topCards.length) {
+        hofGrid.innerHTML = '<span class="text-xs text-gray-400">ยังไม่มีการ์ดในคลัง</span>';
+        return;
+    }
+
+    hofGrid.innerHTML = topCards.map((c, i) => `
+        <div onclick="openEditForm('${c.id}')" class="flex-shrink-0 w-28 bg-white border border-amber-200 p-2 rounded-2xl shadow-sm relative cursor-pointer hover:scale-105 transition-transform card-holo">
+            <span class="absolute top-1 left-1 bg-amber-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full z-10 shadow">#${i+1}</span>
+            <div class="h-24 bg-gray-50 rounded-xl flex items-center justify-center p-1 mb-1">
+                <img src="${getSafeImageUrl(c.image)}" class="h-full object-contain rounded" onerror="this.src='https://placehold.co/80/f9fafb/9ca3af?text=No+Img'">
+            </div>
+            <p class="text-[10px] font-bold text-gray-900 truncate">${c.name}</p>
+            <p class="text-[9px] font-black text-emerald-600">฿${Number(c.price||0).toLocaleString()}</p>
+        </div>
+    `).join('');
+}
+
+// 🎴 3. เพิ่มเอฟเฟกต์ 3D Tilt เวลาเอาเมาส์ไปชี้การ์ดแรร์
+function initCardTiltEffect() {
+    document.addEventListener('mousemove', (e) => {
+        const cards = document.querySelectorAll('.card-holo');
+        cards.forEach(card => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+                const rx = (y / rect.height - 0.5) * -20;
+                const ry = (x / rect.width - 0.5) * 20;
+                card.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.03)`;
+            } else {
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)`;
+            }
+        });
+    });
+}
+
+        // ===== TAB Switch =====
+        function switchTab(tab) {
+            document.getElementById('view-home').style.display = tab === 'home' ? 'block' : 'none';
+            const binderEl = document.getElementById('view-binder');
+            if (tab === 'binder') { binderEl.classList.add('active'); } else { binderEl.classList.remove('active'); }
+
+            document.getElementById('nav-btn-home').classList.toggle('text-gray-900', tab === 'home');
+            document.getElementById('nav-btn-home').classList.toggle('text-gray-400', tab !== 'home');
+            document.getElementById('nav-btn-binder').classList.toggle('text-gray-900', tab === 'binder');
+            document.getElementById('nav-btn-binder').classList.toggle('text-gray-400', tab !== 'binder');
+
+            if (tab === 'binder') {
+                const sel = document.getElementById('binder-set-select');
+                if (!sel.value && sel.options.length > 1) { sel.value = sel.options[1].value; loadBinderSet(); }
+                else if (sel.value) loadBinderSet();
+            }
+        }
+
+        function showMissingCards() {
+            if (!window.currentBinderSetName) return showToast('กรุณาเลือกชุดการ์ดก่อน', 'error');
+            if (window.currentMissingList.length === 0) return showToast('🎉 ยินดีด้วย! คุณเก็บครบเซ็ตนี้แล้ว');
+
+            // แปลงตัวเลขเป็น Format เช่น 001/130
+            const listStr = window.currentMissingList
+                .map(n => `${String(n).padStart(3, '0')}/${window.currentBinderTotal}`)
+                .join(', ');
+
+            document.getElementById('missing-set-name').innerText = window.currentBinderSetName;
+            document.getElementById('missing-list-text').innerText = listStr;
+            document.getElementById('missing-modal').classList.remove('hidden');
+        }
+
+        function copyMissingList() {
+            const txt = `🎯 [WTB] ตั้งรับการ์ดโปเกมอน\nชุด: ${window.currentBinderSetName}\n\nตามหาใบที่ขาดตามเบอร์นี้ครับ:\n${document.getElementById('missing-list-text').innerText}\n\nใครมีใบไหนลองเสนอราคามาได้เลยครับ!`;
+            navigator.clipboard.writeText(txt).then(() => {
+                document.getElementById('missing-modal').classList.add('hidden');
+                showToast('คัดลอกข้อความ WTB แล้ว!');
+            });
+        }
+
+        // ===== BINDER LOGIC =====
+        function parseCardNum(str) {
+            if (!str) return null;
+            const m = String(str).match(/^(\d+)/);
+            return m ? parseInt(m[1], 10) : null;
+        }
+
+        function getTotalFromSet(setCards) {
+            // พยายามอ่านจำนวนรวมจาก "054/130" -> 130
+            let maxTotal = 0;
+            setCards.forEach(c => {
+                const m = String(c.cardNumber||'').match(/\/(\d+)/);
+                if (m) maxTotal = Math.max(maxTotal, parseInt(m[1], 10));
+            });
+            return maxTotal;
+        }
+
+        function loadBinderSet() {
+    const setName = document.getElementById('binder-set-select').value.trim();
+    if (!setName) return;
+
+    const setCards = allCards.filter(c => String(c.set || '').trim() === setName);
+    const ownedCount = setCards.filter(c => String(c.isWishlist) !== 'true').length;
+    const totalCards = getTotalFromSet(setCards);
+
+    const total = totalCards || setCards.length;
+    const percentage = total > 0 ? Math.round((ownedCount / total) * 100) : 0;
+    document.getElementById('binder-owned-count').innerText = `${ownedCount}/${total} (${percentage}%)`;
+    document.getElementById('binder-progress-bar').style.width = `${percentage}%`;
+
+    window.currentMissingList = [];
+    window.currentBinderSetName = setName;
+    window.currentBinderTotal = total;
+
+    binderSlots = [];
+
+    if (totalCards > 0) {
+        const cardMap = {};
+        setCards.forEach(c => {
+            const n = parseCardNum(c.cardNumber);
+            if (n !== null) cardMap[n] = c;
+        });
+
+        // --- กลุ่ม 1: การ์ดปกติ เลข 1 ถึง totalCards ---
+        for (let i = 1; i <= totalCards; i++) {
+            const card = cardMap[i] || null;
+            binderSlots.push({ num: i, card: card });
+            
+            // ดักจับใบที่ไม่มี หรือเป็นแค่ Wishlist
+            if (!card || String(card.isWishlist) === 'true') {
+                window.currentMissingList.push(i);
+            }
+        }
+
+        // --- กลุ่ม 2: การ์ดพิเศษตัวเลข (เลขเกิน totalCards) ---
+        const specialNumCards = setCards
+            .filter(c => {
+                const n = parseCardNum(c.cardNumber);
+                return n !== null && n > totalCards;
+            })
+            .sort((a, b) => parseCardNum(a.cardNumber) - parseCardNum(b.cardNumber));
+
+        // --- กลุ่ม 3: การ์ดไม่ใช่ตัวเลข (PROMO, PR-001, A, SP ฯลฯ) ---
+        const nonNumCards = setCards
+            .filter(c => {
+                const raw = String(c.cardNumber || '').trim();
+                if (!raw) return false;
+                const n = parseCardNum(raw);
+                // ถือว่า "ไม่ใช่ตัวเลข" ถ้า parse ไม่ได้ หรือ ตัวเลขน้อยมาก
+                // แต่ raw มีตัวอักษรอยู่ด้วย (เช่น PR-001 จะมีตัวอักษร P, R)
+                return n === null || /[a-zA-Z]/.test(raw.split('/')[0]);
+            })
+            .sort((a, b) => String(a.cardNumber).localeCompare(String(b.cardNumber)));
+
+        // Helper: เติม filler ให้หน้าปัจจุบันเต็ม แล้วค่อยใส่ header หน้าใหม่
+        const padToNextPage = () => {
+            const rem = binderSlots.length % CARDS_PER_PAGE;
+            if (rem !== 0) {
+                for (let i = 0; i < (CARDS_PER_PAGE - rem); i++) {
+                    binderSlots.push({ isFiller: true });
                 }
             }
-            grid.innerHTML = html;
-            
-            // Update UI
-            document.getElementById('binder-page-indicator').innerText = `หน้า ${currentBinderPage + 1} / ${totalBinderPages}`;
-            document.getElementById('btn-prev-page').disabled = currentBinderPage === 0;
-            document.getElementById('btn-next-page').disabled = currentBinderPage >= totalBinderPages - 1;
+        };
 
-            // Remove anim class after play
-            setTimeout(() => { grid.className = 'binder-grid'; }, 200);
+        // ใส่กลุ่ม 2 (ตัวเลขพิเศษ)
+        if (specialNumCards.length > 0) {
+            padToNextPage();
+            // Header บอกว่าเป็นการ์ดพิเศษ
+            binderSlots.push({ isSpecialHeader: true, label: '⭐ การ์ดพิเศษ (AR,SAR,UR,FUR,RGB)', sublabel: 'Secret / Extra' });
+            for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
+            specialNumCards.forEach(c => {
+                binderSlots.push({ num: parseCardNum(c.cardNumber), card: c, isSpecial: true });
+            });
         }
 
-        function changeBinderPage(dir) {
-            if(dir === -1 && currentBinderPage > 0) {
-                currentBinderPage--;
-                renderBinderPage('slide-in-right');
-            } else if (dir === 1 && currentBinderPage < totalBinderPages - 1) {
-                currentBinderPage++;
-                renderBinderPage('slide-in-left');
-            }
+        // ใส่กลุ่ม 3 (ไม่ใช่ตัวเลข)
+        if (nonNumCards.length > 0) {
+            padToNextPage();
+            binderSlots.push({ isSpecialHeader: true, label: '🎴 การ์ดพิเศษ (Energy,etc.)', sublabel: 'Promo / Non-Numbered' });
+            for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
+            nonNumCards.forEach(c => {
+                binderSlots.push({ num: null, numLabel: String(c.cardNumber || '?'), card: c, isSpecial: true });
+            });
         }
 
-        // Swipe Gestures for Binder
-        let touchStartX = 0, touchEndX = 0;
-        const touchArea = document.getElementById('binder-touch-area');
-        touchArea.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, {passive:true});
-        touchArea.addEventListener('touchend', e => {
-            touchEndX = e.changedTouches[0].screenX;
-            if(touchStartX - touchEndX > 50) changeBinderPage(1); // Swipe Left
-            if(touchEndX - touchStartX > 50) changeBinderPage(-1); // Swipe Right
+    } else {
+        // ไม่มีจำนวนรวม → แบ่งเป็นตัวเลข vs ไม่ใช่ตัวเลขแล้วเรียงต่อกัน
+        const numCards = setCards
+            .filter(c => parseCardNum(c.cardNumber) !== null && !/[a-zA-Z]/.test(String(c.cardNumber||'').split('/')[0]))
+            .sort((a, b) => parseCardNum(a.cardNumber) - parseCardNum(b.cardNumber));
+        const nonNum = setCards
+            .filter(c => parseCardNum(c.cardNumber) === null || /[a-zA-Z]/.test(String(c.cardNumber||'').split('/')[0]))
+            .sort((a, b) => String(a.cardNumber).localeCompare(String(b.cardNumber)));
+
+        numCards.forEach(c => binderSlots.push({ num: parseCardNum(c.cardNumber), card: c }));
+
+        if (nonNum.length > 0) {
+            const rem = binderSlots.length % CARDS_PER_PAGE;
+            if (rem !== 0) for (let i = 0; i < (CARDS_PER_PAGE - rem); i++) binderSlots.push({ isFiller: true });
+            binderSlots.push({ isSpecialHeader: true, label: '🎴 การ์ดพิเศษ', sublabel: 'Promo / Non-Numbered' });
+            for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
+            nonNum.forEach(c => binderSlots.push({ num: null, numLabel: String(c.cardNumber || '?'), card: c, isSpecial: true }));
+        }
+    }
+
+    binderPage = 0;
+    renderBinderPage();
+}
+
+        function renderBinderPage(direction = 'none') {
+    const grid = document.getElementById('binder-grid');
+    const totalPages = Math.max(1, Math.ceil(binderSlots.length / CARDS_PER_PAGE));
+    const pageSlots = binderSlots.slice(binderPage * CARDS_PER_PAGE, (binderPage + 1) * CARDS_PER_PAGE);
+
+    document.getElementById('binder-page-info').innerText = `หน้า ${binderPage + 1} / ${totalPages}`;
+    document.getElementById('binder-prev').disabled = binderPage === 0;
+    document.getElementById('binder-next').disabled = binderPage >= totalPages - 1;
+
+    const dotsEl = document.getElementById('binder-page-dots');
+    dotsEl.innerHTML = Array.from({ length: Math.min(totalPages, 8) }, (_, i) =>
+        `<div class="w-1.5 h-1.5 rounded-full ${i === binderPage ? 'bg-gray-800' : 'bg-gray-300'}"></div>`
+    ).join('');
+
+    grid.className = 'binder-grid ' + (direction === 'next' ? 'slide-in-left' : direction === 'prev' ? 'slide-in-right' : '');
+    grid.innerHTML = '';
+
+    for (let i = 0; i < CARDS_PER_PAGE; i++) {
+        const slot = pageSlots[i];
+
+        if (!slot) {
+            grid.innerHTML += `<div class="card-slot" style="visibility:hidden"></div>`;
+            continue;
+        }
+
+        // Header บอกประเภทการ์ดพิเศษ
+        if (slot.isSpecialHeader) {
+            grid.innerHTML += `
+                <div class="card-slot flex items-center justify-center bg-gray-900 rounded-xl border-0" style="aspect-ratio:unset; min-height:0">
+                    <div class="text-center text-white px-2">
+                        <div style="font-size:20px">${slot.label?.split(' ')[0] || '⭐'}</div>
+                        <div class="font-extrabold text-[11px] mt-1 leading-tight">${slot.label?.split(' ').slice(1).join(' ') || 'การ์ดพิเศษ'}</div>
+                        <div class="text-[9px] opacity-60 mt-0.5">${slot.sublabel || ''}</div>
+                    </div>
+                </div>`;
+            continue;
+        }
+
+        // Filler ช่องว่างที่ซ่อน
+        if (slot.isFiller) {
+            grid.innerHTML += `<div class="card-slot" style="visibility:hidden"></div>`;
+            continue;
+        }
+
+        const card = slot.card;
+
+        // สร้าง label สำหรับเลขบนการ์ด
+        // slot.numLabel = ตัวอักษร (PR-001), slot.num = ตัวเลข, null = ไม่มีเลข
+        let displayNum = '';
+        if (slot.numLabel) {
+            displayNum = slot.numLabel; // ตัวอักษรพิเศษ เช่น PR-001
+        } else if (slot.num !== null && slot.num !== undefined) {
+            displayNum = String(slot.num).padStart(3, '0'); // เลขปกติ เช่น 054
+        }
+
+        const numLabel = displayNum
+            ? `<span class="slot-number">${displayNum}${slot.isSpecial ? ' ★' : ''}</span>`
+            : '';
+
+        if (!card) {
+            grid.innerHTML += `
+                <div class="card-slot is-missing">
+                    ${numLabel}
+                    <div class="slot-missing-label">
+                        <span style="font-size:18px">☐</span>
+                        <span>ยังไม่มี</span>
+                    </div>
+                </div>`;
+        } else {
+            const isW = String(card.isWishlist) === 'true';
+            const img = getSafeImageUrl(card.image);
+            grid.innerHTML += `
+                <div class="card-slot has-card ${isW ? 'opacity-60' : ''} ${slot.isSpecial ? 'ring-2 ring-amber-400' : ''}" onclick="openEditForm('${card.id}')">
+                    ${numLabel}
+                    <img src="${img}" loading="lazy" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=?'">
+                    ${card.qty > 1 && !isW ? `<span class="slot-qty">x${card.qty}</span>` : ''}
+                    ${isW ? '<div class="slot-wanted-badge">🎯</div>' : ''}
+                </div>`;
+        }
+    }
+}
+
+        function changePage(dir) {
+            const totalPages = Math.ceil(binderSlots.length / CARDS_PER_PAGE);
+            const newPage = binderPage + dir;
+            if (newPage < 0 || newPage >= totalPages) return;
+            binderPage = newPage;
+            renderBinderPage(dir > 0 ? 'next' : 'prev');
+        }
+
+        // Swipe
+        const book = document.getElementById('binder-book');
+        book.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, {passive:true});
+        book.addEventListener('touchend', e => {
+            const diff = e.changedTouches[0].screenX - touchStartX;
+            if (Math.abs(diff) > 45) changePage(diff < 0 ? 1 : -1);
         }, {passive:true});
 
+        // ===== Modals =====
+        function toggleModal(o) { document.getElementById('detail-modal').classList.toggle('hidden', !o); }
+        function toggleImageModal(o) { document.getElementById('image-modal').classList.toggle('hidden', !o); }
+        function openImageLightbox(url) { document.getElementById('lightbox-img').src = getSafeImageUrl(url); toggleImageModal(true); }
 
-        // --- MODAL & CRUD ---
-        function openAddModal() {
-            if(!isAdmin) return alert('สงวนสิทธิ์เฉพาะ Admin');
-            document.getElementById('card-modal').classList.remove('hidden');
-            document.getElementById('card-modal').classList.add('flex');
+        function openAddForm() {
+            if (!adminPin) return loginAdmin();
+            document.getElementById('card-form').reset();
+            document.getElementById('form-mode').value = 'add';
             document.getElementById('modal-title').innerText = '✨ เพิ่มการ์ดใหม่';
             document.getElementById('btn-delete').classList.add('hidden');
-            clearForm();
+            document.getElementById('modal-image-preview').src = 'https://placehold.co/150/f9fafb/9ca3af?text=No+Image';
+            document.getElementById('form-tags').value = '';
+            document.getElementById('form-buyPrice').value = '';
+            checkAuthUI(); toggleModal(true);
         }
 
-        function openEditModal(id) {
-            const c = cardsData.find(x => x.id == id);
-            if(!c) return;
-            document.getElementById('card-modal').classList.remove('hidden');
-            document.getElementById('card-modal').classList.add('flex');
-            document.getElementById('modal-title').innerText = isAdmin ? '✏️ แก้ไขข้อมูลการ์ด' : '🔍 รายละเอียดการ์ด';
-            
-            document.getElementById('card-id').value = c.id;
-            document.getElementById('image-url').value = c.imageUrl || '';
-            document.getElementById('card-name').value = c.name || '';
-            document.getElementById('series-code').value = c.series || '';
-            document.getElementById('card-number').value = c.cardNumber || '';
-            document.getElementById('rarity').value = c.rarity || '';
-            document.getElementById('price').value = c.price || '';
-            document.getElementById('quantity').value = c.qty || 1;
-            document.querySelector(`input[name="status"][value="${c.status}"]`).checked = true;
-
-            const inputs = document.querySelectorAll('#card-modal input');
-            inputs.forEach(inp => inp.disabled = !isAdmin);
-            
-            document.getElementById('btn-delete').classList.toggle('hidden', !isAdmin);
-            document.querySelector('#card-modal button:last-child').classList.toggle('hidden', !isAdmin); // Hide Save btn
+        function openEditForm(id) {
+            const card = allCards.find(c => c.id == id); if (!card) return;
+            document.getElementById('form-mode').value = 'update';
+            document.getElementById('form-rowIndex').value = card.rowIndex;
+            document.getElementById('form-id').value = card.id;
+            document.getElementById('form-name').value = card.name || '';
+            document.getElementById('form-set').value = card.set || '';
+            document.getElementById('form-cardNumber').value = card.cardNumber || '';
+            document.getElementById('form-price').value = card.price || 0;
+            document.getElementById('form-qty').value = card.qty || 1;
+            document.getElementById('form-rarity').value = card.rarity || '-';
+            document.getElementById('form-lang').value = card.language || 'TH';
+            document.getElementById('form-condition').value = card.condition || 'NM';
+            document.getElementById('form-image').value = card.image || '';
+            document.getElementById('form-wishlist').checked = String(card.isWishlist) === 'true';
+            document.getElementById('modal-title').innerText = adminPin ? '🛠️ แก้ไขข้อมูล' : '🔍 รายละเอียดการ์ด';
+            document.getElementById('btn-delete').classList.toggle('hidden', !adminPin);
+            document.getElementById('modal-image-preview').src = getSafeImageUrl(card.image);
+            document.getElementById('form-tags').value = card.tags || '';
+            document.getElementById('form-buyPrice').value = card.buyPrice || '';
+            checkAuthUI(); toggleModal(true);
         }
 
-        function closeModal() {
-            document.getElementById('card-modal').classList.add('hidden');
-            document.getElementById('card-modal').classList.remove('flex');
-        }
-
-        function clearForm() {
-            document.querySelectorAll('#card-modal input[type="text"], #card-modal input[type="number"], #card-modal input[type="url"], #card-modal input[type="hidden"]').forEach(el => {
-                el.value = ''; el.disabled = false;
-            });
-            document.getElementById('quantity').value = 1;
-            document.querySelector('input[name="status"][value="owned"]').checked = true;
-            document.querySelectorAll('input[type="radio"]').forEach(el => el.disabled = false);
-        }
-
-        async function saveCard() {
-            if(!isAdmin) return;
-            const data = {
-                id: document.getElementById('card-id').value || Date.now().toString(),
-                imageUrl: document.getElementById('image-url').value,
-                name: document.getElementById('card-name').value,
-                series: document.getElementById('series-code').value,
-                cardNumber: document.getElementById('card-number').value,
-                rarity: document.getElementById('rarity').value.toUpperCase(),
-                price: Number(document.getElementById('price').value) || 0,
-                status: document.querySelector('input[name="status"]:checked').value,
-                qty: Number(document.getElementById('quantity').value) || 1
+        // ===== Submit / Delete =====
+        async function submitForm(e) {
+            e.preventDefault();
+            if (!adminPin) return showToast('กรุณาล็อกอินก่อน', 'error');
+            const d = {
+                pin: adminPin,
+                name: document.getElementById('form-name').value,
+                set: document.getElementById('form-set').value,
+                cardNumber: document.getElementById('form-cardNumber').value,
+                buyPrice: Number(document.getElementById('form-buyPrice').value || 0),
+                price: Number(document.getElementById('form-price').value),
+                qty: Number(document.getElementById('form-qty').value),
+                rarity: document.getElementById('form-rarity').value,
+                language: document.getElementById('form-lang').value,
+                condition: document.getElementById('form-condition').value,
+                image: document.getElementById('form-image').value,
+                isWishlist: document.getElementById('form-wishlist').checked,
+                tags: document.getElementById('form-tags').value
             };
-
-            if(!data.name || !data.imageUrl) return alert('กรุณากรอกชื่อและรูปภาพ');
-
-            // Optimistic Update
-            const idx = cardsData.findIndex(c => c.id == data.id);
-            if(idx > -1) cardsData[idx] = data; else cardsData.unshift(data);
-            localStorage.setItem('tcg_data', JSON.stringify(cardsData));
-            updateFiltersAndUI();
-            if(DOM.views.binder.classList.contains('active')) initBinder();
-            closeModal();
-            showToast('บันทึกสำเร็จ', '✅');
-
-            // Save to server
+            const isAdd = document.getElementById('form-mode').value === 'add';
+            if (isAdd) { d.id = "CARD-" + Date.now(); d.rowIndex = allCards.length + 2; allCards.unshift(d); }
+            else {
+                d.action = 'update'; d.rowIndex = Number(document.getElementById('form-rowIndex').value); d.id = document.getElementById('form-id').value;
+                const i = allCards.findIndex(c => c.rowIndex === d.rowIndex);
+                if (i !== -1) allCards[i] = {...allCards[i], ...d};
+            }
+            updateSetDropdowns(); applyFilters(); updateSummary();
+            localStorage.setItem('tcg_cards', JSON.stringify(allCards));
+            toggleModal(false);
+            showToast(isAdd ? "เพิ่มการ์ดสำเร็จ" : "อัปเดตสำเร็จ");
+            // รีโหลดแฟ้มถ้ากำลังดูอยู่
+            if (document.getElementById('binder-set-select').value) loadBinderSet();
             try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: new URLSearchParams({ action: idx > -1 ? 'update' : 'create', data: JSON.stringify(data) })
-                });
-            } catch (e) { console.error('Sync failed', e); }
+                const r = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(d)});
+                const j = await r.json();
+                if (j.status === 'error' && j.message.includes('Unauthorized')) logoutAdmin();
+            } catch(e) {}
         }
 
         async function deleteCard() {
-            if(!isAdmin || !confirm('ยืนยันการลบการ์ดใบนี้?')) return;
-            const id = document.getElementById('card-id').value;
-            
-            cardsData = cardsData.filter(c => c.id != id);
-            localStorage.setItem('tcg_data', JSON.stringify(cardsData));
-            updateFiltersAndUI();
-            if(DOM.views.binder.classList.contains('active')) initBinder();
-            closeModal();
-            showToast('ลบการ์ดแล้ว', '🗑️');
-
+            if (!confirm("ลบการ์ดใบนี้?")) return;
+            const ri = Number(document.getElementById('form-rowIndex').value);
+            allCards = allCards.filter(c => c.rowIndex !== ri);
+            updateSetDropdowns(); applyFilters(); updateSummary();
+            localStorage.setItem('tcg_cards', JSON.stringify(allCards));
+            if (document.getElementById('binder-set-select').value) loadBinderSet();
+            toggleModal(false); showToast("ลบการ์ดแล้ว");
             try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: new URLSearchParams({ action: 'delete', id: id })
-                });
-            } catch (e) {}
+                const r = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'delete', rowIndex:ri, pin:adminPin})});
+                const j = await r.json();
+                if (j.status === 'error' && j.message.includes('Unauthorized')) logoutAdmin();
+            } catch(e) {}
         }
 
-        // --- STATS MODAL ---
+        // ===== Compress & Upload =====
+        function compressAndUploadImage(event) {
+            const file = event.target.files[0]; if (!file) return;
+            const ov = document.getElementById('upload-overlay');
+            ov.classList.remove('hidden'); ov.classList.add('flex');
+            const reader = new FileReader(); reader.readAsDataURL(file);
+            reader.onload = e => {
+                const img = new Image(); img.src = e.target.result;
+                img.onload = async () => {
+                    const MAX = 800; let w = img.width, h = img.height;
+                    if (w > h) { if (w > MAX) { h = h*MAX/w; w = MAX; } } else { if (h > MAX) { w = w*MAX/h; h = MAX; } }
+                    const c = document.createElement('canvas'); c.width = w; c.height = h;
+                    c.getContext('2d').drawImage(img, 0, 0, w, h);
+                    const b64 = c.toDataURL('image/jpeg', 0.8).split(',')[1];
+                    try {
+                        const r = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'uploadImage', pin:adminPin, fileName:file.name, mimeType:'image/jpeg', base64:b64})});
+                        const j = await r.json();
+                        if (j.status === 'success') { document.getElementById('form-image').value = j.url; document.getElementById('modal-image-preview').src = j.url; showToast('อัปโหลดสำเร็จ!'); }
+                        else { showToast('ล้มเหลว: '+j.message, 'error'); if(j.message.includes('Unauthorized')) logoutAdmin(); }
+                    } catch(e) { showToast('อัปโหลดล้มเหลว', 'error'); }
+                    finally { ov.classList.add('hidden'); ov.classList.remove('flex'); event.target.value=''; }
+                };
+            };
+        }
+
+        function openWTSGenerator() {
+            if (!currentFiltered.length) return showToast('ไม่มีการ์ดให้สร้างรูปภาพ', 'error');
+            document.getElementById('wts-modal').classList.remove('hidden');
+            generateWTSCanvas();
+        }
+
+        async function generateWTSCanvas() {
+            const canvas = document.getElementById('wts-canvas');
+            const ctx = canvas.getContext('2d');
+            const mode = document.getElementById('wts-mode').value;
+            const contact = document.getElementById('wts-contact').value.trim() || 'TCG Vault Collector';
+            
+            // กรองเอาเฉพาะการ์ดที่กรองไว้อยู่ในปัจจุบัน (สูงสุด 6 ใบในรูป)
+            const cardsToDraw = currentFiltered.slice(0, 6);
+
+            // Background
+            ctx.fillStyle = '#0f172a'; // Slate-900
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Banner Header
+            ctx.fillStyle = mode === 'WTS' ? '#ef4444' : '#f59e0b';
+            ctx.fillRect(0, 0, canvas.width, 90);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 32px Prompt, sans-serif';
+            ctx.fillText(mode === 'WTS' ? '🔥 WTS - FOR SALE' : '🎯 WTB - WANTED', 30, 55);
+
+            ctx.font = '16px Prompt, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(`ติดต่อ: ${contact}`, canvas.width - 30, 55);
+            ctx.textAlign = 'left';
+
+            // Draw Cards Grid (2 cols x 3 rows)
+            const startX = 30, startY = 120;
+            const cardW = 250, cardH = 170;
+            const gapX = 40, gapY = 25;
+
+            let totalPrice = 0;
+
+            for (let i = 0; i < cardsToDraw.length; i++) {
+                const c = cardsToDraw[i];
+                const col = i % 2;
+                const row = Math.floor(i / 2);
+                const x = startX + col * (cardW + gapX);
+                const y = startY + row * (cardH + gapY);
+
+                totalPrice += (Number(c.price) || 0) * (Number(c.qty) || 1);
+
+                // Card Box BG
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.roundRect(x, y, cardW, cardH, 16);
+                ctx.fill();
+
+                // Card Image
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.src = getSafeImageUrl(c.image);
+                
+                await new Promise(resolve => {
+                    img.onload = () => {
+                        ctx.drawImage(img, x + 10, y + 10, 100, 150);
+                        resolve();
+                    };
+                    img.onerror = () => { resolve(); };
+                });
+
+                // Text Details
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 16px Prompt, sans-serif';
+                ctx.fillText(c.name.length > 12 ? c.name.substring(0, 12) + '..' : c.name, x + 120, y + 35);
+
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '13px Prompt, sans-serif';
+                ctx.fillText(`ชุด: ${c.set || '-'}`, x + 120, y + 65);
+                ctx.fillText(`สภาพ: ${c.condition || 'NM'} (${c.language || 'TH'})`, x + 120, y + 90);
+                if (c.rarity) ctx.fillText(`Rarity: ${c.rarity}`, x + 120, y + 115);
+
+                // Price Tag
+                ctx.fillStyle = '#10b981';
+                ctx.font = 'bold 18px Prompt, sans-serif';
+                ctx.fillText(`฿${Number(c.price||0).toLocaleString()} ${c.qty > 1 ? `(x${c.qty})` : ''}`, x + 120, y + 145);
+            }
+
+            // Footer Total
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, canvas.height - 70, canvas.width, 70);
+
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = 'bold 20px Prompt, sans-serif';
+            ctx.fillText(`รวมการ์ดทั้งหมด: ${cardsToDraw.length} รายการ`, 30, canvas.height - 28);
+
+            ctx.fillStyle = '#34d399';
+            ctx.font = 'bold 24px Prompt, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(`ราคารวม: ฿${totalPrice.toLocaleString()}`, canvas.width - 30, canvas.height - 28);
+            ctx.textAlign = 'left';
+        }
+
+        function downloadWTSImage() {
+            const canvas = document.getElementById('wts-canvas');
+            const link = document.createElement('a');
+            const mode = document.getElementById('wts-mode').value;
+            link.download = `${mode}_TCG_Vault_${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('ดาวน์โหลดรูปภาพสำเร็จ!');
+        }
+
+        // ===== Export / Stats =====
+        function exportForSale() {
+            const sell = currentFiltered.filter(c => String(c.isWishlist) !== 'true');
+            if (!sell.length) return showToast('ไม่มีการ์ดให้คัดลอก', 'error');
+            let txt = "🔥 [ปล่อยของ] การ์ดโปเกมอน\n\n"; let tot = 0;
+            sell.forEach(c => { txt += `- ${c.name} [${c.set}] ${c.rarity&&c.rarity!=='-'?`(${c.rarity}) `:''}สภาพ ${c.condition} x${c.qty} = ${Number(c.price*c.qty).toLocaleString()} บ.\n`; tot += c.price*c.qty; });
+            txt += `\n💰 รวม: ${tot.toLocaleString()} บาท\nสนใจ IB ได้เลยครับ!`;
+            navigator.clipboard.writeText(txt).then(() => showToast('คัดลอกแล้ว!'));
+        }
+
         function openStatsModal() {
-            const owned = cardsData.filter(c => c.status === 'owned');
-            const wishlist = cardsData.filter(c => c.status === 'wishlist');
-            
-            let html = `
-                <div class="flex justify-between border-b pb-2"><span class="font-bold">✅ การ์ดที่มี</span> <span>${owned.reduce((a,c)=>a+(Number(c.qty)||1),0)} ใบ</span></div>
-                <div class="flex justify-between border-b pb-2"><span class="font-bold">🎯 Wishlist</span> <span>${wishlist.length} ใบ</span></div>
-            `;
-            
-            const setStats = {};
+            const owned = allCards.filter(c => String(c.isWishlist) !== 'true');
+            const totalCost = owned.reduce((s,c) => s + (Number(c.buyPrice||0) * Number(c.qty||1)), 0);
+            const totalVal = owned.reduce((s,c) => s + (Number(c.price||0) * Number(c.qty||1)), 0);
+            const profit = totalVal - totalCost;
+            const roi = totalCost > 0 ? ((profit / totalCost) * 100).toFixed(1) : 0;
+
+            const r = {}, l = {};
             owned.forEach(c => {
-                if(!setStats[c.series]) setStats[c.series] = { qty:0, val:0 };
-                setStats[c.series].qty += Number(c.qty)||1;
-                setStats[c.series].val += (Number(c.price)||0) * (Number(c.qty)||1);
+                if (c.rarity && c.rarity !== '-') r[c.rarity] = (r[c.rarity]||0) + Number(c.qty);
+                l[c.language||'TH'] = (l[c.language||'TH']||0) + Number(c.qty);
             });
-            
-            html += `<div class="font-bold mt-3 mb-1 text-slate-800">📦 มูลค่าตามซีรีส์</div>`;
-            Object.keys(setStats).sort().forEach(s => {
-                html += `<div class="flex justify-between text-[11px]"><span class="text-slate-600">${s||'ไม่ระบุ'} (${setStats[s].qty} ใบ)</span> <span class="font-bold">฿${setStats[s].val.toLocaleString()}</span></div>`;
+            const tot = owned.reduce((s,c) => s+Number(c.qty),0);
+
+            let html = `
+                <div class="bg-slate-900 text-white p-4 rounded-2xl mb-4 space-y-2">
+                    <div class="flex justify-between text-xs text-slate-300">
+                        <span>ต้นทุนรวม: ฿${totalCost.toLocaleString()}</span>
+                        <span>มูลค่ารวม: ฿${totalVal.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-slate-700 pt-2">
+                        <span class="text-xs font-semibold">กำไร/ขาดทุนสุทธิ:</span>
+                        <span class="text-base font-black ${profit >= 0 ? 'text-emerald-400' : 'text-red-400'}">
+                            ${profit >= 0 ? '+' : ''}฿${profit.toLocaleString()} (${roi}%)
+                        </span>
+                    </div>
+                </div>
+                <h3 class="text-xs font-bold text-gray-500 mb-2">⭐ ตามความหายาก</h3>
+            `;
+
+            Object.keys(r).sort((a,b)=>r[b]-r[a]).forEach(k => {
+                const p = tot > 0 ? (r[k]/tot*100).toFixed(0) : 0;
+                html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-gray-800 h-full rounded-full" style="width:${p}%"></div></div><span class="text-gray-500">${r[k]}</span></div>`;
+            });
+            html += '<h3 class="text-xs font-bold text-gray-500 mt-5 mb-2">🌐 ตามภาษา</h3>';
+            Object.keys(l).forEach(k => {
+                const p = tot > 0 ? (l[k]/tot*100).toFixed(0) : 0;
+                html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-emerald-500 h-full rounded-full" style="width:${p}%"></div></div><span class="text-gray-500">${l[k]}</span></div>`;
             });
 
             document.getElementById('stats-content').innerHTML = html;
             document.getElementById('stats-modal').classList.remove('hidden');
-            document.getElementById('stats-modal').classList.add('flex');
-        }
-        function closeStatsModal() {
-            document.getElementById('stats-modal').classList.add('hidden');
-            document.getElementById('stats-modal').classList.remove('flex');
         }
 
-        // --- WTS / WTB TEXT EXPORT ---
-        function exportForSale() {
-            const toSell = filteredCards.filter(c => c.status === 'owned' && c.price > 0);
-            if(toSell.length === 0) return alert('ไม่พบการ์ดที่กรองไว้สำหรับขาย');
-            let text = `[WTS] ปล่อยการ์ดครับ\n\n`;
-            toSell.forEach(c => { text += `- ${c.name} [${c.series||'-'}] ${c.rarity||''} : ${c.price} บาท\n`; });
-            text += `\nสนใจใบไหน Inbox ได้เลยครับ`;
-            navigator.clipboard.writeText(text).then(() => showToast('คัดลอกข้อความขายแล้ว', '📋'));
-        }
-
-        // --- WTS / WTB CANVAS GENERATOR ---
-        function openWTSGenerator() {
-            document.getElementById('wts-modal').classList.remove('hidden');
-            document.getElementById('wts-modal').classList.add('flex');
-            drawCanvas();
-        }
-        function closeWTSGenerator() {
-            document.getElementById('wts-modal').classList.add('hidden');
-            document.getElementById('wts-modal').classList.remove('flex');
-        }
-
-        async function drawCanvas() {
-            const canvas = document.getElementById('wts-canvas');
-            const ctx = canvas.getContext('2d');
-            const title = document.getElementById('wts-title').value;
-            const sub = document.getElementById('wts-sub').value;
-            
-            const toDraw = filteredCards.slice(0, 9); // Max 9 cards for 3x3 layout
-            
-            // Background
-            ctx.fillStyle = '#0f172a'; // slate-900
-            ctx.fillRect(0, 0, 1080, 1080);
-            
-            // Header Pattern
-            ctx.fillStyle = '#4f46e5'; // indigo-600
-            ctx.fillRect(0, 0, 1080, 150);
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 60px "Prompt", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(title, 540, 100);
-
-            // Grid Config
-            const cols = 3, rows = 3;
-            const cardW = 280, cardH = 280; // Box size
-            const startX = (1080 - (cols * cardW)) / 2;
-            const startY = 180;
-
-            for(let i=0; i<toDraw.length; i++) {
-                const c = toDraw[i];
-                const col = i % cols;
-                const row = Math.floor(i / cols);
-                const x = startX + (col * cardW) + 10;
-                const y = startY + (row * cardH) + 10;
-                
-                // Draw Card Box
-                ctx.fillStyle = '#1e293b';
-                ctx.beginPath(); ctx.roundRect(x, y, cardW-20, cardH-20, 20); ctx.fill();
-
-                // Draw Image
-                try {
-                    const img = new Image();
-                    img.crossOrigin = "Anonymous";
-                    img.src = c.imageUrl;
-                    await new Promise((resolve) => {
-                        img.onload = () => {
-                            const imgAspect = img.width / img.height;
-                            const drawW = 160;
-                            const drawH = drawW / imgAspect;
-                            ctx.drawImage(img, x + (cardW-20-drawW)/2, y + 15, drawW, drawH);
-                            resolve();
-                        };
-                        img.onerror = resolve;
-                    });
-                } catch(e) {}
-
-                // Draw Text
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 22px sans-serif';
-                ctx.textAlign = 'center';
-                // Name truncation
-                let name = c.name;
-                if(name.length > 15) name = name.substring(0, 15) + '..';
-                ctx.fillText(name, x + (cardW-20)/2, y + cardH - 55);
-
-                ctx.fillStyle = '#10b981'; // emerald-500
-                ctx.font = 'bold 26px sans-serif';
-                ctx.fillText(`฿${c.price||0}`, x + (cardW-20)/2, y + cardH - 25);
-            }
-
-            // Footer
-            ctx.fillStyle = '#64748b';
-            ctx.font = '30px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(sub, 540, 1050);
-        }
-
-        function downloadCanvas() {
-            const canvas = document.getElementById('wts-canvas');
-            const link = document.createElement('a');
-            link.download = 'TCG_Vault_WTS.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            showToast('ดาวน์โหลดรูปภาพสำเร็จ', '📥');
-        }
-
+        loadData();
+        
     </script>
 </body>
 </html>

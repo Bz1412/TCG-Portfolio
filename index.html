@@ -29,7 +29,7 @@
             height: 100dvh;
             overflow: hidden;
             background: #f3f4f6;
-            padding-bottom: 80px; /* ให้พ้น bottom nav */
+            padding-bottom: 80px;
         }
         #view-binder.active { display: flex; }
 
@@ -41,7 +41,6 @@
             touch-action: pan-y;
         }
 
-        /* สันปก (binding spine) */
         .binder-spine {
             width: 18px;
             flex-shrink: 0;
@@ -61,7 +60,6 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
-        /* หน้ากระดาษ */
         .binder-page-content {
             flex: 1;
             background: white;
@@ -72,7 +70,6 @@
             box-shadow: 4px 0 20px rgba(0,0,0,0.08), inset 8px 0 16px rgba(0,0,0,0.04);
         }
 
-        /* Grid การ์ด 4 แถวแนวนอน x 2 แนวตั้ง = 8 ช่อง */
         .binder-grid {
             flex: 1;
             display: grid;
@@ -138,7 +135,6 @@
             flex-direction: column; gap: 2px;
         }
 
-        /* Pagination bar */
         .binder-pagination {
             flex-shrink: 0;
             display: flex;
@@ -251,7 +247,6 @@
                 <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
                     <button onclick="exportForSale()" class="bg-gray-900 text-white text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-black transition-all duration-200 active:scale-90">📋 โพสต์ขาย</button>
                     <button onclick="openWTSGenerator()" class="bg-indigo-600 text-white text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-indigo-700 shadow-sm transition-all duration-200 active:scale-90">🖼️ สร้างรูปภาพ</button>
-                    <!-- 🌟 Dropdown กรองตาม Set -->
                     <select id="filter-set" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none min-w-0 max-w-[130px]">
                         <option value="">📁 ทุกชุด</option>
                     </select>
@@ -288,6 +283,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <h2 class="text-xs font-bold text-gray-700 flex items-center gap-1">
@@ -299,17 +295,35 @@
                         </div>
                     </div>
 
-                    <!-- 🌟 ส่วนแสดงประวัติการขายล่าสุดที่เพิ่มเข้ามาใหม่ -->
+                    <!-- 🌟 ส่วนแสดงบอร์ดสรุปการขาย + ประวัติ 3 รายการล่าสุด -->
                     <div class="bg-white border border-gray-200 rounded-3xl p-4 shadow-sm space-y-3">
                         <div class="flex justify-between items-center">
                             <h2 class="text-xs font-bold text-gray-900 flex items-center gap-1.5">
-                                <span>🛒 การ์ดที่ขายแล้วล่าสุด</span>
+                                <span>🛒 บอร์ดสรุปการขาย</span>
                             </h2>
                             <span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Live History</span>
                         </div>
-                        <div id="recent-sales-list" class="space-y-2 max-h-48 overflow-y-auto scrollbar-hide">
+
+                        <!-- การ์ดแสดงสรุปรายได้และจำนวนใบ -->
+                        <div class="grid grid-cols-2 gap-2.5 bg-emerald-950 text-white p-3.5 rounded-2xl">
+                            <div>
+                                <p class="text-[10px] text-emerald-300 font-semibold">ขายได้แล้วรวม</p>
+                                <p id="sales-stat-qty" class="text-lg font-black mt-0.5 text-white">0 <span class="text-xs font-normal text-emerald-200">ใบ</span></p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-emerald-300 font-semibold">รายได้สะสมรวม</p>
+                                <p id="sales-stat-revenue" class="text-lg font-black mt-0.5 text-emerald-400">฿0</p>
+                            </div>
+                        </div>
+
+                        <!-- แสดงรายการขาย 3 อันล่าสุด -->
+                        <div id="recent-sales-list" class="space-y-2">
                             <div class="text-xs text-gray-400 text-center py-3">กำลังโหลดประวัติการขาย...</div>
                         </div>
+
+                        <button onclick="openAllSalesModal()" class="w-full py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5">
+                            <span>📜 ดูประวัติการขายทั้งหมด</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -323,7 +337,6 @@
 
     <!-- ===================== VIEW: BINDER ===================== -->
     <div id="view-binder">
-        <!-- Binder Header -->
         <div class="bg-white px-4 pt-10 pb-3 flex items-center gap-3 border-b border-gray-100 shadow-sm flex-shrink-0">
             <div class="flex-1 min-w-0">
                 <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">แฟ้มสะสมการ์ด</p>
@@ -345,9 +358,7 @@
             </div>
         </div>
 
-        <!-- Binder Book -->
         <div class="binder-book" id="binder-book">
-            <!-- Spine -->
             <div class="binder-spine">
                 <div class="binder-ring"></div>
                 <div class="binder-ring"></div>
@@ -356,12 +367,9 @@
                 <div class="binder-ring"></div>
                 <div class="binder-ring"></div>
             </div>
-            <!-- Page -->
             <div class="binder-page-content">
                 <div class="binder-grid" id="binder-grid">
-                    <!-- การ์ดแสดงผลที่นี่ -->
                 </div>
-                <!-- Pagination -->
                 <div class="binder-pagination">
                     <button class="page-btn" id="binder-prev" onclick="changePage(-1)">◀ ก่อนหน้า</button>
                     <div class="text-center">
@@ -387,6 +395,12 @@
                 <h2 id="modal-title" class="font-bold text-lg text-gray-900">จัดการการ์ด</h2>
                 <button onclick="toggleModal(false)" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 text-lg transition-all duration-200 active:scale-90">&times;</button>
             </div>
+
+            <!-- 🌟 ปุ่มดึงการ์ดขายหมดแล้วกลับมา Restock -->
+            <button type="button" id="btn-restock-picker" onclick="openRestockPickerModal()" class="w-full py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-2xl font-bold text-xs transition-all duration-200 active:scale-95 flex items-center justify-center gap-2">
+                <span>📦 เลือกจากการ์ดที่เคยขายหมดแล้ว (Restock)</span>
+            </button>
+
             <div class="flex justify-center bg-gray-50 p-4 rounded-2xl border border-gray-100 cursor-pointer" onclick="openImageLightbox(document.getElementById('modal-image-preview').src)">
                 <img id="modal-image-preview" src="" class="h-40 object-contain rounded-lg drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
             </div>
@@ -430,8 +444,8 @@
                         <input type="number" id="form-price" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
                     </div>
                     <div>
-                        <label class="text-[11px] font-semibold text-gray-500">จำนวน</label>
-                        <input type="number" id="form-qty" required min="1" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                        <label class="text-[11px] font-semibold text-gray-500">จำนวนคงเหลือ</label>
+                        <input type="number" id="form-qty" required min="0" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
                     </div>
                 </div>
                 <div>
@@ -457,7 +471,6 @@
                     </div>
                 </div>
                 <div id="form-actions-wrapper" class="flex gap-2 pt-4">
-                    <!-- 🌟 เพิ่มปุ่มขายการ์ดตรงนี้ -->
                     <button type="button" id="btn-sell" onclick="openSellModal()" class="w-1/3 py-3.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl font-semibold text-xs transition-all duration-200 active:scale-95 hidden">🏷️ ขายการ์ด</button>
                     <button type="button" id="btn-delete" onclick="deleteCard()" class="w-1/4 py-3.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 rounded-xl font-semibold text-xs transition-all duration-200 active:scale-95 hidden">ลบ</button>
                     <button type="submit" class="flex-1 py-3.5 bg-gray-900 hover:bg-black text-white rounded-xl font-semibold text-sm shadow-md transition-all duration-200 active:scale-95">บันทึกข้อมูล</button>
@@ -466,7 +479,20 @@
         </div>
     </div>
 
-    <!-- 🌟 MODAL ใหม่: บันทึกการขาย (Sell Modal) -->
+    <!-- 🌟 MODAL: ตัวเลือกรีสต็อกการ์ดที่เคยขายหมดไปแล้ว -->
+    <div id="restock-picker-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl border border-gray-100 animate-modal-pop space-y-3 max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center pb-2 border-b border-gray-100 flex-shrink-0">
+                <h2 class="font-bold text-base text-gray-900 flex items-center gap-2">📦 การ์ดที่เคยขายหมดแล้ว</h2>
+                <button onclick="document.getElementById('restock-picker-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-900 text-2xl transition-all duration-200 active:scale-90">&times;</button>
+            </div>
+            <p class="text-xs text-gray-500 flex-shrink-0">คลิกการ์ดที่ต้องการเพื่อนำเทมเพลตมาใส่เพิ่มสต็อก:</p>
+            <div id="restock-picker-list" class="space-y-2 overflow-y-auto flex-1 scrollbar-hide py-1">
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: บันทึกการขาย -->
     <div id="sell-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-100 animate-modal-pop space-y-4">
             <div class="flex justify-between items-center pb-2 border-b border-gray-100">
@@ -493,6 +519,21 @@
                     ✅ ยืนยันบันทึกการขาย
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- 🌟 MODAL: ประวัติการขายทั้งหมด -->
+    <div id="all-sales-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-gray-100 animate-modal-pop space-y-4 max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center pb-3 border-b border-gray-100 flex-shrink-0">
+                <h2 class="font-bold text-base text-gray-900 flex items-center gap-2">📜 ประวัติการขายทั้งหมด</h2>
+                <button onclick="document.getElementById('all-sales-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-900 text-2xl transition-all duration-200 active:scale-90">&times;</button>
+            </div>
+            
+            <p class="text-xs text-gray-400 flex-shrink-0">คลิกที่รายการการ์ดเพื่อดูรายละเอียดข้อมูลการ์ด:</p>
+            
+            <div id="full-sales-list" class="space-y-2 overflow-y-auto flex-1 scrollbar-hide py-1">
+            </div>
         </div>
     </div>
 
@@ -566,7 +607,7 @@
     <!-- Bottom Nav -->
     <nav class="fixed bottom-5 left-5 right-5 bg-white/95 backdrop-blur-xl border border-gray-200 py-3 px-6 shadow-[0_10px_40px_rgba(0,0,0,0.1)] max-w-sm mx-auto rounded-[2rem] flex justify-around items-center z-40">
         <button onclick="switchTab('home')" id="nav-btn-home" class="flex flex-col items-center text-gray-900 transition-all duration-200 active:scale-90">
-            <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+            <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 001 1m-6 0h6" /></svg>
             <span class="text-[10px] font-semibold">หน้าแรก</span>
         </button>
         <div class="w-px h-8 bg-gray-200"></div>
@@ -595,9 +636,9 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbyxUtqszvNC3tsfCnp2pH2dMJplBRX6KKX1f-JqzK3q57aAylJ3BOkGEFUJ0bxAI8e-/exec";
         const CARDS_PER_PAGE = 8;
         let allCards = [], currentFiltered = [];
-        let allSales = []; // 🌟 เก็บข้อมูลประวัติการขาย
+        let allSales = [];
         let adminPin = localStorage.getItem('tcg_pin') || '';
-        let binderSlots = [];      // [{num, card|null}] ช่องทั้งหมดในแฟ้ม
+        let binderSlots = [];
         let binderPage = 0;
         let touchStartX = 0;
 
@@ -654,13 +695,11 @@
             const uniqueSets = [...new Set(allCards.map(c => String(c.set || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'th'));
             document.getElementById('set-list').innerHTML = uniqueSets.map(s => `<option value="${s}">`).join('');
 
-            // Filter set (หน้าแรก)
             const fs = document.getElementById('filter-set');
             const prev = fs.value;
             fs.innerHTML = '<option value="">📁 ทุกชุด</option>' + uniqueSets.map(s => `<option value="${s}">${s}</option>`).join('');
             if (uniqueSets.includes(prev)) fs.value = prev;
 
-            // Binder set select
             const bs = document.getElementById('binder-set-select');
             const prevB = bs.value;
             bs.innerHTML = '<option value="">-- เลือกชุดการ์ด --</option>' + uniqueSets.map(s => `<option value="${s}">${s}</option>`).join('');
@@ -699,13 +738,13 @@
                     const j = await r.json();
                     if (j.status === "success") {
                         allCards = j.data;
-                        allSales = j.sales || []; // 🌟 เก็บประวัติการขายที่ส่งกลับมา
+                        allSales = j.sales || [];
                         localStorage.setItem('tcg_cards', JSON.stringify(allCards));
                         updateSetDropdowns(); applyFilters(); updateSummary();
                         renderCardOfTheDay();
                         renderHallOfFame(); 
-                        renderSalesHistory(); // 🌟 วาดประวัติการขายที่หน้าแรก
-                        showToast(`✅ โหลดสำเร็จ (${allCards.length} ใบ)`);
+                        renderSalesBoard();
+                        showToast(`✅ โหลดสำเร็จ (${allCards.filter(c => Number(c.qty) > 0).length} ใบ)`);
                         if (document.getElementById('binder-set-select').value) loadBinderSet();
                     }
                 } catch(err) {
@@ -724,18 +763,28 @@
             await tryFetch();
         }
 
-        // 🌟 ฟังก์ชันวาดประวัติการขายที่หน้าแรก
-        function renderSalesHistory() {
+        // 🌟 วาดบอร์ดสรุปการขาย (แสดงเฉพาะ 3 อันล่าสุด + สรุปรายได้)
+        function renderSalesBoard() {
             const listEl = document.getElementById('recent-sales-list');
+            const qtyStatEl = document.getElementById('sales-stat-qty');
+            const revStatEl = document.getElementById('sales-stat-revenue');
+
+            const totalQty = allSales.reduce((s, item) => s + Number(item.qty || 1), 0);
+            const totalRev = allSales.reduce((s, item) => s + (Number(item.soldPrice || 0) * Number(item.qty || 1)), 0);
+
+            if (qtyStatEl) qtyStatEl.innerHTML = `${totalQty.toLocaleString()} <span class="text-xs font-normal text-emerald-200">ใบ</span>`;
+            if (revStatEl) revStatEl.innerText = `฿${totalRev.toLocaleString()}`;
+
             if (!listEl) return;
-            
+
             if (!allSales || allSales.length === 0) {
                 listEl.innerHTML = '<div class="text-xs text-gray-400 text-center py-3">ยังไม่มีประวัติการขาย</div>';
                 return;
             }
 
-            listEl.innerHTML = allSales.slice(0, 10).map(s => `
-                <div class="bg-emerald-50/60 border border-emerald-100 p-2.5 rounded-2xl flex items-center justify-between gap-2">
+            // แสดงเฉพาะ 3 อันล่าสุด
+            listEl.innerHTML = allSales.slice(0, 3).map(s => `
+                <div onclick="viewSoldCardDetail('${s.cardId}', '${encodeURIComponent(s.cardName)}')" class="bg-emerald-50/60 hover:bg-emerald-100/80 border border-emerald-100 p-2.5 rounded-2xl flex items-center justify-between gap-2 cursor-pointer transition-all duration-200 active:scale-98">
                     <div class="min-w-0 flex-1">
                         <p class="text-xs font-bold text-gray-900 truncate">${s.cardName || 'ไม่ระบุชื่อ'}</p>
                         <p class="text-[9px] text-gray-400 mt-0.5">🕒 ${s.timestamp || '-'}</p>
@@ -748,9 +797,48 @@
             `).join('');
         }
 
+        // 🌟 เปิด Modal ดูประวัติการขายทั้งหมด
+        function openAllSalesModal() {
+            const container = document.getElementById('full-sales-list');
+            if (!allSales || allSales.length === 0) {
+                container.innerHTML = '<div class="text-xs text-gray-400 text-center py-6">ยังไม่มีประวัติการขาย</div>';
+            } else {
+                container.innerHTML = allSales.map(s => `
+                    <div onclick="viewSoldCardDetail('${s.cardId}', '${encodeURIComponent(s.cardName)}')" class="bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 p-3 rounded-2xl flex items-center justify-between gap-2 cursor-pointer transition-all duration-200 active:scale-98">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-bold text-gray-900 truncate">${s.cardName || 'ไม่ระบุชื่อ'}</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">🕒 ${s.timestamp || '-'}</p>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <p class="text-xs font-black text-emerald-600">฿${Number(s.soldPrice || 0).toLocaleString()}</p>
+                            <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-full font-bold">x${s.qty || 1} ใบ</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('all-sales-modal').classList.remove('hidden');
+        }
+
+        // 🌟 คลิกที่การ์ดที่ขายไปเพื่อเปิดดูข้อมูล
+        function viewSoldCardDetail(cardId, encodedCardName) {
+            const cardName = decodeURIComponent(encodedCardName);
+            let card = allCards.find(c => c.id === cardId);
+            if (!card) {
+                card = allCards.find(c => c.name === cardName);
+            }
+
+            if (card) {
+                document.getElementById('all-sales-modal').classList.add('hidden');
+                openEditForm(card.id);
+            } else {
+                showToast(`ไม่พบข้อมูลตั้งต้นของการ์ด "${cardName}"`, 'error');
+            }
+        }
+
         // ===== Summary =====
         function updateSummary() {
-            const owned = allCards.filter(c => String(c.isWishlist) !== 'true');
+            // 🌟 คำนวณเฉพาะการ์ดที่มี Qty > 0
+            const owned = allCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0);
             document.getElementById('total-cards').innerHTML = `${owned.reduce((s,c) => s+Number(c.qty||0),0)} <span class="text-xs text-gray-500">ใบ</span>`;
             document.getElementById('total-price').innerText = `฿${owned.reduce((s,c) => s+(Number(c.price||0)*Number(c.qty||0)),0).toLocaleString()}`;
         }
@@ -767,7 +855,10 @@
 
             document.getElementById('clear-search-btn').classList.toggle('hidden', kw.length === 0);
 
+            // 🌟 ไม่เอาการ์ดที่ขายหมดแล้ว (Qty = 0) มาแสดงในคอลเล็กชันหลัก
             currentFiltered = allCards.filter(card => {
+                if (Number(card.qty) <= 0) return false;
+
                 const isW = String(card.isWishlist) === 'true';
                 if (status === 'owned' && isW) return false;
                 if (status === 'wishlist' && !isW) return false;
@@ -824,9 +915,9 @@
             });
         }
 
-        // 🌟 1. ฟังก์ชัน Card of the Day
+        // Card of the Day (เฉพาะที่มี Qty > 0)
         function renderCardOfTheDay() {
-            const owned = allCards.filter(c => String(c.isWishlist) !== 'true');
+            const owned = allCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0);
             if (!owned.length) return;
 
             const todayStr = new Date().toISOString().split('T')[0];
@@ -848,13 +939,13 @@
 
         initCardTiltEffect();
 
-        // 🏆 2. ฟังก์ชัน Hall of Fame
+        // Hall of Fame (เฉพาะที่มี Qty > 0)
         function renderHallOfFame() {
             const hofGrid = document.getElementById('hall-of-fame-grid');
             if (!hofGrid) return;
 
             const topCards = [...allCards]
-                .filter(c => String(c.isWishlist) !== 'true')
+                .filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0)
                 .sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0))
                 .slice(0, 5);
 
@@ -875,7 +966,6 @@
             `).join('');
         }
 
-        // 🎴 3. 3D Tilt Effect
         function initCardTiltEffect() {
             document.addEventListener('mousemove', (e) => {
                 const cards = document.querySelectorAll('.card-holo');
@@ -954,7 +1044,8 @@
             if (!setName) return;
 
             const setCards = allCards.filter(c => String(c.set || '').trim() === setName);
-            const ownedCount = setCards.filter(c => String(c.isWishlist) !== 'true').length;
+            // 🌟 กรองเฉพาะที่มี Qty > 0
+            const ownedCount = setCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0).length;
             const totalCards = getTotalFromSet(setCards);
 
             const total = totalCards || setCards.length;
@@ -977,9 +1068,10 @@
 
                 for (let i = 1; i <= totalCards; i++) {
                     const card = cardMap[i] || null;
-                    binderSlots.push({ num: i, card: card });
+                    const isOwned = card && String(card.isWishlist) !== 'true' && Number(card.qty) > 0;
+                    binderSlots.push({ num: i, card: isOwned ? card : null });
                     
-                    if (!card || String(card.isWishlist) === 'true') {
+                    if (!isOwned) {
                         window.currentMissingList.push(i);
                     }
                 }
@@ -1014,7 +1106,8 @@
                     binderSlots.push({ isSpecialHeader: true, label: '⭐ การ์ดพิเศษ (AR,SAR,UR,FUR,RGB)', sublabel: 'Secret / Extra' });
                     for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
                     specialNumCards.forEach(c => {
-                        binderSlots.push({ num: parseCardNum(c.cardNumber), card: c, isSpecial: true });
+                        const isOwned = Number(c.qty) > 0;
+                        binderSlots.push({ num: parseCardNum(c.cardNumber), card: isOwned ? c : null, isSpecial: true });
                     });
                 }
 
@@ -1023,7 +1116,8 @@
                     binderSlots.push({ isSpecialHeader: true, label: '🎴 การ์ดพิเศษ (Energy,etc.)', sublabel: 'Promo / Non-Numbered' });
                     for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
                     nonNumCards.forEach(c => {
-                        binderSlots.push({ num: null, numLabel: String(c.cardNumber || '?'), card: c, isSpecial: true });
+                        const isOwned = Number(c.qty) > 0;
+                        binderSlots.push({ num: null, numLabel: String(c.cardNumber || '?'), card: isOwned ? c : null, isSpecial: true });
                     });
                 }
 
@@ -1035,14 +1129,14 @@
                     .filter(c => parseCardNum(c.cardNumber) === null || /[a-zA-Z]/.test(String(c.cardNumber||'').split('/')[0]))
                     .sort((a, b) => String(a.cardNumber).localeCompare(String(b.cardNumber)));
 
-                numCards.forEach(c => binderSlots.push({ num: parseCardNum(c.cardNumber), card: c }));
+                numCards.forEach(c => binderSlots.push({ num: parseCardNum(c.cardNumber), card: Number(c.qty) > 0 ? c : null }));
 
                 if (nonNum.length > 0) {
                     const rem = binderSlots.length % CARDS_PER_PAGE;
                     if (rem !== 0) for (let i = 0; i < (CARDS_PER_PAGE - rem); i++) binderSlots.push({ isFiller: true });
                     binderSlots.push({ isSpecialHeader: true, label: '🎴 การ์ดพิเศษ', sublabel: 'Promo / Non-Numbered' });
                     for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
-                    nonNum.forEach(c => binderSlots.push({ num: null, numLabel: String(c.cardNumber || '?'), card: c, isSpecial: true }));
+                    nonNum.forEach(c => binderSlots.push({ num: null, numLabel: String(c.cardNumber || '?'), card: Number(c.qty) > 0 ? c : null, isSpecial: true }));
                 }
             }
 
@@ -1155,7 +1249,8 @@
             document.getElementById('form-mode').value = 'add';
             document.getElementById('modal-title').innerText = '✨ เพิ่มการ์ดใหม่';
             document.getElementById('btn-delete').classList.add('hidden');
-            document.getElementById('btn-sell').classList.add('hidden'); // ซ่อนปุ่มขายถ้าเพิ่มการ์ดใหม่
+            document.getElementById('btn-sell').classList.add('hidden');
+            document.getElementById('btn-restock-picker').classList.remove('hidden'); // แสดงปุ่มเลือกรีสต็อก
             document.getElementById('modal-image-preview').src = 'https://placehold.co/150/f9fafb/9ca3af?text=No+Image';
             document.getElementById('form-tags').value = '';
             document.getElementById('form-buyPrice').value = '';
@@ -1171,18 +1266,19 @@
             document.getElementById('form-set').value = card.set || '';
             document.getElementById('form-cardNumber').value = card.cardNumber || '';
             document.getElementById('form-price').value = card.price || 0;
-            document.getElementById('form-qty').value = card.qty || 1;
+            document.getElementById('form-qty').value = card.qty || 0;
             document.getElementById('form-rarity').value = card.rarity || '-';
             document.getElementById('form-lang').value = card.language || 'TH';
             document.getElementById('form-condition').value = card.condition || 'NM';
             document.getElementById('form-image').value = card.image || '';
             document.getElementById('form-wishlist').checked = String(card.isWishlist) === 'true';
-            document.getElementById('modal-title').innerText = adminPin ? '🛠️ แก้ไขข้อมูล' : '🔍 รายละเอียดการ์ด';
+            document.getElementById('modal-title').innerText = adminPin ? (Number(card.qty) === 0 ? '📦 ปรับสต็อก/แก้ไขข้อมูล' : '🛠️ แก้ไขข้อมูล') : '🔍 รายละเอียดการ์ด';
             document.getElementById('btn-delete').classList.toggle('hidden', !adminPin);
+            document.getElementById('btn-restock-picker').classList.add('hidden'); // ซ่อนปุ่มเลือกรีสต็อกถ้าเปิดแก้อยู่แล้ว
             
-            // 🌟 ซ่อน/แสดงปุ่มขายการ์ด (แสดงเฉพาะแอดมินและการ์ดที่ไม่ใช่ Wishlist)
             const isWishlist = String(card.isWishlist) === 'true';
-            document.getElementById('btn-sell').classList.toggle('hidden', !adminPin || isWishlist);
+            const isSoldOut = Number(card.qty) <= 0;
+            document.getElementById('btn-sell').classList.toggle('hidden', !adminPin || isWishlist || isSoldOut);
 
             document.getElementById('modal-image-preview').src = getSafeImageUrl(card.image);
             document.getElementById('form-tags').value = card.tags || '';
@@ -1190,7 +1286,40 @@
             checkAuthUI(); toggleModal(true);
         }
 
-        // 🌟 เปิด Modal ขายการ์ด
+        // 🌟 เปิด Modal ตัวเลือกดึงการ์ดที่ขายหมดแล้วกลับมารีสต็อก
+        function openRestockPickerModal() {
+            const soldOutCards = allCards.filter(c => Number(c.qty) <= 0);
+            const container = document.getElementById('restock-picker-list');
+
+            if (!soldOutCards.length) {
+                container.innerHTML = '<div class="text-xs text-gray-400 text-center py-6">ยังไม่มีรายการการ์ดที่ขายหมดในระบบ</div>';
+            } else {
+                container.innerHTML = soldOutCards.map(c => `
+                    <div onclick="selectRestockCard('${c.id}')" class="bg-gray-50 hover:bg-indigo-50 border border-gray-200 hover:border-indigo-300 p-2.5 rounded-2xl flex items-center gap-3 cursor-pointer transition-all duration-200 active:scale-95">
+                        <img src="${getSafeImageUrl(c.image)}" class="w-10 h-14 object-contain rounded border border-gray-200 bg-white p-0.5 flex-shrink-0" onerror="this.src='https://placehold.co/80/f9fafb/9ca3af?text=No+Img'">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-bold text-gray-900 truncate">${c.name}</p>
+                            <p class="text-[10px] text-gray-500 mt-0.5">${c.set||'-'} • ${c.cardNumber||'-'}</p>
+                            <p class="text-[10px] font-black text-emerald-600 mt-0.5">ราคาประเมินเดิม: ฿${Number(c.price||0).toLocaleString()}</p>
+                        </div>
+                        <span class="text-xs font-bold bg-indigo-600 text-white px-2.5 py-1 rounded-xl shadow-sm flex-shrink-0">เลือก</span>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('restock-picker-modal').classList.remove('hidden');
+        }
+
+        // 🌟 ดึงข้อมูลการ์ดที่เลือกมาใส่ในฟอร์มเพื่อเพิ่มสต็อก
+        function selectRestockCard(id) {
+            document.getElementById('restock-picker-modal').classList.add('hidden');
+            openEditForm(id);
+            document.getElementById('form-qty').value = 1; // ตั้งค่าเริ่มต้นเป็น 1 ใบให้พร้อมบันทึก
+            document.getElementById('form-qty').focus();
+            showToast('ดึงข้อมูลการ์ดแล้ว กรุณาปรับจำนวนและกดบันทึก');
+        }
+
+        // เปิด Modal ขายการ์ด
         function openSellModal() {
             const ri = Number(document.getElementById('form-rowIndex').value);
             const card = allCards.find(c => c.rowIndex === ri);
@@ -1202,11 +1331,11 @@
             document.getElementById('sell-qty-input').max = card.qty;
             document.getElementById('sell-price-input').value = card.price || 0;
 
-            toggleModal(false); // ซ่อน modal แก้ไข
+            toggleModal(false);
             document.getElementById('sell-modal').classList.remove('hidden');
         }
 
-        // 🌟 ส่งข้อมูลการขายการ์ดไปยัง Apps Script
+        // ส่งข้อมูลการขายการ์ด
         async function submitSell(e) {
             e.preventDefault();
             if (!adminPin) return showToast('กรุณาล็อกอินก่อน', 'error');
@@ -1228,24 +1357,21 @@
                 soldPrice: soldPrice
             };
 
-            // อัปเดตข้อมูลแบบ Offline ในเครื่องก่อนทันที
-            if (card.qty <= sellQty) {
-                allCards = allCards.filter(c => c.rowIndex !== ri);
-            } else {
-                card.qty -= sellQty;
-            }
+            // อัปเดต Qty เป็น 0 หรือลดลงตามการขายจริง
+            card.qty = Math.max(0, card.qty - sellQty);
 
-            // เพิ่มเข้าอาร์เรย์ sales ล่าสุด
+            // เพิ่มเข้าประวัติการขายในเครื่องทันที
             const now = new Date().toLocaleString('th-TH');
             allSales.unshift({
                 timestamp: now,
+                cardId: card.id,
                 cardName: card.name,
                 soldPrice: soldPrice,
                 qty: sellQty
             });
 
             localStorage.setItem('tcg_cards', JSON.stringify(allCards));
-            updateSetDropdowns(); applyFilters(); updateSummary(); renderSalesHistory();
+            updateSetDropdowns(); applyFilters(); updateSummary(); renderSalesBoard();
             document.getElementById('sell-modal').classList.add('hidden');
             showToast(`บันทึกการขาย ${card.name} เรียบร้อยแล้ว!`);
 
@@ -1297,7 +1423,7 @@
         }
 
         async function deleteCard() {
-            if (!confirm("ลบการ์ดใบนี้?")) return;
+            if (!confirm("ลบการ์ดใบนี้ถาวร?")) return;
             const ri = Number(document.getElementById('form-rowIndex').value);
             allCards = allCards.filter(c => c.rowIndex !== ri);
             updateSetDropdowns(); applyFilters(); updateSummary();
@@ -1438,7 +1564,7 @@
 
         // ===== Export / Stats =====
         function exportForSale() {
-            const sell = currentFiltered.filter(c => String(c.isWishlist) !== 'true');
+            const sell = currentFiltered.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0);
             if (!sell.length) return showToast('ไม่มีการ์ดให้คัดลอก', 'error');
             let txt = "🔥 [ปล่อยของ] การ์ดโปเกมอน\n\n"; let tot = 0;
             sell.forEach(c => { txt += `- ${c.name} [${c.set}] ${c.rarity&&c.rarity!=='-'?`(${c.rarity}) `:''}สภาพ ${c.condition} x${c.qty} = ${Number(c.price*c.qty).toLocaleString()} บ.\n`; tot += c.price*c.qty; });
@@ -1447,7 +1573,7 @@
         }
 
         function openStatsModal() {
-            const owned = allCards.filter(c => String(c.isWishlist) !== 'true');
+            const owned = allCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0);
             const totalCost = owned.reduce((s,c) => s + (Number(c.buyPrice||0) * Number(c.qty||1)), 0);
             const totalVal = owned.reduce((s,c) => s + (Number(c.price||0) * Number(c.qty||1)), 0);
             const profit = totalVal - totalCost;
@@ -1463,24 +1589,24 @@
             let html = `
                 <div class="bg-slate-900 text-white p-4 rounded-2xl mb-4 space-y-2">
                     <div class="flex justify-between text-xs text-slate-300">
-                        <span>ต้นทุนรวม: ฿${totalCost.toLocaleString()}</span>
-                        <span>มูลค่ารวม: ฿${totalVal.toLocaleString()}</span>
+                        <span>ต้นทุนรวมคลัง: ฿${totalCost.toLocaleString()}</span>
+                        <span>มูลค่าประเมินคลัง: ฿${totalVal.toLocaleString()}</span>
                     </div>
                     <div class="flex justify-between items-center border-t border-slate-700 pt-2">
-                        <span class="text-xs font-semibold">กำไร/ขาดทุนสุทธิ:</span>
+                        <span class="text-xs font-semibold">กำไร/ขาดทุนคาดการณ์:</span>
                         <span class="text-base font-black ${profit >= 0 ? 'text-emerald-400' : 'text-red-400'}">
                             ${profit >= 0 ? '+' : ''}฿${profit.toLocaleString()} (${roi}%)
                         </span>
                     </div>
                 </div>
-                <h3 class="text-xs font-bold text-gray-500 mb-2">⭐ ตามความหายาก</h3>
+                <h3 class="text-xs font-bold text-gray-500 mb-2">⭐ ตามความหายาก (ในคลัง)</h3>
             `;
 
             Object.keys(r).sort((a,b)=>r[b]-r[a]).forEach(k => {
                 const p = tot > 0 ? (r[k]/tot*100).toFixed(0) : 0;
                 html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-gray-800 h-full rounded-full" style="width:${p}%"></div></div><span class="text-gray-500">${r[k]}</span></div>`;
             });
-            html += '<h3 class="text-xs font-bold text-gray-500 mt-5 mb-2">🌐 ตามภาษา</h3>';
+            html += '<h3 class="text-xs font-bold text-gray-500 mt-5 mb-2">🌐 ตามภาษา (ในคลัง)</h3>';
             Object.keys(l).forEach(k => {
                 const p = tot > 0 ? (l[k]/tot*100).toFixed(0) : 0;
                 html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-emerald-500 h-full rounded-full" style="width:${p}%"></div></div><span class="text-gray-500">${l[k]}</span></div>`;
@@ -1494,4 +1620,4 @@
         
     </script>
 </body>
-</html>v
+</html>

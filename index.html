@@ -12,6 +12,8 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTgxOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTElIiBmaWxsPSIjZmZmZmZmIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAwIiBmb250LXdlaWdodD0iYm9sZCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VENHPC90ZXh0Pjwvc3ZnPg==">
     <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTgxOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTElIiBmaWxsPSIjZmZmZmZmIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAwIiBmb250LXdlaWdodD0iYm9sZCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VENHPC90ZXh0Pjwvc3ZnPg==">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
@@ -535,6 +537,38 @@
             <span class="text-[10px] font-semibold">ผู้ดูแล</span>
         </button>
     </nav>
+
+    <!-- 1. กราฟประวัติมูลค่าคอลเลกชัน (Historical Value Tracking) -->
+<section style="margin: 20px 0; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+  <h2 style="margin-top: 0;">ประวัติมูลค่าคอลเลกชัน (Historical Value Tracking)</h2>
+  <div style="position: relative; width: 100%; max-width: 800px; margin: 0 auto;">
+    <canvas id="valueHistoryChart"></canvas>
+  </div>
+</section>
+
+<!-- 2. ระบบสแกนรหัสการ์ดด้วยกล้อง (Camera OCR Reader) -->
+<section style="margin: 20px 0; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+  <h2 style="margin-top: 0;">สแกนรหัสการ์ดด้วยกล้อง (Camera OCR Reader)</h2>
+  
+  <div style="margin-bottom: 15px;">
+    <button id="startCamBtn" onclick="startCamera()" style="padding: 8px 16px; cursor: pointer;">📷 เปิดกล้อง</button>
+    <button id="stopCamBtn" onclick="stopCamera()" style="display: none; padding: 8px 16px; cursor: pointer;">ปิดกล้อง</button>
+    <button id="captureBtn" onclick="scanCardCode()" style="display: none; padding: 8px 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">🔍 สแกนรหัส</button>
+  </div>
+
+  <!-- พื้นที่แสดงกล้อง -->
+  <div id="videoContainer" style="display: none; margin-bottom: 15px;">
+    <video id="webcam" autoplay playsinline style="width: 100%; max-width: 400px; border: 2px solid #333; border-radius: 8px;"></video>
+    <canvas id="snapshotCanvas" style="display: none;"></canvas>
+  </div>
+
+  <!-- ผลลัพธ์การสแกน -->
+  <div>
+    <p id="ocrStatus" style="font-weight: bold; color: #0066cc; margin-bottom: 5px;"></p>
+    <label for="cardCodeInput">รหัสที่สแกนได้: </label>
+    <input type="text" id="cardCodeInput" placeholder="ผลลัพธ์จะแสดงที่นี่..." style="width: 100%; max-width: 300px; padding: 8px; font-size: 16px;">
+  </div>
+</section>
 
     <script>
         // ===== PWA Manifest =====
@@ -1342,6 +1376,125 @@
             txt += `\n💰 รวม: ${tot.toLocaleString()} บาท\nสนใจ IB ได้เลยครับ!`;
             navigator.clipboard.writeText(txt).then(() => showToast('คัดลอกแล้ว!'));
         }
+
+        // ==========================================
+  // 1. ฟังก์ชันกราฟประวัติมูลค่า (Chart.js)
+  // ==========================================
+  const ctx = document.getElementById('valueHistoryChart').getContext('2d');
+  
+  // ข้อมูลจำลอง (สามารถปรับแก้ให้ดึงจาก Database หรือ LocalStorage ได้)
+  const historyData = {
+    labels: ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน'], 
+    datasets: [{
+      label: 'มูลค่ารวม (บาท)',
+      data: [15000, 16200, 15800, 17500, 19000, 22500],
+      borderColor: '#36A2EB',
+      backgroundColor: 'rgba(54, 162, 235, 0.2)',
+      borderWidth: 2,
+      fill: true,
+      tension: 0.4 // ทำให้เส้นกราฟโค้งมน
+    }]
+  };
+
+  const valueChart = new Chart(ctx, {
+    type: 'line',
+    data: historyData,
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' }
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+
+  // ฟังก์ชันตัวช่วยสำหรับเพิ่มข้อมูลใหม่เข้ากราฟ
+  function addChartData(monthLabel, value) {
+    valueChart.data.labels.push(monthLabel);
+    valueChart.data.datasets[0].data.push(value);
+    valueChart.update();
+  }
+
+  // ==========================================
+  // 2. ฟังก์ชันกล้องและ OCR (Tesseract.js)
+  // ==========================================
+  let mediaStream = null;
+
+  // เปิดกล้อง
+  async function startCamera() {
+    try {
+      // บังคับใช้กล้องหลัง (environment) หากเปิดในมือถือ
+      mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } 
+      });
+      const video = document.getElementById('webcam');
+      video.srcObject = mediaStream;
+      
+      // สลับ UI
+      document.getElementById('videoContainer').style.display = 'block';
+      document.getElementById('startCamBtn').style.display = 'none';
+      document.getElementById('stopCamBtn').style.display = 'inline-block';
+      document.getElementById('captureBtn').style.display = 'inline-block';
+      document.getElementById('ocrStatus').innerText = '📸 กล้องพร้อมใช้งาน กรุณาจัดรหัสให้อยู่ในเฟรมแล้วกดสแกน';
+      document.getElementById('ocrStatus').style.color = '#0066cc';
+    } catch (err) {
+      alert('ไม่สามารถเข้าถึงกล้องได้: ' + err.message);
+    }
+  }
+
+  // ปิดกล้อง
+  function stopCamera() {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(track => track.stop());
+    }
+    document.getElementById('videoContainer').style.display = 'none';
+    document.getElementById('startCamBtn').style.display = 'inline-block';
+    document.getElementById('stopCamBtn').style.display = 'none';
+    document.getElementById('captureBtn').style.display = 'none';
+    document.getElementById('ocrStatus').innerText = '';
+  }
+
+  // ถ่ายภาพและอ่านข้อความ
+  async function scanCardCode() {
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('snapshotCanvas');
+    const statusText = document.getElementById('ocrStatus');
+    const inputField = document.getElementById('cardCodeInput');
+    
+    // กำหนดขนาด canvas ให้พอดีกับวิดีโอ
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // แคปเจอร์เฟรมปัจจุบันวาดลง canvas
+    const context = canvas.getContext('2d');
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    statusText.innerText = '⏳ กำลังประมวลผลอ่านรหัส... กรุณารอสักครู่';
+    statusText.style.color = '#ff9800';
+    
+    try {
+      // เรียกใช้ Tesseract อ่านภาพเป็นภาษาอังกฤษ (eng) รองรับตัวเลขและตัวอักษร
+      const { data: { text } } = await Tesseract.recognize(canvas, 'eng');
+      
+      // ทำความสะอาดข้อความ ลบช่องว่างหรือบรรทัดว่าง
+      const cleanText = text.trim();
+      
+      if(cleanText) {
+        inputField.value = cleanText;
+        statusText.innerText = '✅ สแกนสำเร็จ!';
+        statusText.style.color = 'green';
+      } else {
+        statusText.innerText = '❌ ไม่พบข้อความ กรุณาปรับโฟกัสแล้วลองใหม่';
+        statusText.style.color = 'red';
+      }
+    } catch (err) {
+      statusText.innerText = '⚠️ เกิดข้อผิดพลาดในการอ่านรหัส';
+      statusText.style.color = 'red';
+      console.error(err);
+    }
+  }
 
         function openStatsModal() {
             const owned = allCards.filter(c => String(c.isWishlist) !== 'true');

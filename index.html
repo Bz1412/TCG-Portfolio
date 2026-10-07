@@ -226,6 +226,12 @@
                     <select id="filter-rarity" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
                         <option value="all">ระดับทั้งหมด</option><option value="RGB">RGB</option><option value="FUR">FUR</option><option value="UR">UR</option><option value="SAR">SAR</option><option value="SR">SR</option><option value="AR">AR</option><option value="RR">RR</option><option value="R">R</option><option value="U">U</option><option value="C">C</option>
                     </select>
+                    <select id="filter-lang" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
+                        <option value="all">ทุกภาษา</option><option value="TH">ไทย (TH)</option><option value="JP">ญี่ปุ่น (JP)</option><option value="EN">อังกฤษ (EN)</option>
+                    </select>
+                    <select id="filter-condition" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
+                        <option value="all">ทุกสภาพ</option><option value="NM">NM</option><option value="LP">LP</option><option value="MP">MP</option><option value="HP">HP</option><option value="Graded">Graded</option>
+                    </select>
                 </div>
             </div>
             <div id="loading" class="grid grid-cols-2 gap-4">
@@ -342,6 +348,10 @@
                     <select id="form-condition" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
                         <option value="NM">NM (สวยไม่มีตำหนิ)</option><option value="LP">LP (มีรอยขนแมว)</option><option value="MP">MP (มีรอยชัดเจน)</option><option value="HP">HP (ตำหนิหนัก)</option><option value="Graded">Graded (มีเกรด)</option>
                     </select>
+                </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-gray-500">แท็ก (คั่นด้วยลูกน้ำ)</label>
+                    <input type="text" id="form-tags" placeholder="เช่น #Pikachu, Promo, #Charizard" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
                 </div>
                 <label id="wishlist-wrapper" class="flex items-center space-x-2 bg-gray-100 p-3 rounded-xl border border-gray-200 cursor-pointer">
                     <input type="checkbox" id="form-wishlist" class="w-4 h-4 rounded border-gray-300">
@@ -552,8 +562,9 @@
             const sort = document.getElementById('sort-select').value;
             const rarity = document.getElementById('filter-rarity').value;
             const status = document.getElementById('filter-status').value;
-            // 🌟 KEY FIX: trim() ค่าจาก dropdown ก่อนเปรียบเทียบ
             const filterSetVal = document.getElementById('filter-set').value.trim();
+            const lang = document.getElementById('filter-lang').value;
+            const condition = document.getElementById('filter-condition').value;
 
             document.getElementById('clear-search-btn').classList.toggle('hidden', kw.length === 0);
 
@@ -561,12 +572,15 @@
                 const isW = String(card.isWishlist) === 'true';
                 if (status === 'owned' && isW) return false;
                 if (status === 'wishlist' && !isW) return false;
-                // 🌟 KEY FIX: trim() ค่าชื่อชุดก่อนเปรียบเทียบ
                 if (filterSetVal && String(card.set || '').trim() !== filterSetVal) return false;
-                const matchKw = !kw || String(card.name).toLowerCase().includes(kw) || String(card.set).toLowerCase().includes(kw) || String(card.cardNumber||'').toLowerCase().includes(kw);
+
+                if (lang !== 'all' && card.language !== lang) return false;
+                if (condition !== 'all' && card.condition !== condition) return false;
+
+                const matchKw = !kw || String(card.name).toLowerCase().includes(kw) || String(card.set).toLowerCase().includes(kw) || String(card.cardNumber||'').toLowerCase().includes(kw) || String(card.tags||'').toLowerCase().includes(kw);
+                
                 return matchKw && (rarity === 'all' || card.rarity === rarity);
             });
-
             currentFiltered.sort((a,b) => {
                 if (sort === 'price_desc') return (Number(b.price)||0) - (Number(a.price)||0);
                 if (sort === 'price_asc') return (Number(a.price)||0) - (Number(b.price)||0);
@@ -586,6 +600,10 @@
                 const isW = String(card.isWishlist) === 'true';
                 const cNum = card.cardNumber ? `<span class="text-[9px] bg-gray-50 text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded">No.${card.cardNumber}</span>` : '';
                 const rb = card.rarity && card.rarity !== '-' ? `<span class="text-[9px] bg-gray-900 text-white px-1.5 py-0.5 rounded font-bold">${card.rarity}</span>` : '';
+                
+                // 🌟 แปลงแท็กให้กลายเป็นป้าย
+                const tagHtml = card.tags ? String(card.tags).split(',').map(t => `<span class="text-[9px] bg-blue-50 text-blue-600 border border-blue-200 px-1.5 py-0.5 rounded-md inline-block mr-1 mt-1">${t.trim()}</span>`).join('') : '';
+
                 g.innerHTML += `
                     <div class="bg-white border ${isW?'border-amber-200 bg-amber-50/30':'border-gray-200 hover:border-gray-300'} p-3.5 rounded-3xl shadow-sm flex flex-col justify-between relative">
                         ${isW ? '<div class="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10 animate-pulse">🎯 WANTED</div>' : ''}
@@ -599,6 +617,7 @@
                             </div>
                             <h2 class="text-xs font-bold text-gray-900 truncate">${card.name}</h2>
                             <p class="text-[10px] text-gray-500 mt-0.5">สภาพ: ${card.condition||'NM'} • ${card.language||'TH'}</p>
+                            ${tagHtml ? `<div class="mt-1">${tagHtml}</div>` : ''} <!-- 🌟 แสดงแท็กตรงนี้ -->
                         </div>
                         <div onclick="openEditForm('${card.id}')" class="flex justify-between items-center mt-3 pt-3 border-t ${isW?'border-amber-200':'border-gray-100'} cursor-pointer">
                             <span class="text-xs font-black text-emerald-600">฿${Number(card.price||0).toLocaleString()}</span>
@@ -853,6 +872,7 @@
             document.getElementById('modal-title').innerText = '✨ เพิ่มการ์ดใหม่';
             document.getElementById('btn-delete').classList.add('hidden');
             document.getElementById('modal-image-preview').src = 'https://placehold.co/150/f9fafb/9ca3af?text=No+Image';
+            document.getElementById('form-tags').value = '';
             checkAuthUI(); toggleModal(true);
         }
 
@@ -874,6 +894,7 @@
             document.getElementById('modal-title').innerText = adminPin ? '🛠️ แก้ไขข้อมูล' : '🔍 รายละเอียดการ์ด';
             document.getElementById('btn-delete').classList.toggle('hidden', !adminPin);
             document.getElementById('modal-image-preview').src = getSafeImageUrl(card.image);
+            document.getElementById('form-tags').value = card.tags || '';
             checkAuthUI(); toggleModal(true);
         }
 
@@ -893,6 +914,7 @@
                 condition: document.getElementById('form-condition').value,
                 image: document.getElementById('form-image').value,
                 isWishlist: document.getElementById('form-wishlist').checked
+                tags: document.getElementById('form-tags').value
             };
             const isAdd = document.getElementById('form-mode').value === 'add';
             if (isAdd) { d.id = "CARD-" + Date.now(); d.rowIndex = allCards.length + 2; allCards.unshift(d); }

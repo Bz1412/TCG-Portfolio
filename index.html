@@ -418,7 +418,7 @@
 
         // ===== Auth =====
         function checkAuthUI() {
-            const ok = adminPin.length > 0;
+            const ok = adminPin === "001412"; 
             document.getElementById('nav-add-btn').classList.toggle('hidden', !ok);
             document.getElementById('nav-login-hint').classList.toggle('hidden', ok);
             document.getElementById('auth-btn-login').classList.toggle('hidden', ok);
@@ -428,9 +428,17 @@
             document.getElementById('form-actions-wrapper').classList.toggle('hidden', !ok);
             ['opacity','pointerEvents'].forEach(p => document.getElementById('wishlist-wrapper').style[p] = ok ? '' : p === 'opacity' ? '0.6' : 'none');
         }
+        
         function loginAdmin() {
             const pin = prompt("🔐 รหัสผ่านผู้ดูแลระบบ:");
-            if (pin) { adminPin = pin; localStorage.setItem('tcg_pin', pin); checkAuthUI(); showToast("ปลดล็อกโหมดผู้ดูแลแล้ว"); }
+            if (pin === "001412") { 
+                adminPin = pin; 
+                localStorage.setItem('tcg_pin', pin); 
+                checkAuthUI(); 
+                showToast("ปลดล็อกโหมดผู้ดูแลแล้ว"); 
+            } else if (pin !== null) {
+                showToast("รหัสผ่านไม่ถูกต้อง", "error");
+            }
         }
         function logoutAdmin() {
             adminPin = ''; localStorage.removeItem('tcg_pin'); checkAuthUI(); showToast("ออกจากระบบแล้ว"); toggleModal(false);

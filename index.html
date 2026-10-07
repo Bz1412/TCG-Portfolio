@@ -242,6 +242,7 @@
                 </div>
                 <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
                     <button onclick="exportForSale()" class="bg-gray-900 text-white text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-black">📋 โพสต์ขาย</button>
+                    <button onclick="openWTSGenerator()" class="bg-indigo-600 text-white text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-indigo-700 shadow-sm">🖼️ สร้างรูปภาพ</button>
                     <!-- 🌟 Dropdown กรองตาม Set -->
                     <select id="filter-set" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none min-w-0 max-w-[130px]">
                         <option value="">📁 ทุกชุด</option>
@@ -400,7 +401,11 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-[11px] font-semibold text-gray-500">ราคา (บาท)</label>
+                        <label class="text-[11px] font-semibold text-gray-500">ต้นทุนซื้อ (บาท)</label>
+                        <input type="number" id="form-buyPrice" placeholder="0" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-gray-500">ราคาประเมิน/ขาย (บาท)</label>
                         <input type="number" id="form-price" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
                     </div>
                     <div>
@@ -452,6 +457,40 @@
             <button onclick="copyMissingList()" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl hover:bg-black transition text-sm">
                 📋 คัดลอกไปโพสต์รับซื้อ (WTB)
             </button>
+        </div>
+    </div>
+
+    <!-- WTS/WTB Generator Modal -->
+    <div id="wts-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl border border-gray-100 max-h-[92vh] overflow-y-auto">
+            <div class="flex justify-between items-center pb-2 border-b border-gray-100 mb-3">
+                <h2 class="font-bold text-base text-gray-900">🖼️ สร้างรูปภาพ WTS / WTB</h2>
+                <button onclick="document.getElementById('wts-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-900 text-2xl">&times;</button>
+            </div>
+            
+            <div class="space-y-3">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-500">ประเภท</label>
+                        <select id="wts-mode" onchange="generateWTSCanvas()" class="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold">
+                            <option value="WTS">🔥 WTS (ขาย)</option>
+                            <option value="WTB">🎯 WTB (ตั้งรับ)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-500">ชื่อผู้ขาย/ช่องทางติดต่อ</label>
+                        <input type="text" id="wts-contact" placeholder="FB: MyName / Tel" oninput="generateWTSCanvas()" class="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs">
+                    </div>
+                </div>
+
+                <div class="border border-gray-200 rounded-2xl p-2 bg-gray-50 flex justify-center">
+                    <canvas id="wts-canvas" width="600" height="750" class="w-full h-auto rounded-xl shadow-sm border border-gray-200"></canvas>
+                </div>
+
+                <button onclick="downloadWTSImage()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center gap-2">
+                    <span>💾 ดาวน์โหลดรูปภาพ (PNG)</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1059,6 +1098,7 @@ function initCardTiltEffect() {
             document.getElementById('btn-delete').classList.add('hidden');
             document.getElementById('modal-image-preview').src = 'https://placehold.co/150/f9fafb/9ca3af?text=No+Image';
             document.getElementById('form-tags').value = '';
+            document.getElementById('form-buyPrice').value = '';
             checkAuthUI(); toggleModal(true);
         }
 
@@ -1081,6 +1121,7 @@ function initCardTiltEffect() {
             document.getElementById('btn-delete').classList.toggle('hidden', !adminPin);
             document.getElementById('modal-image-preview').src = getSafeImageUrl(card.image);
             document.getElementById('form-tags').value = card.tags || '';
+            document.getElementById('form-buyPrice').value = card.buyPrice || '';
             checkAuthUI(); toggleModal(true);
         }
 
@@ -1093,6 +1134,7 @@ function initCardTiltEffect() {
                 name: document.getElementById('form-name').value,
                 set: document.getElementById('form-set').value,
                 cardNumber: document.getElementById('form-cardNumber').value,
+                buyPrice: Number(document.getElementById('form-buyPrice').value || 0),
                 price: Number(document.getElementById('form-price').value),
                 qty: Number(document.getElementById('form-qty').value),
                 rarity: document.getElementById('form-rarity').value,
@@ -1162,6 +1204,115 @@ function initCardTiltEffect() {
             };
         }
 
+        function openWTSGenerator() {
+            if (!currentFiltered.length) return showToast('ไม่มีการ์ดให้สร้างรูปภาพ', 'error');
+            document.getElementById('wts-modal').classList.remove('hidden');
+            generateWTSCanvas();
+        }
+
+        async function generateWTSCanvas() {
+            const canvas = document.getElementById('wts-canvas');
+            const ctx = canvas.getContext('2d');
+            const mode = document.getElementById('wts-mode').value;
+            const contact = document.getElementById('wts-contact').value.trim() || 'TCG Vault Collector';
+            
+            // กรองเอาเฉพาะการ์ดที่กรองไว้อยู่ในปัจจุบัน (สูงสุด 6 ใบในรูป)
+            const cardsToDraw = currentFiltered.slice(0, 6);
+
+            // Background
+            ctx.fillStyle = '#0f172a'; // Slate-900
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Banner Header
+            ctx.fillStyle = mode === 'WTS' ? '#ef4444' : '#f59e0b';
+            ctx.fillRect(0, 0, canvas.width, 90);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 32px Prompt, sans-serif';
+            ctx.fillText(mode === 'WTS' ? '🔥 WTS - FOR SALE' : '🎯 WTB - WANTED', 30, 55);
+
+            ctx.font = '16px Prompt, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(`ติดต่อ: ${contact}`, canvas.width - 30, 55);
+            ctx.textAlign = 'left';
+
+            // Draw Cards Grid (2 cols x 3 rows)
+            const startX = 30, startY = 120;
+            const cardW = 250, cardH = 170;
+            const gapX = 40, gapY = 25;
+
+            let totalPrice = 0;
+
+            for (let i = 0; i < cardsToDraw.length; i++) {
+                const c = cardsToDraw[i];
+                const col = i % 2;
+                const row = Math.floor(i / 2);
+                const x = startX + col * (cardW + gapX);
+                const y = startY + row * (cardH + gapY);
+
+                totalPrice += (Number(c.price) || 0) * (Number(c.qty) || 1);
+
+                // Card Box BG
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.roundRect(x, y, cardW, cardH, 16);
+                ctx.fill();
+
+                // Card Image
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.src = getSafeImageUrl(c.image);
+                
+                await new Promise(resolve => {
+                    img.onload = () => {
+                        ctx.drawImage(img, x + 10, y + 10, 100, 150);
+                        resolve();
+                    };
+                    img.onerror = () => { resolve(); };
+                });
+
+                // Text Details
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 16px Prompt, sans-serif';
+                ctx.fillText(c.name.length > 12 ? c.name.substring(0, 12) + '..' : c.name, x + 120, y + 35);
+
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '13px Prompt, sans-serif';
+                ctx.fillText(`ชุด: ${c.set || '-'}`, x + 120, y + 65);
+                ctx.fillText(`สภาพ: ${c.condition || 'NM'} (${c.language || 'TH'})`, x + 120, y + 90);
+                if (c.rarity) ctx.fillText(`Rarity: ${c.rarity}`, x + 120, y + 115);
+
+                // Price Tag
+                ctx.fillStyle = '#10b981';
+                ctx.font = 'bold 18px Prompt, sans-serif';
+                ctx.fillText(`฿${Number(c.price||0).toLocaleString()} ${c.qty > 1 ? `(x${c.qty})` : ''}`, x + 120, y + 145);
+            }
+
+            // Footer Total
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, canvas.height - 70, canvas.width, 70);
+
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = 'bold 20px Prompt, sans-serif';
+            ctx.fillText(`รวมการ์ดทั้งหมด: ${cardsToDraw.length} รายการ`, 30, canvas.height - 28);
+
+            ctx.fillStyle = '#34d399';
+            ctx.font = 'bold 24px Prompt, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(`ราคารวม: ฿${totalPrice.toLocaleString()}`, canvas.width - 30, canvas.height - 28);
+            ctx.textAlign = 'left';
+        }
+
+        function downloadWTSImage() {
+            const canvas = document.getElementById('wts-canvas');
+            const link = document.createElement('a');
+            const mode = document.getElementById('wts-mode').value;
+            link.download = `${mode}_TCG_Vault_${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('ดาวน์โหลดรูปภาพสำเร็จ!');
+        }
+
         // ===== Export / Stats =====
         function exportForSale() {
             const sell = currentFiltered.filter(c => String(c.isWishlist) !== 'true');
@@ -1174,13 +1325,34 @@ function initCardTiltEffect() {
 
         function openStatsModal() {
             const owned = allCards.filter(c => String(c.isWishlist) !== 'true');
+            const totalCost = owned.reduce((s,c) => s + (Number(c.buyPrice||0) * Number(c.qty||1)), 0);
+            const totalVal = owned.reduce((s,c) => s + (Number(c.price||0) * Number(c.qty||1)), 0);
+            const profit = totalVal - totalCost;
+            const roi = totalCost > 0 ? ((profit / totalCost) * 100).toFixed(1) : 0;
+
             const r = {}, l = {};
             owned.forEach(c => {
                 if (c.rarity && c.rarity !== '-') r[c.rarity] = (r[c.rarity]||0) + Number(c.qty);
                 l[c.language||'TH'] = (l[c.language||'TH']||0) + Number(c.qty);
             });
             const tot = owned.reduce((s,c) => s+Number(c.qty),0);
-            let html = '<h3 class="text-xs font-bold text-gray-500 mb-2">⭐ ตามความหายาก</h3>';
+
+            let html = `
+                <div class="bg-slate-900 text-white p-4 rounded-2xl mb-4 space-y-2">
+                    <div class="flex justify-between text-xs text-slate-300">
+                        <span>ต้นทุนรวม: ฿${totalCost.toLocaleString()}</span>
+                        <span>มูลค่ารวม: ฿${totalVal.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-slate-700 pt-2">
+                        <span class="text-xs font-semibold">กำไร/ขาดทุนสุทธิ:</span>
+                        <span class="text-base font-black ${profit >= 0 ? 'text-emerald-400' : 'text-red-400'}">
+                            ${profit >= 0 ? '+' : ''}฿${profit.toLocaleString()} (${roi}%)
+                        </span>
+                    </div>
+                </div>
+                <h3 class="text-xs font-bold text-gray-500 mb-2">⭐ ตามความหายาก</h3>
+            `;
+
             Object.keys(r).sort((a,b)=>r[b]-r[a]).forEach(k => {
                 const p = tot > 0 ? (r[k]/tot*100).toFixed(0) : 0;
                 html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-gray-800 h-full rounded-full" style="width:${p}%"></div></div><span class="text-gray-500">${r[k]}</span></div>`;
@@ -1190,11 +1362,13 @@ function initCardTiltEffect() {
                 const p = tot > 0 ? (l[k]/tot*100).toFixed(0) : 0;
                 html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-emerald-500 h-full rounded-full" style="width:${p}%"></div></div><span class="text-gray-500">${l[k]}</span></div>`;
             });
+
             document.getElementById('stats-content').innerHTML = html;
             document.getElementById('stats-modal').classList.remove('hidden');
         }
 
         loadData();
+        
     </script>
 </body>
 </html>

@@ -160,7 +160,36 @@
         .page-btn:active { background: #e5e7eb; }
         .page-btn:disabled { opacity: 0.35; cursor: default; }
 
-        /* Swipe animation */
+.card-holo {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+.card-holo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        115deg, 
+        transparent 20%, 
+        rgba(255, 255, 255, 0.4) 35%, 
+        rgba(255, 0, 128, 0.25) 45%, 
+        rgba(0, 255, 255, 0.25) 55%, 
+        rgba(255, 255, 0, 0.25) 65%, 
+        transparent 80%
+    );
+    opacity: 0;
+    mix-blend-mode: color-dodge;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    border-radius: inherit;
+}
+.card-holo:hover::after {
+    opacity: 1;
+}
+
         @keyframes slideLeft { from { transform: translateX(60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes slideRight { from { transform: translateX(-60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .slide-in-left { animation: slideLeft 0.2s ease; }
@@ -233,14 +262,42 @@
                         <option value="all">ทุกสภาพ</option><option value="NM">NM</option><option value="LP">LP</option><option value="MP">MP</option><option value="HP">HP</option><option value="Graded">Graded</option>
                     </select>
                 </div>
-            </div>
-            <div id="loading" class="grid grid-cols-2 gap-4">
-                <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-56"></div>
-                <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-56"></div>
-            </div>
-            <div id="card-grid" class="grid grid-cols-2 gap-4 hidden"></div>
-        </main>
-    </div>
+                <div id="showcase-section" class="mb-6 space-y-4">
+                    <div id="card-of-the-day-container" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-4 text-white shadow-xl border border-indigo-500/30 flex items-center gap-4 relative overflow-hidden">
+                        <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                        <div id="cotd-img-box" class="w-20 h-28 bg-black/40 rounded-xl flex-shrink-0 flex items-center justify-center border border-white/10 p-1">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5 mb-1">
+                                <span class="text-[10px] font-extrabold bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full uppercase tracking-wider">🌟 Card of the Day</span>
+                            </div>
+                            <h3 id="cotd-name" class="font-bold text-sm truncate text-amber-200">กำลังสุ่มการ์ดเด่น...</h3>
+                            <p id="cotd-details" class="text-xs text-slate-300 mt-0.5 truncate">-</p>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span id="cotd-price" class="text-sm font-black text-emerald-400">฿0</span>
+                                <span id="cotd-rarity" class="text-[10px] bg-white/10 px-2 py-0.5 rounded border border-white/10 text-slate-300">UR</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h2 class="text-xs font-bold text-gray-700 flex items-center gap-1">
+                                <span>🏆 Top Valued Cards</span>
+                                <span class="text-[10px] text-gray-400 font-normal">(สุดยอดการ์ดประจำคลัง)</span>
+                            </h2>
+                        </div>
+                        <div id="hall-of-fame-grid" class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                        </div>
+                    </div>
+                </div>
+                            </div>
+                            <div id="loading" class="grid grid-cols-2 gap-4">
+                                <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-56"></div>
+                                <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-56"></div>
+                            </div>
+                            <div id="card-grid" class="grid grid-cols-2 gap-4 hidden"></div>
+                        </main>
+                    </div>
 
     <!-- ===================== VIEW: BINDER ===================== -->
     <div id="view-binder">
@@ -600,8 +657,6 @@
                 const isW = String(card.isWishlist) === 'true';
                 const cNum = card.cardNumber ? `<span class="text-[9px] bg-gray-50 text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded">No.${card.cardNumber}</span>` : '';
                 const rb = card.rarity && card.rarity !== '-' ? `<span class="text-[9px] bg-gray-900 text-white px-1.5 py-0.5 rounded font-bold">${card.rarity}</span>` : '';
-                
-                // 🌟 แปลงแท็กให้กลายเป็นป้าย
                 const tagHtml = card.tags ? String(card.tags).split(',').map(t => `<span class="text-[9px] bg-blue-50 text-blue-600 border border-blue-200 px-1.5 py-0.5 rounded-md inline-block mr-1 mt-1">${t.trim()}</span>`).join('') : '';
 
                 g.innerHTML += `
@@ -626,6 +681,79 @@
                     </div>`;
             });
         }
+
+        // 🌟 1. ฟังก์ชัน Card of the Day (สุ่มการ์ดเด่นตามวันที่)
+function renderCardOfTheDay() {
+    const owned = allCards.filter(c => String(c.isWishlist) !== 'true');
+    if (!owned.length) return;
+
+    // ใช้ วันที่ (YYYY-MM-DD) เป็น Seed สุ่มเพื่อให้การ์ดเปลี่ยนวันละ 1 ครั้ง
+    const todayStr = new Date().toISOString().split('T')[0];
+    let hash = 0;
+    for (let i = 0; i < todayStr.length; i++) {
+        hash = todayStr.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const idx = Math.abs(hash) % owned.length;
+    const card = owned[idx];
+
+    document.getElementById('cotd-name').textContent = card.name;
+    document.getElementById('cotd-details').textContent = `${card.set || '-'} • No.${card.cardNumber || '-'} (${card.condition || 'NM'})`;
+    document.getElementById('cotd-price').textContent = `฿${Number(card.price || 0).toLocaleString()}`;
+    document.getElementById('cotd-rarity').textContent = card.rarity || 'RARE';
+    document.getElementById('cotd-img-box').innerHTML = `
+        <img src="${getSafeImageUrl(card.image)}" class="h-full object-contain rounded-md card-holo shadow-lg" onerror="this.src='https://placehold.co/100/f9fafb/9ca3af?text=Card'">
+    `;
+}
+
+        renderCardOfTheDay();
+        renderHallOfFame();
+        initCardTiltEffect();
+
+// 🏆 2. ฟังก์ชัน Hall of Fame (แสดงการ์ดที่แพงที่สุด 5 อันดับแรก)
+function renderHallOfFame() {
+    const hofGrid = document.getElementById('hall-of-fame-grid');
+    if (!hofGrid) return;
+
+    const topCards = [...allCards]
+        .filter(c => String(c.isWishlist) !== 'true')
+        .sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0))
+        .slice(0, 5);
+
+    if (!topCards.length) {
+        hofGrid.innerHTML = '<span class="text-xs text-gray-400">ยังไม่มีการ์ดในคลัง</span>';
+        return;
+    }
+
+    hofGrid.innerHTML = topCards.map((c, i) => `
+        <div onclick="openEditForm('${c.id}')" class="flex-shrink-0 w-28 bg-white border border-amber-200 p-2 rounded-2xl shadow-sm relative cursor-pointer hover:scale-105 transition-transform card-holo">
+            <span class="absolute top-1 left-1 bg-amber-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full z-10 shadow">#${i+1}</span>
+            <div class="h-24 bg-gray-50 rounded-xl flex items-center justify-center p-1 mb-1">
+                <img src="${getSafeImageUrl(c.image)}" class="h-full object-contain rounded" onerror="this.src='https://placehold.co/80/f9fafb/9ca3af?text=No+Img'">
+            </div>
+            <p class="text-[10px] font-bold text-gray-900 truncate">${c.name}</p>
+            <p class="text-[9px] font-black text-emerald-600">฿${Number(c.price||0).toLocaleString()}</p>
+        </div>
+    `).join('');
+}
+
+// 🎴 3. เพิ่มเอฟเฟกต์ 3D Tilt เวลาเอาเมาส์ไปชี้การ์ดแรร์
+function initCardTiltEffect() {
+    document.addEventListener('mousemove', (e) => {
+        const cards = document.querySelectorAll('.card-holo');
+        cards.forEach(card => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+                const rx = (y / rect.height - 0.5) * -20;
+                const ry = (x / rect.width - 0.5) * 20;
+                card.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.03)`;
+            } else {
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)`;
+            }
+        });
+    });
+}
 
         // ===== TAB Switch =====
         function switchTab(tab) {

@@ -309,9 +309,17 @@
                     <option value="">-- เลือกชุดการ์ด (Set) --</option>
                 </select>
             </div>
-            <div id="binder-stats" class="text-right flex-shrink-0">
-                <p class="text-[10px] text-gray-400 font-semibold">มีแล้ว</p>
-                <p id="binder-owned-count" class="text-sm font-extrabold text-emerald-600">0 / 0</p>
+            <div id="binder-stats" class="flex-shrink-0 w-2/5">
+                <div class="flex justify-between items-end mb-1">
+                    <p class="text-[10px] text-gray-400 font-semibold">ความคืบหน้า</p>
+                    <p id="binder-owned-count" class="text-xs font-extrabold text-emerald-600">0/0 (0%)</p>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2">
+                    <div id="binder-progress-bar" class="bg-emerald-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <button onclick="showMissingCards()" class="w-full bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100 text-[10px] font-bold py-1.5 rounded-lg transition shadow-sm">
+                    🔍 ลิสต์ใบที่ขาด
+                </button>
             </div>
         </div>
 
@@ -427,6 +435,23 @@
                     <button type="submit" class="flex-1 py-3.5 bg-gray-900 hover:bg-black text-white rounded-xl font-semibold text-sm shadow-md transition">บันทึกข้อมูล</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Missing Cards Modal -->
+    <div id="missing-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-100">
+            <div class="flex justify-between items-center pb-3 border-b border-gray-100 mb-4">
+                <h2 class="font-bold text-lg text-gray-900 flex items-center gap-2">🔍 ใบที่ขาด</h2>
+                <button onclick="document.getElementById('missing-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-900 text-2xl">&times;</button>
+            </div>
+            <p class="text-xs text-gray-500 mb-2">ชุด: <span id="missing-set-name" class="font-bold text-gray-900"></span></p>
+            <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 max-h-40 overflow-y-auto mb-4 scrollbar-hide">
+                <p id="missing-list-text" class="text-sm font-mono text-gray-700 break-words leading-relaxed"></p>
+            </div>
+            <button onclick="copyMissingList()" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl hover:bg-black transition text-sm">
+                📋 คัดลอกไปโพสต์รับซื้อ (WTB)
+            </button>
         </div>
     </div>
 
@@ -772,6 +797,28 @@ function initCardTiltEffect() {
             }
         }
 
+        function showMissingCards() {
+            if (!window.currentBinderSetName) return showToast('กรุณาเลือกชุดการ์ดก่อน', 'error');
+            if (window.currentMissingList.length === 0) return showToast('🎉 ยินดีด้วย! คุณเก็บครบเซ็ตนี้แล้ว');
+
+            // แปลงตัวเลขเป็น Format เช่น 001/130
+            const listStr = window.currentMissingList
+                .map(n => `${String(n).padStart(3, '0')}/${window.currentBinderTotal}`)
+                .join(', ');
+
+            document.getElementById('missing-set-name').innerText = window.currentBinderSetName;
+            document.getElementById('missing-list-text').innerText = listStr;
+            document.getElementById('missing-modal').classList.remove('hidden');
+        }
+
+        function copyMissingList() {
+            const txt = `🎯 [WTB] ตั้งรับการ์ดโปเกมอน\nชุด: ${window.currentBinderSetName}\n\nตามหาใบที่ขาดตามเบอร์นี้ครับ:\n${document.getElementById('missing-list-text').innerText}\n\nใครมีใบไหนลองเสนอราคามาได้เลยครับ!`;
+            navigator.clipboard.writeText(txt).then(() => {
+                document.getElementById('missing-modal').classList.add('hidden');
+                showToast('คัดลอกข้อความ WTB แล้ว!');
+            });
+        }
+
         // ===== BINDER LOGIC =====
         function parseCardNum(str) {
             if (!str) return null;
@@ -797,12 +844,18 @@ function initCardTiltEffect() {
     const ownedCount = setCards.filter(c => String(c.isWishlist) !== 'true').length;
     const totalCards = getTotalFromSet(setCards);
 
-    document.getElementById('binder-owned-count').innerText = `${ownedCount} / ${totalCards || setCards.length}`;
+    const total = totalCards || setCards.length;
+    const percentage = total > 0 ? Math.round((ownedCount / total) * 100) : 0;
+    document.getElementById('binder-owned-count').innerText = `${ownedCount}/${total} (${percentage}%)`;
+    document.getElementById('binder-progress-bar').style.width = `${percentage}%`;
+
+    window.currentMissingList = [];
+    window.currentBinderSetName = setName;
+    window.currentBinderTotal = total;
 
     binderSlots = [];
 
     if (totalCards > 0) {
-        // สร้าง Map ของการ์ดทั้งหมด Key = เลขการ์ด
         const cardMap = {};
         setCards.forEach(c => {
             const n = parseCardNum(c.cardNumber);
@@ -811,7 +864,13 @@ function initCardTiltEffect() {
 
         // --- กลุ่ม 1: การ์ดปกติ เลข 1 ถึง totalCards ---
         for (let i = 1; i <= totalCards; i++) {
-            binderSlots.push({ num: i, card: cardMap[i] || null });
+            const card = cardMap[i] || null;
+            binderSlots.push({ num: i, card: card });
+            
+            // ดักจับใบที่ไม่มี หรือเป็นแค่ Wishlist
+            if (!card || String(card.isWishlist) === 'true') {
+                window.currentMissingList.push(i);
+            }
         }
 
         // --- กลุ่ม 2: การ์ดพิเศษตัวเลข (เลขเกิน totalCards) ---

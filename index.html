@@ -770,17 +770,29 @@ function updatePinDisplay() {
     }
 }
 
-function verifyPin() {
-    adminPin = currentPinInput;
-    localStorage.setItem('tcg_admin_pin', adminPin);
-    
-    closePinModal();
+const CORRECT_PIN = '001412'; 
 
-    if (typeof checkAuthUI === 'function') {
-        checkAuthUI();
+function verifyPin() {
+    if (currentPinInput === CORRECT_PIN) {
+
+        adminPin = currentPinInput;
+        localStorage.setItem('tcg_admin_pin', adminPin);
+        
+        closePinModal();
+        
+        if (typeof checkAuthUI === 'function') {
+            checkAuthUI();
+        }
+        
+        showToast('🔓 เข้าสู่ระบบผู้ดูแลแล้ว', 'success');
+        
+    } else {
+
+        showToast('❌ รหัส PIN ไม่ถูกต้อง', 'error');
+
+        currentPinInput = '';
+        updatePinDisplay();
     }
-    
-    showToast('🔓 เข้าสู่ระบบผู้ดูแลแล้ว', 'success');
 }
         
         function logoutAdmin() {

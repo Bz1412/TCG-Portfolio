@@ -200,7 +200,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 selection:bg-gray-200 selection:text-gray-900">
+<body class="bg-gray-50 text-gray-900 selection:bg-gray-200 selection:text-gray-900" onload="loadData()">
 
     <datalist id="set-list"></datalist>
 
@@ -209,7 +209,7 @@
     </div>
 
     <!-- ===================== VIEW: HOME ===================== -->
-    <div id="view-home" class="min-h-screen pb-28">
+    <div id="view-home" class="min-h-screen pb-28 active">
         <header class="bg-white pt-8 pb-6 px-6 rounded-b-[2.5rem] shadow-sm border-b border-gray-200">
             <div class="max-w-md mx-auto">
                 <div class="flex justify-between items-center mb-6">
@@ -307,7 +307,7 @@
                             <p id="cotd-details" class="text-xs text-slate-300 mt-0.5 truncate">-</p>
                             <div class="mt-2 flex items-center gap-2">
                                 <span id="cotd-price" class="text-sm font-black text-emerald-400">฿0</span>
-                                <span id="cotd-rarity" class="text-[10px] bg-white/10 px-2 py-0.5 rounded border border-white/10 text-slate-300">UR</span>
+                                <span id="cotd-rarity" class="text-[10px] bg-white/10 px-2 py-0.5 rounded border border-white/10 text-slate-300">-</span>
                             </div>
                         </div>
                     </div>
@@ -740,7 +740,7 @@
         const CARDS_PER_PAGE = 8;
         let allCards = [], currentFiltered = [];
         let allSales = [];
-        let adminPin = localStorage.getItem('tcg_pin') || '';
+        let adminPin = localStorage.getItem('tcg_admin_pin') || localStorage.getItem('tcg_pin') || '';
         let binderSlots = [];
         let binderPage = 0;
         let touchStartX = 0;
@@ -758,76 +758,74 @@
             ['opacity','pointerEvents'].forEach(p => document.getElementById('wishlist-wrapper').style[p] = ok ? '' : p === 'opacity' ? '0.6' : 'none');
         }
 
-let currentPinInput = '';
+        let currentPinInput = '';
 
-function loginAdmin() {
-    currentPinInput = '';
-    updatePinDisplay();
-    document.getElementById('pin-modal').classList.remove('hidden');
-}
-
-function closePinModal() {
-    document.getElementById('pin-modal').classList.add('hidden');
-}
-
-function pressPin(num) {
-    if (currentPinInput.length < 6) {
-        currentPinInput += num;
-        updatePinDisplay();
-
-        if (currentPinInput.length === 6) {
-            setTimeout(() => {
-                verifyPin();
-            }, 150);
+        function loginAdmin() {
+            currentPinInput = '';
+            updatePinDisplay();
+            document.getElementById('pin-modal').classList.remove('hidden');
         }
-    }
-}
 
-function deletePin() {
-    if (currentPinInput.length > 0) {
-        currentPinInput = currentPinInput.slice(0, -1);
-        updatePinDisplay();
-    }
-}
-
-function updatePinDisplay() {
-    const indicators = document.getElementById('pin-indicators').children;
-    for (let i = 0; i < 6; i++) {
-        if (i < currentPinInput.length) {
-            indicators[i].className = 'w-3.5 h-3.5 rounded-full bg-purple-500 transition-all duration-200 scale-110 shadow-[0_0_8px_rgba(168,85,247,0.8)]';
-        } else {
-            indicators[i].className = 'w-3.5 h-3.5 rounded-full border-2 border-gray-600 transition-all duration-200';
+        function closePinModal() {
+            document.getElementById('pin-modal').classList.add('hidden');
         }
-    }
-}
 
-const CORRECT_PIN = '001412'; 
+        function pressPin(num) {
+            if (currentPinInput.length < 6) {
+                currentPinInput += num;
+                updatePinDisplay();
 
-function verifyPin() {
-    if (currentPinInput === CORRECT_PIN) {
-
-        adminPin = currentPinInput;
-        localStorage.setItem('tcg_admin_pin', adminPin);
-        
-        closePinModal();
-        
-        if (typeof checkAuthUI === 'function') {
-            checkAuthUI();
+                if (currentPinInput.length === 6) {
+                    setTimeout(() => {
+                        verifyPin();
+                    }, 150);
+                }
+            }
         }
-        
-        showToast('🔓 เข้าสู่ระบบผู้ดูแลแล้ว', 'success');
-        
-    } else {
 
-        showToast('❌ รหัส PIN ไม่ถูกต้อง', 'error');
+        function deletePin() {
+            if (currentPinInput.length > 0) {
+                currentPinInput = currentPinInput.slice(0, -1);
+                updatePinDisplay();
+            }
+        }
 
-        currentPinInput = '';
-        updatePinDisplay();
-    }
-}
+        function updatePinDisplay() {
+            const indicators = document.getElementById('pin-indicators').children;
+            for (let i = 0; i < 6; i++) {
+                if (i < currentPinInput.length) {
+                    indicators[i].className = 'w-3.5 h-3.5 rounded-full bg-purple-500 transition-all duration-200 scale-110 shadow-[0_0_8px_rgba(168,85,247,0.8)]';
+                } else {
+                    indicators[i].className = 'w-3.5 h-3.5 rounded-full border-2 border-gray-600 transition-all duration-200';
+                }
+            }
+        }
+
+        const CORRECT_PIN = '001412'; 
+
+        function verifyPin() {
+            if (currentPinInput === CORRECT_PIN) {
+                adminPin = currentPinInput;
+                localStorage.setItem('tcg_admin_pin', adminPin);
+                closePinModal();
+                if (typeof checkAuthUI === 'function') {
+                    checkAuthUI();
+                }
+                showToast('🔓 เข้าสู่ระบบผู้ดูแลแล้ว', 'success');
+            } else {
+                showToast('❌ รหัส PIN ไม่ถูกต้อง', 'error');
+                currentPinInput = '';
+                updatePinDisplay();
+            }
+        }
         
         function logoutAdmin() {
-            adminPin = ''; localStorage.removeItem('tcg_pin'); checkAuthUI(); showToast("ออกจากระบบแล้ว"); toggleModal(false);
+            adminPin = ''; 
+            localStorage.removeItem('tcg_admin_pin'); 
+            localStorage.removeItem('tcg_pin'); 
+            checkAuthUI(); 
+            showToast("ออกจากระบบแล้ว"); 
+            toggleModal(false);
         }
 
         // ===== Toast =====
@@ -867,79 +865,79 @@ function verifyPin() {
         }
 
         // ===== Load Data =====
-let allPacks = []; 
+        let allPacks = []; 
 
-async function loadData() {
-    checkAuthUI();
-    document.getElementById('loading').style.display = 'grid';
-    document.getElementById('card-grid').style.display = 'none';
-    
-    const cache = localStorage.getItem('tcg_cards');
-    const cachePacks = localStorage.getItem('tcg_packs');
-    const cacheSales = localStorage.getItem('tcg_sales');
-    
-    if (cache) {
-        try {
-            allCards = JSON.parse(cache);
-            if (cachePacks) allPacks = JSON.parse(cachePacks);
-            if (cacheSales) allSales = JSON.parse(cacheSales);
+        async function loadData() {
+            checkAuthUI();
+            document.getElementById('loading').style.display = 'grid';
+            document.getElementById('card-grid').style.display = 'none';
             
-            updateSetDropdowns(); applyFilters(); updateSummary();
-            renderCardOfTheDay();
-            renderHallOfFame();
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('card-grid').style.display = 'grid';
-        } catch(e) { 
-            localStorage.removeItem('tcg_cards'); 
-            localStorage.removeItem('tcg_packs');
-        }
-    }
-
-    const fetchWithTimeout = (url, ms = 12000) => {
-        const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), ms);
-        return fetch(url, { signal: ctrl.signal })
-            .finally(() => clearTimeout(timer));
-    };
-
-    const tryFetch = async (attempt = 1) => {
-        try {
-            showToast(attempt > 1 ? `กำลังลองใหม่ครั้งที่ ${attempt}...` : '🔄 ซิงค์ข้อมูล...', 'success');
-            const r = await fetchWithTimeout(API_URL);
-            const j = await r.json();
+            const cache = localStorage.getItem('tcg_cards');
+            const cachePacks = localStorage.getItem('tcg_packs');
+            const cacheSales = localStorage.getItem('tcg_sales');
             
-            if (j.status === "success") {
-                allCards = j.data;
-                allSales = j.sales || [];
-                allPacks = j.packs || [];
-
-                localStorage.setItem('tcg_cards', JSON.stringify(allCards));
-                localStorage.setItem('tcg_packs', JSON.stringify(allPacks));
-                localStorage.setItem('tcg_sales', JSON.stringify(allSales));
-
-                updateSetDropdowns(); applyFilters(); updateSummary();
-                renderCardOfTheDay();
-                renderHallOfFame(); 
-                renderSalesBoard();
-                
-                showToast(`✅ โหลดสำเร็จ (${allCards.filter(c => Number(c.qty) > 0).length} ใบ)`);
-                if (document.getElementById('binder-set-select').value) loadBinderSet();
+            if (cache) {
+                try {
+                    allCards = JSON.parse(cache);
+                    if (cachePacks) allPacks = JSON.parse(cachePacks);
+                    if (cacheSales) allSales = JSON.parse(cacheSales);
+                    
+                    updateSetDropdowns(); applyFilters(); updateSummary();
+                    renderCardOfTheDay();
+                    renderHallOfFame();
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('card-grid').style.display = 'grid';
+                } catch(e) { 
+                    localStorage.removeItem('tcg_cards'); 
+                    localStorage.removeItem('tcg_packs');
+                }
             }
-        } catch(err) {
-            if (attempt < 2) {
-                await new Promise(res => setTimeout(res, 2000));
-                return tryFetch(attempt + 1);
-            } else {
-                showToast(cache ? '⚠️ ใช้ข้อมูล Cache (ออฟไลน์)' : '❌ โหลดไม่ได้ กรุณา 🔄', 'error');
-            }
-        } finally {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('card-grid').style.display = 'grid';
+
+            const fetchWithTimeout = (url, ms = 12000) => {
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), ms);
+                return fetch(url, { signal: ctrl.signal })
+                    .finally(() => clearTimeout(timer));
+            };
+
+            const tryFetch = async (attempt = 1) => {
+                try {
+                    showToast(attempt > 1 ? `กำลังลองใหม่ครั้งที่ ${attempt}...` : '🔄 ซิงค์ข้อมูล...', 'success');
+                    const r = await fetchWithTimeout(API_URL);
+                    const j = await r.json();
+                    
+                    if (j.status === "success") {
+                        allCards = j.data;
+                        allSales = j.sales || [];
+                        allPacks = j.packs || [];
+
+                        localStorage.setItem('tcg_cards', JSON.stringify(allCards));
+                        localStorage.setItem('tcg_packs', JSON.stringify(allPacks));
+                        localStorage.setItem('tcg_sales', JSON.stringify(allSales));
+
+                        updateSetDropdowns(); applyFilters(); updateSummary();
+                        renderCardOfTheDay();
+                        renderHallOfFame(); 
+                        renderSalesBoard();
+                        
+                        showToast(`✅ โหลดสำเร็จ (${allCards.filter(c => Number(c.qty) > 0).length} ใบ)`);
+                        if (document.getElementById('binder-set-select').value) loadBinderSet();
+                    }
+                } catch(err) {
+                    if (attempt < 2) {
+                        await new Promise(res => setTimeout(res, 2000));
+                        return tryFetch(attempt + 1);
+                    } else {
+                        showToast(cache ? '⚠️ ใช้ข้อมูล Cache (ออฟไลน์)' : '❌ โหลดไม่ได้ กรุณา 🔄', 'error');
+                    }
+                } finally {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('card-grid').style.display = 'grid';
+                }
+            };
+
+            await tryFetch();
         }
-    };
-
-    await tryFetch();
-}
 
         function renderSalesBoard() {
             const listEl = document.getElementById('recent-sales-list');
@@ -1013,67 +1011,65 @@ async function loadData() {
         }
 
         function updateSummary() {
-    let totalCards = 0;
-    let estimatedValue = 0;
-    let totalCost = 0;
-    let totalSales = 0;
+            let totalCards = 0;
+            let estimatedValue = 0;
+            let totalCost = 0;
+            let totalSales = 0;
 
-    // 1. คำนวณ "ราคาประเมิน" (ยอดที่ควรจะได้จากของที่มี)
-    if (typeof allCards !== 'undefined') {
-        allCards.forEach(card => {
-            if (card.isWishlist !== true && card.isWishlist !== 'true' && Number(card.qty) > 0) {
-                totalCards += Number(card.qty);
-                estimatedValue += (Number(card.price) || 0) * Number(card.qty);
+            if (typeof allCards !== 'undefined') {
+                allCards.forEach(card => {
+                    if (card.isWishlist !== true && card.isWishlist !== 'true' && Number(card.qty) > 0) {
+                        totalCards += Number(card.qty);
+                        estimatedValue += (Number(card.price) || 0) * Number(card.qty);
+                    }
+                });
             }
-        });
-    }
 
-    // 2. คำนวณ "ต้นทุน" จากแพ็คทั้งหมด
-    if (typeof allPacks !== 'undefined') {
-        allPacks.forEach(pack => {
-            totalCost += Number(pack.totalCost || pack.price || pack.cost || 0);
-        });
-    }
+            if (typeof allPacks !== 'undefined') {
+                allPacks.forEach(pack => {
+                    totalCost += Number(pack.totalCost || pack.price || pack.cost || 0);
+                });
+            }
 
-    // 3. คำนวณ "ยอดขายรวม" จากประวัติการขาย
-    if (typeof allSales !== 'undefined') {
-        allSales.forEach(sale => {
-            let rawPrice = sale.price || sale.sellPrice || sale.soldPrice || sale.totalPrice || sale.amount || 0;
+            if (typeof allSales !== 'undefined') {
+                allSales.forEach(sale => {
+                    let rawPrice = sale.price || sale.sellPrice || sale.soldPrice || sale.totalPrice || sale.amount || 0;
+                    let cleanPrice = String(rawPrice).replace(/[^0-9.-]+/g, "");
+                    totalSales += (Number(cleanPrice) || 0) * Number(sale.qty || 1);
+                });
+            }
 
-            let cleanPrice = String(rawPrice).replace(/[^0-9.-]+/g, "");
+            let realProfit = totalSales - totalCost;
+
+            if(document.getElementById('summary-cost')) {
+                document.getElementById('summary-cost').innerText = `฿${totalCost.toLocaleString()}`;
+            }
             
-            totalSales += Number(cleanPrice) || 0;
-        });
-    }
+            if(document.getElementById('summary-estimated')) {
+                document.getElementById('summary-estimated').innerText = `฿${estimatedValue.toLocaleString()}`;
+            }
+            
+            if(document.getElementById('summary-sales')) {
+                document.getElementById('summary-sales').innerText = `฿${totalSales.toLocaleString()}`;
+            }
+            
+            const profitEl = document.getElementById('summary-profit');
+            if(profitEl) {
+                profitEl.innerText = `฿${realProfit.toLocaleString()}`;
+                if (realProfit > 0) {
+                    profitEl.className = "text-2xl font-bold relative z-10 text-emerald-600";
+                } else if (realProfit < 0) {
+                    profitEl.className = "text-2xl font-bold relative z-10 text-red-500";
+                } else {
+                    profitEl.className = "text-2xl font-bold relative z-10 text-gray-800";
+                }
+            }
 
-    // 4. คำนวณ "กำไร/ขาดทุน" (เอาเฉพาะเงินที่รับมาแล้ว ลบด้วย ต้นทุนแพ็คทั้งหมด)
-    let realProfit = totalSales - totalCost;
-
-    if(document.getElementById('summary-cost')) {
-        document.getElementById('summary-cost').innerText = `฿${totalCost.toLocaleString()}`;
-    }
-    
-    if(document.getElementById('summary-estimated')) {
-        document.getElementById('summary-estimated').innerText = `฿${estimatedValue.toLocaleString()}`;
-    }
-    
-    if(document.getElementById('summary-sales')) {
-        document.getElementById('summary-sales').innerText = `฿${totalSales.toLocaleString()}`;
-    }
-    
-    const profitEl = document.getElementById('summary-profit');
-        if (realProfit > 0) {
-            profitEl.className = "text-2xl font-bold relative z-10 text-emerald-600";
-        } else if (realProfit < 0) {
-            profitEl.className = "text-2xl font-bold relative z-10 text-red-500";
-        } else {
-            profitEl.className = "text-2xl font-bold relative z-10 text-gray-800";
+            if(document.getElementById('total-cards')) {
+                document.getElementById('total-cards').innerText = `${totalCards} ใบ`;
+            }
         }
 
-    if(document.getElementById('total-cards')) {
-        document.getElementById('total-cards').innerText = `${totalCards} ใบ`;
-    }
-}
         // ===== Filters (Home) =====
         function applyFilters() {
             const kw = document.getElementById('search-input').value.toLowerCase().trim();
@@ -1086,9 +1082,8 @@ async function loadData() {
 
             document.getElementById('clear-search-btn').classList.toggle('hidden', kw.length === 0);
 
-            // 🌟 ไม่เอาการ์ดที่ขายหมดแล้ว (Qty = 0) มาแสดงในคอลเล็กชันหลัก
             currentFiltered = allCards.filter(card => {
-                if (Number(card.qty) <= 0) return false;
+                if (Number(card.qty) <= 0 && String(card.isWishlist) !== 'true') return false;
 
                 const isW = String(card.isWishlist) === 'true';
                 if (status === 'owned' && isW) return false;
@@ -1102,6 +1097,7 @@ async function loadData() {
                 
                 return matchKw && (rarity === 'all' || card.rarity === rarity);
             });
+
             currentFiltered.sort((a,b) => {
                 if (sort === 'price_desc') return (Number(b.price)||0) - (Number(a.price)||0);
                 if (sort === 'price_asc') return (Number(a.price)||0) - (Number(b.price)||0);
@@ -1120,57 +1116,59 @@ async function loadData() {
                 const img = getSafeImageUrl(card.image);
                 const isW = String(card.isWishlist) === 'true';
                 const cNum = card.cardNumber ? `<span class="text-[9px] bg-gray-50 text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded">No.${card.cardNumber}</span>` : '';
-                const rb = card.rarity && card.rarity !== '-' ? `<span class="text-[9px] bg-gray-900 text-white px-1.5 py-0.5 rounded font-bold">${card.rarity}</span>` : '';
-                const tagHtml = card.tags ? String(card.tags).split(',').map(t => `<span class="text-[9px] bg-blue-50 text-blue-600 border border-blue-200 px-1.5 py-0.5 rounded-md inline-block mr-1 mt-1">${t.trim()}</span>`).join('') : '';
-
+                const rb = card.rarity && card.rarity !== '-' ? `<span class="text-[9px] bg-gray-800 text-white px-1.5 py-0.5 rounded font-bold">${card.rarity}</span>` : '';
+                const langBadge = card.language ? `<span class="text-[9px] border border-gray-300 text-gray-600 px-1.5 py-0.5 rounded">${card.language}</span>` : '';
+                const condBadge = card.condition ? `<span class="text-[9px] bg-indigo-50 text-indigo-600 border border-indigo-100 px-1.5 py-0.5 rounded">${card.condition}</span>` : '';
+                const qtyBadge = Number(card.qty) > 0 ? `<div class="absolute top-2 right-2 bg-gray-900 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">x${card.qty}</div>` : '';
+                const wBadge = isW ? `<div class="absolute top-2 right-2 bg-amber-400 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1">🎯 Wishlist</div>` : '';
+                
                 g.innerHTML += `
-                    <div class="bg-white border ${isW?'border-amber-200 bg-amber-50/30':'border-gray-200 hover:border-gray-300'} p-3.5 rounded-3xl shadow-sm flex flex-col justify-between relative transition-transform duration-200 active:scale-95">
-                        ${isW ? '<div class="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10 animate-pulse">🎯 WANTED</div>' : ''}
-                        <div onclick="openEditForm('${card.id}')" class="cursor-pointer">
-                            <div class="w-full h-36 bg-gray-50 rounded-2xl mb-3 flex items-center justify-center p-2 border border-gray-100">
-                                <img src="${img}" loading="lazy" class="h-full object-contain rounded-lg drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
-                            </div>
-                            <div class="flex flex-wrap gap-1 mb-1.5">
-                                <span class="text-[9px] bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded font-semibold">${card.set||'-'}</span>
-                                ${cNum} ${rb}
-                            </div>
-                            <h2 class="text-xs font-bold text-gray-900 truncate">${card.name}</h2>
-                            <p class="text-[10px] text-gray-500 mt-0.5">สภาพ: ${card.condition||'NM'} • ${card.language||'TH'}</p>
-                            ${tagHtml ? `<div class="mt-1">${tagHtml}</div>` : ''}
+                <div onclick="openEditForm('${card.id}')" class="bg-white border border-gray-200 rounded-3xl p-3 shadow-sm relative cursor-pointer hover:shadow-md transition-all duration-200 hover:-translate-y-1 ${card.rarity && ['SAR','SR','UR','AR'].includes(card.rarity) ? 'card-holo' : ''}">
+                    ${isW ? wBadge : qtyBadge}
+                    <div class="h-32 bg-gray-50 rounded-2xl flex items-center justify-center p-2 mb-3">
+                        <img src="${img}" class="h-full object-contain drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
+                    </div>
+                    <div class="flex flex-wrap gap-1 mb-1.5">${cNum}${rb}${langBadge}${condBadge}</div>
+                    <h3 class="font-bold text-xs text-gray-900 leading-tight line-clamp-2 mb-1">${card.name}</h3>
+                    <p class="text-[10px] text-gray-500 truncate mb-2">${card.set}</p>
+                    <div class="flex items-end justify-between mt-auto">
+                        <div>
+                            <p class="text-[9px] text-gray-400">ราคาประเมิน</p>
+                            <p class="font-black text-emerald-600 text-sm">฿${Number(card.price||0).toLocaleString()}</p>
                         </div>
-                        <div onclick="openEditForm('${card.id}')" class="flex justify-between items-center mt-3 pt-3 border-t ${isW?'border-amber-200':'border-gray-100'} cursor-pointer">
-                            <span class="text-xs font-black text-emerald-600">฿${Number(card.price||0).toLocaleString()}</span>
-                            ${!isW ? `<span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full font-semibold">x${card.qty}</span>` : '<span class="text-[10px] text-amber-600 font-semibold">อยากได้</span>'}
-                        </div>
-                    </div>`;
+                    </div>
+                </div>`;
             });
         }
 
-        // Card of the Day (เฉพาะที่มี Qty > 0)
+        // ===== Highlight Sections =====
         function renderCardOfTheDay() {
-            const owned = allCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0);
-            if (!owned.length) return;
-
-            const todayStr = new Date().toISOString().split('T')[0];
-            let hash = 0;
-            for (let i = 0; i < todayStr.length; i++) {
-                hash = todayStr.charCodeAt(i) + ((hash << 5) - hash);
+            const cotdContainer = document.getElementById('cotd-img-box');
+            if (!cotdContainer) return;
+            
+            const highRarities = ['SAR', 'SR', 'UR', 'AR'];
+            const ownedHigh = allCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0 && highRarities.includes(c.rarity));
+            
+            let targetCard = null;
+            if (ownedHigh.length > 0) {
+                targetCard = ownedHigh[Math.floor(Math.random() * ownedHigh.length)];
+            } else {
+                const anyOwned = allCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0);
+                if (anyOwned.length > 0) targetCard = anyOwned[Math.floor(Math.random() * anyOwned.length)];
             }
-            const idx = Math.abs(hash) % owned.length;
-            const card = owned[idx];
-
-            document.getElementById('cotd-name').textContent = card.name;
-            document.getElementById('cotd-details').textContent = `${card.set || '-'} • No.${card.cardNumber || '-'} (${card.condition || 'NM'})`;
-            document.getElementById('cotd-price').textContent = `฿${Number(card.price || 0).toLocaleString()}`;
-            document.getElementById('cotd-rarity').textContent = card.rarity || 'RARE';
-            document.getElementById('cotd-img-box').innerHTML = `
-                <img src="${getSafeImageUrl(card.image)}" class="h-full object-contain rounded-md card-holo shadow-lg" onerror="this.src='https://placehold.co/100/f9fafb/9ca3af?text=Card'">
-            `;
+            
+            if (targetCard) {
+                cotdContainer.innerHTML = `<img src="${getSafeImageUrl(targetCard.image)}" class="h-full w-full object-contain drop-shadow-lg" onerror="this.src='https://placehold.co/100/111827/9ca3af?text=Image'">`;
+                document.getElementById('cotd-name').innerText = targetCard.name;
+                document.getElementById('cotd-details').innerText = targetCard.set + (targetCard.cardNumber ? ` • No.${targetCard.cardNumber}` : '');
+                document.getElementById('cotd-price').innerText = `฿${Number(targetCard.price || 0).toLocaleString()}`;
+                document.getElementById('cotd-rarity').innerText = targetCard.rarity || '-';
+            } else {
+                document.getElementById('cotd-name').innerText = 'ยังไม่มีการ์ดแนะนำ';
+                document.getElementById('cotd-price').innerText = '-';
+            }
         }
 
-        initCardTiltEffect();
-
-        // Hall of Fame (เฉพาะที่มี Qty > 0)
         function renderHallOfFame() {
             const hofGrid = document.getElementById('hall-of-fame-grid');
             if (!hofGrid) return;
@@ -1185,453 +1183,125 @@ async function loadData() {
                 return;
             }
 
-            hofGrid.innerHTML = topCards.map((c, i) => `
-                <div onclick="openEditForm('${c.id}')" class="flex-shrink-0 w-28 bg-white border border-amber-200 p-2 rounded-2xl shadow-sm relative cursor-pointer hover:scale-105 transition-transform card-holo active:scale-95 duration-200">
-                    <span class="absolute top-1 left-1 bg-amber-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full z-10 shadow">#${i+1}</span>
-                    <div class="h-24 bg-gray-50 rounded-xl flex items-center justify-center p-1 mb-1">
-                        <img src="${getSafeImageUrl(c.image)}" class="h-full object-contain rounded" onerror="this.src='https://placehold.co/80/f9fafb/9ca3af?text=No+Img'">
+            hofGrid.innerHTML = topCards.map((card, index) => `
+                <div onclick="openEditForm('${card.id}')" class="bg-white border border-amber-200 p-2 rounded-2xl min-w-[120px] flex-shrink-0 cursor-pointer shadow-sm relative overflow-hidden transition-transform active:scale-95">
+                    <div class="absolute -right-2 -top-2 text-2xl opacity-10">🏆</div>
+                    <div class="flex items-center gap-1.5 mb-1.5">
+                        <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-100">#${index + 1}</span>
                     </div>
-                    <p class="text-[10px] font-bold text-gray-900 truncate">${c.name}</p>
-                    <p class="text-[9px] font-black text-emerald-600">฿${Number(c.price||0).toLocaleString()}</p>
+                    <div class="h-20 bg-gray-50 rounded-xl flex items-center justify-center p-1 mb-2">
+                        <img src="${getSafeImageUrl(card.image)}" class="h-full object-contain drop-shadow-sm" onerror="this.src='https://placehold.co/100/f9fafb/9ca3af?text=Image'">
+                    </div>
+                    <h4 class="text-[10px] font-bold text-gray-900 truncate">${card.name}</h4>
+                    <p class="text-[10px] font-black text-emerald-600 mt-0.5">฿${Number(card.price || 0).toLocaleString()}</p>
                 </div>
             `).join('');
         }
 
-        function initCardTiltEffect() {
-            document.addEventListener('mousemove', (e) => {
-                const cards = document.querySelectorAll('.card-holo');
-                cards.forEach(card => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
-                        const rx = (y / rect.height - 0.5) * -20;
-                        const ry = (x / rect.width - 0.5) * 20;
-                        card.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.03)`;
-                    } else {
-                        card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)`;
-                    }
-                });
-            });
-        }
-
-        // ===== TAB Switch =====
+        // ===== Navigation =====
         function switchTab(tab) {
+            document.getElementById('view-home').classList.toggle('active', tab === 'home');
+            document.getElementById('view-binder').classList.toggle('active', tab === 'binder');
             document.getElementById('view-home').style.display = tab === 'home' ? 'block' : 'none';
-            const binderEl = document.getElementById('view-binder');
-            if (tab === 'binder') { binderEl.classList.add('active'); } else { binderEl.classList.remove('active'); }
-
+            document.getElementById('view-binder').style.display = tab === 'binder' ? 'flex' : 'none';
+            
             document.getElementById('nav-btn-home').classList.toggle('text-gray-900', tab === 'home');
             document.getElementById('nav-btn-home').classList.toggle('text-gray-400', tab !== 'home');
             document.getElementById('nav-btn-binder').classList.toggle('text-gray-900', tab === 'binder');
             document.getElementById('nav-btn-binder').classList.toggle('text-gray-400', tab !== 'binder');
-
-            if (tab === 'binder') {
-                const sel = document.getElementById('binder-set-select');
-                if (!sel.value && sel.options.length > 1) { sel.value = sel.options[1].value; loadBinderSet(); }
-                else if (sel.value) loadBinderSet();
-            }
-        }
-
-        function showMissingCards() {
-            if (!window.currentBinderSetName) return showToast('กรุณาเลือกชุดการ์ดก่อน', 'error');
-            if (window.currentMissingList.length === 0) return showToast('🎉 ยินดีด้วย! คุณเก็บครบเซ็ตนี้แล้ว');
-
-            const listStr = window.currentMissingList
-                .map(n => `${String(n).padStart(3, '0')}/${window.currentBinderTotal}`)
-                .join(', ');
-
-            document.getElementById('missing-set-name').innerText = window.currentBinderSetName;
-            document.getElementById('missing-list-text').innerText = listStr;
-            document.getElementById('missing-modal').classList.remove('hidden');
-        }
-
-        function copyMissingList() {
-            const txt = `🎯 [WTB] ตั้งรับการ์ดโปเกมอน\nชุด: ${window.currentBinderSetName}\n\nตามหาใบที่ขาดตามเบอร์นี้ครับ:\n${document.getElementById('missing-list-text').innerText}\n\nใครมีใบไหนลองเสนอราคามาได้เลยครับ!`;
-            navigator.clipboard.writeText(txt).then(() => {
-                document.getElementById('missing-modal').classList.add('hidden');
-                showToast('คัดลอกข้อความ WTB แล้ว!');
-            });
-        }
-
-        // ===== BINDER LOGIC =====
-        function parseCardNum(str) {
-            if (!str) return null;
-            const m = String(str).match(/^(\d+)/);
-            return m ? parseInt(m[1], 10) : null;
-        }
-
-        function getTotalFromSet(setCards) {
-            let maxTotal = 0;
-            setCards.forEach(c => {
-                const m = String(c.cardNumber||'').match(/\/(\d+)/);
-                if (m) maxTotal = Math.max(maxTotal, parseInt(m[1], 10));
-            });
-            return maxTotal;
-        }
-
-        function loadBinderSet() {
-            const setName = document.getElementById('binder-set-select').value.trim();
-            if (!setName) return;
-
-            const setCards = allCards.filter(c => String(c.set || '').trim() === setName);
-            // 🌟 กรองเฉพาะที่มี Qty > 0
-            const ownedCount = setCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0).length;
-            const totalCards = getTotalFromSet(setCards);
-
-            const total = totalCards || setCards.length;
-            const percentage = total > 0 ? Math.round((ownedCount / total) * 100) : 0;
-            document.getElementById('binder-owned-count').innerText = `${ownedCount}/${total} (${percentage}%)`;
-            document.getElementById('binder-progress-bar').style.width = `${percentage}%`;
-
-            window.currentMissingList = [];
-            window.currentBinderSetName = setName;
-            window.currentBinderTotal = total;
-
-            binderSlots = [];
-
-            if (totalCards > 0) {
-                const cardMap = {};
-                setCards.forEach(c => {
-                    const n = parseCardNum(c.cardNumber);
-                    if (n !== null) cardMap[n] = c;
-                });
-
-                for (let i = 1; i <= totalCards; i++) {
-                    const card = cardMap[i] || null;
-                    const isOwned = card && String(card.isWishlist) !== 'true' && Number(card.qty) > 0;
-                    binderSlots.push({ num: i, card: isOwned ? card : null });
-                    
-                    if (!isOwned) {
-                        window.currentMissingList.push(i);
-                    }
-                }
-
-                const specialNumCards = setCards
-                    .filter(c => {
-                        const n = parseCardNum(c.cardNumber);
-                        return n !== null && n > totalCards;
-                    })
-                    .sort((a, b) => parseCardNum(a.cardNumber) - parseCardNum(b.cardNumber));
-
-                const nonNumCards = setCards
-                    .filter(c => {
-                        const raw = String(c.cardNumber || '').trim();
-                        if (!raw) return false;
-                        const n = parseCardNum(raw);
-                        return n === null || /[a-zA-Z]/.test(raw.split('/')[0]);
-                    })
-                    .sort((a, b) => String(a.cardNumber).localeCompare(String(b.cardNumber)));
-
-                const padToNextPage = () => {
-                    const rem = binderSlots.length % CARDS_PER_PAGE;
-                    if (rem !== 0) {
-                        for (let i = 0; i < (CARDS_PER_PAGE - rem); i++) {
-                            binderSlots.push({ isFiller: true });
-                        }
-                    }
-                };
-
-                if (specialNumCards.length > 0) {
-                    padToNextPage();
-                    binderSlots.push({ isSpecialHeader: true, label: '⭐ การ์ดพิเศษ (AR,SAR,UR,FUR,RGB)', sublabel: 'Secret / Extra' });
-                    for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
-                    specialNumCards.forEach(c => {
-                        const isOwned = Number(c.qty) > 0;
-                        binderSlots.push({ num: parseCardNum(c.cardNumber), card: isOwned ? c : null, isSpecial: true });
-                    });
-                }
-
-                if (nonNumCards.length > 0) {
-                    padToNextPage();
-                    binderSlots.push({ isSpecialHeader: true, label: '🎴 การ์ดพิเศษ (Energy,etc.)', sublabel: 'Promo / Non-Numbered' });
-                    for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
-                    nonNumCards.forEach(c => {
-                        const isOwned = Number(c.qty) > 0;
-                        binderSlots.push({ num: null, numLabel: String(c.cardNumber || '?'), card: isOwned ? c : null, isSpecial: true });
-                    });
-                }
-
-            } else {
-                const numCards = setCards
-                    .filter(c => parseCardNum(c.cardNumber) !== null && !/[a-zA-Z]/.test(String(c.cardNumber||'').split('/')[0]))
-                    .sort((a, b) => parseCardNum(a.cardNumber) - parseCardNum(b.cardNumber));
-                const nonNum = setCards
-                    .filter(c => parseCardNum(c.cardNumber) === null || /[a-zA-Z]/.test(String(c.cardNumber||'').split('/')[0]))
-                    .sort((a, b) => String(a.cardNumber).localeCompare(String(b.cardNumber)));
-
-                numCards.forEach(c => binderSlots.push({ num: parseCardNum(c.cardNumber), card: Number(c.qty) > 0 ? c : null }));
-
-                if (nonNum.length > 0) {
-                    const rem = binderSlots.length % CARDS_PER_PAGE;
-                    if (rem !== 0) for (let i = 0; i < (CARDS_PER_PAGE - rem); i++) binderSlots.push({ isFiller: true });
-                    binderSlots.push({ isSpecialHeader: true, label: '🎴 การ์ดพิเศษ', sublabel: 'Promo / Non-Numbered' });
-                    for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
-                    nonNum.forEach(c => binderSlots.push({ num: null, numLabel: String(c.cardNumber || '?'), card: Number(c.qty) > 0 ? c : null, isSpecial: true }));
-                }
-            }
-
-            binderPage = 0;
-            renderBinderPage();
-        }
-
-        function renderBinderPage(direction = 'none') {
-            const grid = document.getElementById('binder-grid');
-            const totalPages = Math.max(1, Math.ceil(binderSlots.length / CARDS_PER_PAGE));
-            const pageSlots = binderSlots.slice(binderPage * CARDS_PER_PAGE, (binderPage + 1) * CARDS_PER_PAGE);
-
-            document.getElementById('binder-page-info').innerText = `หน้า ${binderPage + 1} / ${totalPages}`;
-            document.getElementById('binder-prev').disabled = binderPage === 0;
-            document.getElementById('binder-next').disabled = binderPage >= totalPages - 1;
-
-            const dotsEl = document.getElementById('binder-page-dots');
-            dotsEl.innerHTML = Array.from({ length: Math.min(totalPages, 8) }, (_, i) =>
-                `<div class="w-1.5 h-1.5 rounded-full ${i === binderPage ? 'bg-gray-800' : 'bg-gray-300'}"></div>`
-            ).join('');
-
-            grid.className = 'binder-grid ' + (direction === 'next' ? 'slide-in-left' : direction === 'prev' ? 'slide-in-right' : '');
-            grid.innerHTML = '';
-
-            for (let i = 0; i < CARDS_PER_PAGE; i++) {
-                const slot = pageSlots[i];
-
-                if (!slot) {
-                    grid.innerHTML += `<div class="card-slot" style="visibility:hidden"></div>`;
-                    continue;
-                }
-
-                if (slot.isSpecialHeader) {
-                    grid.innerHTML += `
-                        <div class="card-slot flex items-center justify-center bg-gray-900 rounded-xl border-0" style="aspect-ratio:unset; min-height:0">
-                            <div class="text-center text-white px-2">
-                                <div style="font-size:20px">${slot.label?.split(' ')[0] || '⭐'}</div>
-                                <div class="font-extrabold text-[11px] mt-1 leading-tight">${slot.label?.split(' ').slice(1).join(' ') || 'การ์ดพิเศษ'}</div>
-                                <div class="text-[9px] opacity-60 mt-0.5">${slot.sublabel || ''}</div>
-                            </div>
-                        </div>`;
-                    continue;
-                }
-
-                if (slot.isFiller) {
-                    grid.innerHTML += `<div class="card-slot" style="visibility:hidden"></div>`;
-                    continue;
-                }
-
-                const card = slot.card;
-
-                let displayNum = '';
-                if (slot.numLabel) {
-                    displayNum = slot.numLabel;
-                } else if (slot.num !== null && slot.num !== undefined) {
-                    displayNum = String(slot.num).padStart(3, '0');
-                }
-
-                const numLabel = displayNum
-                    ? `<span class="slot-number">${displayNum}${slot.isSpecial ? ' ★' : ''}</span>`
-                    : '';
-
-                if (!card) {
-                    grid.innerHTML += `
-                        <div class="card-slot is-missing">
-                            ${numLabel}
-                            <div class="slot-missing-label">
-                                <span style="font-size:18px">☐</span>
-                                <span>ยังไม่มี</span>
-                            </div>
-                        </div>`;
-                } else {
-                    const isW = String(card.isWishlist) === 'true';
-                    const img = getSafeImageUrl(card.image);
-                    grid.innerHTML += `
-                        <div class="card-slot has-card ${isW ? 'opacity-60' : ''} ${slot.isSpecial ? 'ring-2 ring-amber-400' : ''}" onclick="openEditForm('${card.id}')">
-                            ${numLabel}
-                            <img src="${img}" loading="lazy" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=?'">
-                            ${card.qty > 1 && !isW ? `<span class="slot-qty">x${card.qty}</span>` : ''}
-                            ${isW ? '<div class="slot-wanted-badge">🎯</div>' : ''}
-                        </div>`;
+            
+            if (tab === 'binder' && !document.getElementById('binder-set-select').value) {
+                if (document.getElementById('binder-set-select').options.length > 1) {
+                    document.getElementById('binder-set-select').selectedIndex = 1;
+                    loadBinderSet();
                 }
             }
         }
 
-        function changePage(dir) {
-            const totalPages = Math.ceil(binderSlots.length / CARDS_PER_PAGE);
-            const newPage = binderPage + dir;
-            if (newPage < 0 || newPage >= totalPages) return;
-            binderPage = newPage;
-            renderBinderPage(dir > 0 ? 'next' : 'prev');
+        // ===== Form Actions =====
+        function toggleModal(show) {
+            const m = document.getElementById('detail-modal');
+            if(show) m.classList.remove('hidden');
+            else m.classList.add('hidden');
         }
-
-        // Swipe
-        const book = document.getElementById('binder-book');
-        book.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, {passive:true});
-        book.addEventListener('touchend', e => {
-            const diff = e.changedTouches[0].screenX - touchStartX;
-            if (Math.abs(diff) > 45) changePage(diff < 0 ? 1 : -1);
-        }, {passive:true});
-
-        // ===== Modals =====
-        function toggleModal(o) { document.getElementById('detail-modal').classList.toggle('hidden', !o); }
-        function toggleImageModal(o) { document.getElementById('image-modal').classList.toggle('hidden', !o); }
-        function openImageLightbox(url) { document.getElementById('lightbox-img').src = getSafeImageUrl(url); toggleImageModal(true); }
 
         function openAddForm() {
-            if (!adminPin) return loginAdmin();
             document.getElementById('card-form').reset();
             document.getElementById('form-mode').value = 'add';
-            document.getElementById('modal-title').innerText = '✨ เพิ่มการ์ดใหม่';
+            document.getElementById('form-id').value = '';
+            document.getElementById('modal-title').innerText = 'เพิ่มการ์ดใหม่';
+            document.getElementById('modal-image-preview').src = 'https://placehold.co/150/f9fafb/9ca3af?text=Upload+Image';
             document.getElementById('btn-delete').classList.add('hidden');
             document.getElementById('btn-sell').classList.add('hidden');
-            document.getElementById('btn-restock-picker').classList.remove('hidden'); // แสดงปุ่มเลือกรีสต็อก
-            document.getElementById('modal-image-preview').src = 'https://placehold.co/150/f9fafb/9ca3af?text=No+Image';
-            document.getElementById('form-tags').value = '';
-            document.getElementById('form-buyPrice').value = '';
-            checkAuthUI(); toggleModal(true);
+            document.getElementById('btn-restock-picker').classList.remove('hidden');
+            toggleModal(true);
         }
 
         function openEditForm(id) {
-            const card = allCards.find(c => c.id == id); if (!card) return;
-            document.getElementById('form-mode').value = 'update';
-            document.getElementById('form-rowIndex').value = card.rowIndex;
+            const card = allCards.find(c => c.id === id);
+            if (!card) return;
+            
+            document.getElementById('form-mode').value = 'edit';
             document.getElementById('form-id').value = card.id;
             document.getElementById('form-name').value = card.name || '';
             document.getElementById('form-set').value = card.set || '';
             document.getElementById('form-cardNumber').value = card.cardNumber || '';
-            document.getElementById('form-price').value = card.price || 0;
-            document.getElementById('form-qty').value = card.qty || 0;
             document.getElementById('form-rarity').value = card.rarity || '-';
             document.getElementById('form-lang').value = card.language || 'TH';
-            document.getElementById('form-condition').value = card.condition || 'NM';
-            document.getElementById('form-image').value = card.image || '';
-            document.getElementById('form-wishlist').checked = String(card.isWishlist) === 'true';
-            document.getElementById('modal-title').innerText = adminPin ? (Number(card.qty) === 0 ? '📦 ปรับสต็อก/แก้ไขข้อมูล' : '🛠️ แก้ไขข้อมูล') : '🔍 รายละเอียดการ์ด';
-            document.getElementById('btn-delete').classList.toggle('hidden', !adminPin);
-            document.getElementById('btn-restock-picker').classList.add('hidden'); // ซ่อนปุ่มเลือกรีสต็อกถ้าเปิดแก้อยู่แล้ว
-            
-            const isWishlist = String(card.isWishlist) === 'true';
-            const isSoldOut = Number(card.qty) <= 0;
-            document.getElementById('btn-sell').classList.toggle('hidden', !adminPin || isWishlist || isSoldOut);
-
-            document.getElementById('modal-image-preview').src = getSafeImageUrl(card.image);
-            document.getElementById('form-tags').value = card.tags || '';
             document.getElementById('form-buyPrice').value = card.buyPrice || '';
-            checkAuthUI(); toggleModal(true);
-        }
-
-        // 🌟 เปิด Modal ตัวเลือกดึงการ์ดที่ขายหมดแล้วกลับมารีสต็อก
-        function openRestockPickerModal() {
-            const soldOutCards = allCards.filter(c => Number(c.qty) <= 0);
-            const container = document.getElementById('restock-picker-list');
-
-            if (!soldOutCards.length) {
-                container.innerHTML = '<div class="text-xs text-gray-400 text-center py-6">ยังไม่มีรายการการ์ดที่ขายหมดในระบบ</div>';
-            } else {
-                container.innerHTML = soldOutCards.map(c => `
-                    <div onclick="selectRestockCard('${c.id}')" class="bg-gray-50 hover:bg-indigo-50 border border-gray-200 hover:border-indigo-300 p-2.5 rounded-2xl flex items-center gap-3 cursor-pointer transition-all duration-200 active:scale-95">
-                        <img src="${getSafeImageUrl(c.image)}" class="w-10 h-14 object-contain rounded border border-gray-200 bg-white p-0.5 flex-shrink-0" onerror="this.src='https://placehold.co/80/f9fafb/9ca3af?text=No+Img'">
-                        <div class="min-w-0 flex-1">
-                            <p class="text-xs font-bold text-gray-900 truncate">${c.name}</p>
-                            <p class="text-[10px] text-gray-500 mt-0.5">${c.set||'-'} • ${c.cardNumber||'-'}</p>
-                            <p class="text-[10px] font-black text-emerald-600 mt-0.5">ราคาประเมินเดิม: ฿${Number(c.price||0).toLocaleString()}</p>
-                        </div>
-                        <span class="text-xs font-bold bg-indigo-600 text-white px-2.5 py-1 rounded-xl shadow-sm flex-shrink-0">เลือก</span>
-                    </div>
-                `).join('');
+            document.getElementById('form-price').value = card.price || '';
+            document.getElementById('form-qty').value = card.qty || '1';
+            document.getElementById('form-condition').value = card.condition || 'NM';
+            document.getElementById('form-tags').value = card.tags || '';
+            document.getElementById('form-wishlist').checked = String(card.isWishlist) === 'true';
+            document.getElementById('form-image').value = card.image || '';
+            document.getElementById('modal-image-preview').src = getSafeImageUrl(card.image);
+            
+            document.getElementById('modal-title').innerText = 'แก้ไขการ์ด';
+            
+            if (adminPin === CORRECT_PIN) {
+                document.getElementById('btn-delete').classList.remove('hidden');
+                document.getElementById('btn-sell').classList.toggle('hidden', String(card.isWishlist) === 'true' || Number(card.qty) <= 0);
             }
-
-            document.getElementById('restock-picker-modal').classList.remove('hidden');
+            document.getElementById('btn-restock-picker').classList.add('hidden');
+            
+            toggleModal(true);
         }
 
-        // 🌟 ดึงข้อมูลการ์ดที่เลือกมาใส่ในฟอร์มเพื่อเพิ่มสต็อก
-        function selectRestockCard(id) {
-            document.getElementById('restock-picker-modal').classList.add('hidden');
-            openEditForm(id);
-            document.getElementById('form-qty').value = 1; // ตั้งค่าเริ่มต้นเป็น 1 ใบให้พร้อมบันทึก
-            document.getElementById('form-qty').focus();
-            showToast('ดึงข้อมูลการ์ดแล้ว กรุณาปรับจำนวนและกดบันทึก');
+        function compressAndUploadImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const MAX = 800;
+                    if (width > height) { if (width > MAX) { height *= MAX / width; width = MAX; } }
+                    else { if (height > MAX) { width *= MAX / height; height = MAX; } }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                    
+                    document.getElementById('form-image').value = dataUrl;
+                    document.getElementById('modal-image-preview').src = dataUrl;
+                };
+            };
         }
 
-        // เปิด Modal ขายการ์ด
-        function openSellModal() {
-            const ri = Number(document.getElementById('form-rowIndex').value);
-            const card = allCards.find(c => c.rowIndex === ri);
-            if (!card) return;
-
-            document.getElementById('sell-card-name').innerText = card.name;
-            document.getElementById('sell-max-qty').innerText = card.qty;
-            document.getElementById('sell-qty-input').value = 1;
-            document.getElementById('sell-qty-input').max = card.qty;
-            document.getElementById('sell-price-input').value = card.price || 0;
-
-            toggleModal(false);
-            document.getElementById('sell-modal').classList.remove('hidden');
-        }
-
-        // ส่งข้อมูลการขายการ์ด
-        async function submitSell(e) {
-            e.preventDefault();
-            if (!adminPin) return showToast('กรุณาล็อกอินก่อน', 'error');
-
-            const ri = Number(document.getElementById('form-rowIndex').value);
-            const card = allCards.find(c => c.rowIndex === ri);
-            const sellQty = Number(document.getElementById('sell-qty-input').value);
-            const soldPrice = Number(document.getElementById('sell-price-input').value);
-
-            if (!card || sellQty < 1 || sellQty > card.qty) {
-                return showToast('จำนวนที่ขายไม่ถูกต้อง หรือเกินกว่าที่มีในคลัง', 'error');
-            }
-
-            const btn = e.target.querySelector('button[type="submit"]');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '⏳ กำลังบันทึก...';
-            btn.disabled = true;
-
-            try {
-                // ส่งข้อมูลการขายไปยัง Google Apps Script
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'sell',
-                        pin: adminPin,
-                        id: card.id,
-                        rowIndex: card.rowIndex,
-                        sellQty: sellQty,
-                        soldPrice: soldPrice,
-                        cardName: card.name
-                    })
-                });
-                const result = await res.json();
-                
-                if (result.status === 'success') {
-                    showToast('✅ บันทึกการขายสำเร็จ!');
-                    document.getElementById('sell-modal').classList.add('hidden');
-                    loadData(); // โหลดข้อมูลใหม่เพื่ออัปเดตสต็อกและบอร์ดสรุป
-                } else {
-                    showToast('❌ เกิดข้อผิดพลาด: ' + result.message, 'error');
-                }
-            } catch (err) {
-                showToast('❌ เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว', 'error');
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }
-
-        // ===== ส่งข้อมูลฟอร์ม (เพิ่ม/แก้ไขการ์ด) =====
         async function submitForm(e) {
             e.preventDefault();
-            if (!adminPin) return showToast('กรุณาล็อกอินด้วยรหัสผู้ดูแลก่อน', 'error');
-
-            const btn = e.target.querySelector('button[type="submit"]');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '⏳ กำลังบันทึก...';
-            btn.disabled = true;
-
-            const mode = document.getElementById('form-mode').value;
             const payload = {
-                action: mode === 'add' ? 'add' : 'update',
-                pin: adminPin,
+                action: document.getElementById('form-mode').value,
                 id: document.getElementById('form-id').value,
-                rowIndex: document.getElementById('form-rowIndex').value,
                 name: document.getElementById('form-name').value,
                 set: document.getElementById('form-set').value,
                 cardNumber: document.getElementById('form-cardNumber').value,
@@ -1645,337 +1315,340 @@ async function loadData() {
                 isWishlist: document.getElementById('form-wishlist').checked,
                 image: document.getElementById('form-image').value
             };
-
-            try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const result = await res.json();
-                if (result.status === 'success') {
-                    showToast('✅ บันทึกข้อมูลการ์ดสำเร็จ');
-                    toggleModal(false);
-                    loadData();
-                } else {
-                    showToast('❌ ' + result.message, 'error');
-                }
-            } catch (err) {
-                showToast('❌ เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว', 'error');
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
+            
+            await callAPI(payload);
         }
 
-        // ===== ลบการ์ด =====
         async function deleteCard() {
-            if (!adminPin) return showToast('กรุณาล็อกอินก่อน', 'error');
-            if (!confirm('⚠️ คุณแน่ใจหรือไม่ว่าต้องการลบการ์ดใบนี้ออกจากคลัง?')) return;
+            if (!confirm('ยืนยันการลบการ์ดใบนี้?')) return;
+            const payload = {
+                action: 'delete',
+                id: document.getElementById('form-id').value
+            };
+            await callAPI(payload);
+        }
 
-            const btn = document.getElementById('btn-delete');
-            btn.innerHTML = '⏳...';
-            btn.disabled = true;
+        function openSellModal() {
+            const cardName = document.getElementById('form-name').value;
+            const maxQty = parseInt(document.getElementById('form-qty').value) || 0;
+            const defaultPrice = document.getElementById('form-price').value;
+            
+            document.getElementById('sell-card-name').innerText = cardName;
+            document.getElementById('sell-max-qty').innerText = maxQty;
+            document.getElementById('sell-qty-input').max = maxQty;
+            document.getElementById('sell-qty-input').value = 1;
+            document.getElementById('sell-price-input').value = defaultPrice;
+            
+            document.getElementById('sell-modal').classList.remove('hidden');
+        }
 
+        async function submitSell(e) {
+            e.preventDefault();
+            const payload = {
+                action: 'sell',
+                id: document.getElementById('form-id').value,
+                sellQty: document.getElementById('sell-qty-input').value,
+                sellPrice: document.getElementById('sell-price-input').value
+            };
+            document.getElementById('sell-modal').classList.add('hidden');
+            await callAPI(payload);
+        }
+
+        function openPackModal() {
+            document.getElementById('pack-form').reset();
+            document.getElementById('pack-modal').classList.remove('hidden');
+        }
+
+        async function submitPack(e) {
+            e.preventDefault();
+            const payload = {
+                action: 'addPack',
+                packName: document.getElementById('pack-name').value,
+                price: document.getElementById('pack-price').value,
+                qty: document.getElementById('pack-qty').value
+            };
+            document.getElementById('pack-modal').classList.add('hidden');
+            await callAPI(payload);
+        }
+
+        async function callAPI(payload) {
+            document.getElementById('upload-overlay').style.display = 'flex';
             try {
-                const payload = {
-                    action: 'delete',
-                    pin: adminPin,
-                    rowIndex: document.getElementById('form-rowIndex').value
-                };
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const result = await res.json();
-                if (result.status === 'success') {
-                    showToast('🗑️ ลบข้อมูลสำเร็จ');
-                    toggleModal(false);
-                    loadData();
-                } else {
-                    showToast('❌ ' + result.message, 'error');
-                }
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                showToast('ส่งข้อมูลแล้ว ระบบกำลังประมวลผล', 'success');
+                toggleModal(false);
+                setTimeout(() => loadData(), 2000); 
+                
             } catch (err) {
-                showToast('❌ เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว', 'error');
+                showToast('เชื่อมต่อ API ไม่สำเร็จ', 'error');
             } finally {
-                btn.innerHTML = 'ลบ';
-                btn.disabled = false;
+                document.getElementById('upload-overlay').style.display = 'none';
             }
         }
 
-function openPackModal() {
-    if (typeof adminPin === 'undefined' || !adminPin) {
-        showToast('🔒 กรุณาล็อกอินเข้าสู่ระบบผู้ดูแลก่อน', 'error');
-        return;
-    }
-    document.getElementById('pack-modal').classList.remove('hidden');
-}
-
-        // ===== ส่งข้อมูลฟอร์ม (ซื้อแพ็ค) =====
-async function submitPack(e) {
-    e.preventDefault();
-    if (!adminPin) return showToast('กรุณาล็อกอินด้วยรหัสผู้ดูแลก่อน', 'error');
-
-    const btn = e.target.querySelector('button[type="submit"]');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '⏳ กำลังบันทึก...';
-    btn.disabled = true;
-
-    const payload = {
-        action: 'addPack',
-        pin: adminPin,
-        name: document.getElementById('pack-name').value,
-        price: document.getElementById('pack-price').value,
-        qty: document.getElementById('pack-qty').value
-    };
-
-    try {
-        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-        const result = await res.json();
-        
-        if (result.status === 'success') {
-            showToast('📦 บันทึกต้นทุนแพ็คสำเร็จ!');
-            document.getElementById('pack-modal').classList.add('hidden');
-            e.target.reset(); // ล้างฟอร์ม
-            loadData(); // เรียกให้โหลดข้อมูลใหม่ทั้งหมดเพื่ออัปเดต Dashboard ทันที
-        } else {
-            showToast('❌ ' + result.message, 'error');
-        }
-    } catch (err) {
-        showToast('❌ เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว', 'error');
-    } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    }
-}
-
-        // ===== ย่อขนาดและอัปโหลดรูปภาพ =====
-        function compressAndUploadImage(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        // ===== Restock & Modals =====
+        function openRestockPickerModal() {
+            const container = document.getElementById('restock-picker-list');
+            const soldOutCards = allCards.filter(c => Number(c.qty) <= 0 && String(c.isWishlist) !== 'true');
             
-            const overlay = document.getElementById('upload-overlay');
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
-            
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (e) => {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = async () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800; // ย่อขนาดเพื่อไม่ให้ไฟล์หนักเกินไป
-                    const scaleSize = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scaleSize;
-                    
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    const base64 = canvas.toDataURL('image/jpeg', 0.8); // บีบอัดเป็น JPEG 80%
-                    
-                    try {
-                        const res = await fetch(API_URL, {
-                            method: 'POST',
-                            body: JSON.stringify({ action: 'upload', image: base64, pin: adminPin })
-                        });
-                        const result = await res.json();
-                        
-                        if (result.status === 'success') {
-                            document.getElementById('form-image').value = result.url;
-                            document.getElementById('modal-image-preview').src = result.url;
-                            showToast('✅ อัปโหลดรูปภาพสำเร็จ');
-                        } else {
-                            showToast('❌ อัปโหลดล้มเหลว: ' + result.message, 'error');
-                        }
-                    } catch (err) {
-                        showToast('❌ อัปโหลดล้มเหลว (Network Error)', 'error');
-                    } finally {
-                        overlay.classList.add('hidden');
-                        overlay.classList.remove('flex');
-                    }
-                };
-            };
+            if (soldOutCards.length === 0) {
+                container.innerHTML = '<div class="text-xs text-gray-400 text-center py-6">ไม่มีรายการการ์ดที่เคยขายหมดไปแล้ว</div>';
+            } else {
+                container.innerHTML = soldOutCards.map(c => `
+                    <div onclick="selectRestock('${c.id}')" class="bg-gray-50 hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200 p-2 rounded-xl flex items-center gap-2 cursor-pointer transition-all duration-200">
+                        <img src="${getSafeImageUrl(c.image)}" class="w-10 h-10 object-contain rounded bg-white">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-gray-900 truncate">${c.name}</p>
+                            <p class="text-[10px] text-gray-500">${c.set} ${c.cardNumber ? `(${c.cardNumber})` : ''}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('restock-picker-modal').classList.remove('hidden');
         }
 
+        function selectRestock(id) {
+            document.getElementById('restock-picker-modal').classList.add('hidden');
+            openEditForm(id);
+        }
+
+        function openImageLightbox(src) {
+            if(!src || src.includes('placehold.co')) return;
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('image-modal').classList.remove('hidden');
+        }
+
+        function toggleImageModal(show) {
+            if(!show) document.getElementById('image-modal').classList.add('hidden');
+        }
+
+        function openStatsModal() {
+            // Mock stats generation
+            const content = document.getElementById('stats-content');
+            let owned = allCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0);
+            let setsCount = [...new Set(owned.map(c => c.set))].length;
+            
+            content.innerHTML = `
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-indigo-50 p-3 rounded-2xl border border-indigo-100 text-center">
+                        <p class="text-[10px] text-indigo-500 font-bold">จำนวนชุดที่เก็บ</p>
+                        <p class="text-xl font-black text-indigo-700">${setsCount} ชุด</p>
+                    </div>
+                    <div class="bg-amber-50 p-3 rounded-2xl border border-amber-100 text-center">
+                        <p class="text-[10px] text-amber-500 font-bold">จำนวนการ์ด</p>
+                        <p class="text-xl font-black text-amber-700">${owned.length} ใบ</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('stats-modal').classList.remove('hidden');
+        }
+
+        // ===== WTS Generator =====
         function openWTSGenerator() {
-            if (!currentFiltered.length) return showToast('ไม่มีการ์ดให้สร้างรูปภาพ', 'error');
             document.getElementById('wts-modal').classList.remove('hidden');
-            generateWTSCanvas();
+            setTimeout(generateWTSCanvas, 100);
         }
 
-        async function generateWTSCanvas() {
+        function generateWTSCanvas() {
             const canvas = document.getElementById('wts-canvas');
+            if(!canvas) return;
             const ctx = canvas.getContext('2d');
             const mode = document.getElementById('wts-mode').value;
-            const contact = document.getElementById('wts-contact').value.trim() || 'TCG Vault Collector';
+            const contact = document.getElementById('wts-contact').value || 'ติดต่อ IB';
             
-            const cardsToDraw = currentFiltered.slice(0, 6);
-
-            ctx.fillStyle = '#0f172a';
+            ctx.fillStyle = '#111827';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = mode === 'WTS' ? '#ef4444' : '#f59e0b';
-            ctx.fillRect(0, 0, canvas.width, 90);
-
+            
+            ctx.fillStyle = mode === 'WTS' ? '#10b981' : '#f59e0b';
+            ctx.font = 'bold 48px Prompt, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(mode, canvas.width/2, 80);
+            
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 32px Prompt, sans-serif';
-            ctx.fillText(mode === 'WTS' ? '🔥 WTS - FOR SALE' : '🎯 WTB - WANTED', 30, 55);
-
+            ctx.font = '24px Prompt, sans-serif';
+            ctx.fillText(`Contact: ${contact}`, canvas.width/2, 130);
+            
+            ctx.fillStyle = '#374151';
             ctx.font = '16px Prompt, sans-serif';
-            ctx.textAlign = 'right';
-            ctx.fillText(`ติดต่อ: ${contact}`, canvas.width - 30, 55);
-            ctx.textAlign = 'left';
-
-            const startX = 30, startY = 120;
-            const cardW = 250, cardH = 170;
-            const gapX = 40, gapY = 25;
-
-            let totalPrice = 0;
-
-            for (let i = 0; i < cardsToDraw.length; i++) {
-                const c = cardsToDraw[i];
-                const col = i % 2;
-                const row = Math.floor(i / 2);
-                const x = startX + col * (cardW + gapX);
-                const y = startY + row * (cardH + gapY);
-
-                totalPrice += (Number(c.price) || 0) * (Number(c.qty) || 1);
-
-                ctx.fillStyle = '#1e293b';
-                ctx.beginPath();
-                ctx.roundRect(x, y, cardW, cardH, 16);
-                ctx.fill();
-
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.src = getSafeImageUrl(c.image);
+            ctx.fillText('Generated by TCG Vault App', canvas.width/2, canvas.height - 30);
+            
+            // Draw dummy card grid based on mode
+            const items = allCards.filter(c => mode === 'WTS' ? (Number(c.qty) > 0 && String(c.isWishlist) !== 'true') : String(c.isWishlist) === 'true').slice(0, 8);
+            
+            let x = 40, y = 180;
+            items.forEach((c, i) => {
+                ctx.fillStyle = '#1f2937';
+                ctx.fillRect(x, y, 110, 150);
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = '12px sans-serif';
+                ctx.fillText(c.name.substring(0,10)+'...', x+55, y+140);
                 
-                await new Promise(resolve => {
-                    img.onload = () => {
-                        ctx.drawImage(img, x + 10, y + 10, 100, 150);
-                        resolve();
-                    };
-                    img.onerror = () => { resolve(); };
-                });
-
-                ctx.fillStyle = '#f8fafc';
-                ctx.font = 'bold 16px Prompt, sans-serif';
-                ctx.fillText(c.name.length > 12 ? c.name.substring(0, 12) + '..' : c.name, x + 120, y + 35);
-
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = '13px Prompt, sans-serif';
-                ctx.fillText(`ชุด: ${c.set || '-'}`, x + 120, y + 65);
-                ctx.fillText(`สภาพ: ${c.condition || 'NM'} (${c.language || 'TH'})`, x + 120, y + 90);
-                if (c.rarity) ctx.fillText(`Rarity: ${c.rarity}`, x + 120, y + 115);
-
-                ctx.fillStyle = '#10b981';
-                ctx.font = 'bold 18px Prompt, sans-serif';
-                ctx.fillText(`฿${Number(c.price||0).toLocaleString()} ${c.qty > 1 ? `(x${c.qty})` : ''}`, x + 120, y + 145);
-            }
-
-            ctx.fillStyle = '#1e293b';
-            ctx.fillRect(0, canvas.height - 70, canvas.width, 70);
-
-            ctx.fillStyle = '#38bdf8';
-            ctx.font = 'bold 20px Prompt, sans-serif';
-            ctx.fillText(`รวมการ์ดทั้งหมด: ${cardsToDraw.length} รายการ`, 30, canvas.height - 28);
-
-            ctx.fillStyle = '#34d399';
-            ctx.font = 'bold 24px Prompt, sans-serif';
-            ctx.textAlign = 'right';
-            ctx.fillText(`ราคารวม: ฿${totalPrice.toLocaleString()}`, canvas.width - 30, canvas.height - 28);
-            ctx.textAlign = 'left';
+                x += 140;
+                if((i+1) % 4 === 0) { x = 40; y += 180; }
+            });
         }
 
         function downloadWTSImage() {
             const canvas = document.getElementById('wts-canvas');
             const link = document.createElement('a');
-            const mode = document.getElementById('wts-mode').value;
-            link.download = `${mode}_TCG_Vault_${Date.now()}.png`;
+            link.download = `TCG_${document.getElementById('wts-mode').value}_${Date.now()}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
-            showToast('ดาวน์โหลดรูปภาพสำเร็จ!');
         }
 
-        // ===== Export / Stats =====
         function exportForSale() {
-            const sell = currentFiltered.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0);
-            if (!sell.length) return showToast('ไม่มีการ์ดให้คัดลอก', 'error');
-            let txt = "🔥 [ปล่อยของ] การ์ดโปเกมอน\n\n"; let tot = 0;
-            sell.forEach(c => { txt += `- ${c.name} [${c.set}] ${c.rarity&&c.rarity!=='-'?`(${c.rarity}) `:''}สภาพ ${c.condition} x${c.qty} = ${Number(c.price*c.qty).toLocaleString()} บ.\n`; tot += c.price*c.qty; });
-            txt += `\n💰 รวม: ${tot.toLocaleString()} บาท\nสนใจ IB ได้เลยครับ!`;
-            navigator.clipboard.writeText(txt).then(() => showToast('คัดลอกแล้ว!'));
+            const selling = allCards.filter(c => Number(c.qty) > 0 && String(c.isWishlist) !== 'true');
+            if(!selling.length) return showToast('ไม่มีการ์ดให้ขาย', 'error');
+            
+            let text = "🔥 WTS การ์ดโปเกมอน\n\n";
+            selling.forEach(c => {
+                text += `- ${c.name} [${c.set}] ${c.rarity !== '-' ? c.rarity : ''} : ${c.price} บาท\n`;
+            });
+            text += "\nสนใจใบไหน IB สอบถามได้ครับ\n#PokemonTCG #WTS";
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('คัดลอกข้อความขายเรียบร้อย');
+            }).catch(() => showToast('คัดลอกล้มเหลว', 'error'));
         }
 
-        function openStatsModal() {
-    const owned = allCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0);
-    
-    // 1. คำนวณต้นทุนจากการซื้อการ์ดรายใบ (จากข้อมูลการ์ดเดิม)
-    const cardCost = owned.reduce((s,c) => s + (Number(c.buyPrice||0) * Number(c.qty||1)), 0);
-    
-    // 2. คำนวณต้นทุนจากการเปิดแพ็ค (ดึงจาก allPacks)
-    let packCost = 0;
-    if (typeof allPacks !== 'undefined') {
-        allPacks.forEach(pack => {
-            let rawCost = pack.totalCost || pack.price || pack.cost || 0;
-            let cleanCost = String(rawCost).replace(/[^0-9.-]+/g, ""); // กรองตัวอักษรออก
-            packCost += Number(cleanCost) || 0;
+        // ===== Binder Logic =====
+        function loadBinderSet() {
+            const setName = document.getElementById('binder-set-select').value;
+            if (!setName) {
+                document.getElementById('binder-grid').innerHTML = '';
+                document.getElementById('binder-owned-count').innerText = '0/0 (0%)';
+                document.getElementById('binder-progress-bar').style.width = '0%';
+                return;
+            }
+
+            binderSlots = allCards.filter(c => c.set === setName).sort((a, b) => {
+                const na = String(a.cardNumber || '').split('/')[0].replace(/\D/g, '');
+                const nb = String(b.cardNumber || '').split('/')[0].replace(/\D/g, '');
+                return Number(na) - Number(nb);
+            });
+            
+            let owned = 0;
+            binderSlots.forEach(c => {
+                if (Number(c.qty) > 0 && String(c.isWishlist) !== 'true') owned++;
+            });
+            
+            const total = binderSlots.length;
+            const pct = total ? Math.round((owned/total)*100) : 0;
+            
+            document.getElementById('binder-owned-count').innerText = `${owned}/${total} (${pct}%)`;
+            document.getElementById('binder-progress-bar').style.width = `${pct}%`;
+            
+            binderPage = 0;
+            renderBinderPage();
+        }
+
+        function renderBinderPage() {
+            const grid = document.getElementById('binder-grid');
+            grid.innerHTML = '';
+            
+            const totalPages = Math.ceil(binderSlots.length / CARDS_PER_PAGE) || 1;
+            document.getElementById('binder-page-info').innerText = `หน้า ${binderPage + 1} / ${totalPages}`;
+            document.getElementById('binder-prev').disabled = binderPage === 0;
+            document.getElementById('binder-next').disabled = binderPage >= totalPages - 1;
+            
+            const dots = document.getElementById('binder-page-dots');
+            dots.innerHTML = '';
+            for(let i=0; i<totalPages; i++){
+                dots.innerHTML += `<div class="w-1.5 h-1.5 rounded-full ${i === binderPage ? 'bg-gray-800' : 'bg-gray-300'}"></div>`;
+            }
+
+            const start = binderPage * CARDS_PER_PAGE;
+            const end = start + CARDS_PER_PAGE;
+            const pageCards = binderSlots.slice(start, end);
+            
+            for (let i = 0; i < CARDS_PER_PAGE; i++) {
+                const c = pageCards[i];
+                if (c) {
+                    const isOwned = Number(c.qty) > 0 && String(c.isWishlist) !== 'true';
+                    const isW = String(c.isWishlist) === 'true';
+                    
+                    if (isOwned) {
+                        grid.innerHTML += `
+                            <div class="card-slot has-card" onclick="openImageLightbox('${getSafeImageUrl(c.image)}')">
+                                <img src="${getSafeImageUrl(c.image)}" onerror="this.src='https://placehold.co/150/ffffff/9ca3af?text=No+Img'">
+                                ${c.cardNumber ? `<div class="slot-number">${c.cardNumber}</div>` : ''}
+                                ${Number(c.qty) > 1 ? `<div class="slot-qty">x${c.qty}</div>` : ''}
+                            </div>
+                        `;
+                    } else {
+                        grid.innerHTML += `
+                            <div class="card-slot is-missing">
+                                ${isW ? `<div class="slot-wanted-badge">🎯</div>` : ''}
+                                <div class="slot-missing-label">
+                                    <span class="text-[9px] px-1 bg-gray-200 rounded">${c.cardNumber || 'No.'}</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    grid.innerHTML += `<div class="card-slot" style="border: 1px solid #f3f4f6; background: transparent;"></div>`;
+                }
+            }
+        }
+
+        function changePage(dir) {
+            const totalPages = Math.ceil(binderSlots.length / CARDS_PER_PAGE);
+            if (binderPage + dir >= 0 && binderPage + dir < totalPages) {
+                binderPage += dir;
+                
+                const grid = document.getElementById('binder-grid');
+                grid.classList.remove('slide-in-left', 'slide-in-right');
+                void grid.offsetWidth;
+                grid.classList.add(dir > 0 ? 'slide-in-right' : 'slide-in-left');
+                
+                renderBinderPage();
+            }
+        }
+
+        function showMissingCards() {
+            const setName = document.getElementById('binder-set-select').value;
+            if(!setName) return showToast('กรุณาเลือกชุดการ์ดก่อน', 'error');
+            
+            const missing = binderSlots.filter(c => Number(c.qty) <= 0 || String(c.isWishlist) === 'true');
+            if(!missing.length) return showToast('คุณเก็บครบชุดนี้แล้ว! 🎉');
+            
+            document.getElementById('missing-set-name').innerText = setName;
+            
+            let text = "";
+            missing.forEach(c => {
+                text += `[ ] ${c.cardNumber ? c.cardNumber+' - ' : ''}${c.name} ${c.rarity !== '-' ? '('+c.rarity+')' : ''}\n`;
+            });
+            document.getElementById('missing-list-text').innerText = text;
+            document.getElementById('missing-modal').classList.remove('hidden');
+        }
+
+        function copyMissingList() {
+            const setName = document.getElementById('binder-set-select').value;
+            const text = `🎯 WTB ตามหาการ์ดชุด: ${setName}\n\n${document.getElementById('missing-list-text').innerText}\nใครมีเสนอราคามาได้เลยครับ!`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('คัดลอกข้อความรับซื้อเรียบร้อย');
+                document.getElementById('missing-modal').classList.add('hidden');
+            }).catch(() => showToast('คัดลอกล้มเหลว', 'error'));
+        }
+
+        // Touch events for binder pagination
+        document.getElementById('binder-book').addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
         });
-    }
+        document.getElementById('binder-book').addEventListener('touchend', e => {
+            const touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX - touchEndX > 50) changePage(1);
+            else if (touchEndX - touchStartX > 50) changePage(-1);
+        });
 
-    // 3. รวมต้นทุนทั้งหมด (รายใบ + เปิดแพ็ค)
-    const totalCost = cardCost + packCost;
-    
-    // 4. คำนวณมูลค่ารวม และ กำไร/ขาดทุน
-    const totalVal = owned.reduce((s,c) => s + (Number(c.price||0) * Number(c.qty||1)), 0);
-    const profit = totalVal - totalCost;
-    const roi = totalCost > 0 ? ((profit / totalCost) * 100).toFixed(1) : 0;
-
-    const r = {}, l = {};
-    owned.forEach(c => {
-        if (c.rarity && c.rarity !== '-') r[c.rarity] = (r[c.rarity]||0) + Number(c.qty);
-        l[c.language||'TH'] = (l[c.language||'TH']||0) + Number(c.qty);
-    });
-    const tot = owned.reduce((s,c) => s+Number(c.qty),0);
-
-    // 5. ปรับปรุงหน้าตา UI ให้แสดงแจกแจงต้นทุนอย่างชัดเจน
-    let html = `
-        <div class="bg-slate-900 text-white p-4 rounded-2xl mb-4 space-y-2 shadow-inner">
-            <div class="flex justify-between text-xs text-slate-300">
-                <span>💳 ทุนซื้อรายใบ: ฿${cardCost.toLocaleString()}</span>
-                <span>💎 มูลค่าประเมิน: ฿${totalVal.toLocaleString()}</span>
-            </div>
-            <div class="flex justify-between text-xs text-slate-400">
-                <span>📦 ทุนเปิดแพ็ค: ฿${packCost.toLocaleString()}</span>
-                <span></span>
-            </div>
-            
-            <div class="flex justify-between items-center border-t border-slate-700 pt-2 mt-2">
-                <span class="text-xs font-semibold text-slate-200">💰 ต้นทุนสุทธิ (รวมแพ็ค):</span>
-                <span class="text-sm font-bold text-white">฿${totalCost.toLocaleString()}</span>
-            </div>
-            
-            <div class="flex justify-between items-center border-t border-slate-700 pt-2">
-                <span class="text-xs font-semibold">กำไร/ขาดทุนคาดการณ์:</span>
-                <span class="text-base font-black ${profit >= 0 ? 'text-emerald-400' : 'text-red-400'}">
-                    ${profit >= 0 ? '+' : ''}฿${profit.toLocaleString()} (${roi}%)
-                </span>
-            </div>
-        </div>
-        <h3 class="text-xs font-bold text-gray-500 mb-2">⭐ ตามความหายาก (ในคลัง)</h3>
-    `;
-
-    Object.keys(r).sort((a,b)=>r[b]-r[a]).forEach(k => {
-        const p = tot > 0 ? (r[k]/tot*100).toFixed(0) : 0;
-        html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-gray-800 h-full rounded-full" style="width:${p}%"></div></div><span class="text-gray-500">${r[k]}</span></div>`;
-    });
-    html += '<h3 class="text-xs font-bold text-gray-500 mt-5 mb-2">🌐 ตามภาษา (ในคลัง)</h3>';
-    Object.keys(l).forEach(k => {
-        const p = tot > 0 ? (l[k]/tot*100).toFixed(0) : 0;
-        html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-emerald-500 h-full rounded-full" style="width:${p}%"></div></div><span class="text-gray-500">${l[k]}</span></div>`;
-    });
-
-    document.getElementById('stats-content').innerHTML = html;
-    document.getElementById('stats-modal').classList.remove('hidden');
-}
-
-        loadData();
-        
     </script>
 </body>
 </html>

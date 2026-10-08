@@ -228,33 +228,38 @@
                 <!-- แดชบอร์ดสรุปยอด -->
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
     
+    <!-- แดชบอร์ดสรุปยอด (Minimal ขาว-เทา) -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    
     <!-- 1. ต้นทุนรวม -->
-    <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800 shadow-sm relative overflow-hidden">
-        <p class="text-gray-400 text-sm mb-1 relative z-10">📦 ต้นทุนเปิดแพ็ค</p>
-        <h3 id="summary-cost" class="text-2xl font-bold text-red-400 relative z-10">฿0</h3>
-        <div class="absolute right-0 bottom-0 text-red-500/10 text-5xl transform translate-x-2 translate-y-2">📦</div>
+    <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm relative overflow-hidden transition-all hover:shadow-md">
+        <p class="text-gray-500 text-sm mb-1 relative z-10 font-medium">📦 ต้นทุนเปิดแพ็ค</p>
+        <h3 id="summary-cost" class="text-2xl font-bold text-gray-800 relative z-10">฿0</h3>
+        <div class="absolute right-0 bottom-0 text-5xl transform translate-x-2 translate-y-2 opacity-10 grayscale">📦</div>
     </div>
 
     <!-- 2. ราคาประเมิน (มูลค่าของที่ยังอยู่) -->
-    <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800 shadow-sm relative overflow-hidden">
-        <p class="text-gray-400 text-sm mb-1 relative z-10">💎 ราคาประเมิน (ในคลัง)</p>
-        <h3 id="summary-estimated" class="text-2xl font-bold text-blue-400 relative z-10">฿0</h3>
-        <div class="absolute right-0 bottom-0 text-blue-500/10 text-5xl transform translate-x-2 translate-y-2">💎</div>
+    <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm relative overflow-hidden transition-all hover:shadow-md">
+        <p class="text-gray-500 text-sm mb-1 relative z-10 font-medium">💎 ราคาประเมิน (ในคลัง)</p>
+        <h3 id="summary-estimated" class="text-2xl font-bold text-gray-800 relative z-10">฿0</h3>
+        <div class="absolute right-0 bottom-0 text-5xl transform translate-x-2 translate-y-2 opacity-10 grayscale">💎</div>
     </div>
 
     <!-- 3. ยอดขายรวม -->
-    <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800 shadow-sm relative overflow-hidden">
-        <p class="text-gray-400 text-sm mb-1 relative z-10">💰 ยอดที่ขายได้</p>
-        <h3 id="summary-sales" class="text-2xl font-bold text-green-400 relative z-10">฿0</h3>
-        <div class="absolute right-0 bottom-0 text-green-500/10 text-5xl transform translate-x-2 translate-y-2">💰</div>
+    <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm relative overflow-hidden transition-all hover:shadow-md">
+        <p class="text-gray-500 text-sm mb-1 relative z-10 font-medium">💰 ยอดที่ขายได้</p>
+        <h3 id="summary-sales" class="text-2xl font-bold text-gray-800 relative z-10">฿0</h3>
+        <div class="absolute right-0 bottom-0 text-5xl transform translate-x-2 translate-y-2 opacity-10 grayscale">💰</div>
     </div>
 
     <!-- 4. กำไร/ขาดทุน (ยอดขาย - ต้นทุน) -->
-    <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800 shadow-sm relative overflow-hidden">
-        <p class="text-gray-400 text-sm mb-1 relative z-10">📈 กำไรจริง (Realized)</p>
-        <h3 id="summary-profit" class="text-2xl font-bold relative z-10">฿0</h3>
-        <div class="absolute right-0 bottom-0 text-white/5 text-5xl transform translate-x-2 translate-y-2">📈</div>
+    <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm relative overflow-hidden transition-all hover:shadow-md">
+        <p class="text-gray-500 text-sm mb-1 relative z-10 font-medium">📈 กำไรจริง (Realized)</p>
+        <h3 id="summary-profit" class="text-2xl font-bold text-gray-800 relative z-10">฿0</h3>
+        <div class="absolute right-0 bottom-0 text-5xl transform translate-x-2 translate-y-2 opacity-10 grayscale">📈</div>
     </div>
+
+</div>
 
 </div>
 
@@ -667,14 +672,6 @@
         <!-- ส่วนแสดงสถิติเดิม (การ์ดแยกตามธาตุ/ระดับ ฯลฯ) -->
         <div id="stats-content" class="space-y-4 mb-4"></div>
 
-        <!-- 👇 เพิ่มส่วนแสดงต้นทุนแพ็ค (แยกออกมาให้เห็นชัดเจน) 👇 -->
-        <div class="pt-4 border-t border-gray-100">
-            <div class="flex justify-between items-center py-2">
-                <span class="text-sm font-medium text-gray-500">📦 ต้นทุนเปิดแพ็ครวม</span>
-                <span id="modal-pack-cost" class="font-bold text-red-500 text-lg">฿0</span>
-            </div>
-        </div>
-
     </div>
 </div>
 
@@ -1069,15 +1066,12 @@ async function loadData() {
     }
     
     const profitEl = document.getElementById('summary-profit');
-    if(profitEl) {
-        profitEl.innerText = `${realProfit > 0 ? '+' : ''}฿${realProfit.toLocaleString()}`;
-
         if (realProfit > 0) {
-            profitEl.className = "text-2xl font-bold relative z-10 text-green-400";
+            profitEl.className = "text-2xl font-bold relative z-10 text-emerald-600";
         } else if (realProfit < 0) {
-            profitEl.className = "text-2xl font-bold relative z-10 text-red-400";
+            profitEl.className = "text-2xl font-bold relative z-10 text-red-500";
         } else {
-            profitEl.className = "text-2xl font-bold relative z-10 text-gray-300";
+            profitEl.className = "text-2xl font-bold relative z-10 text-gray-800";
         }
     }
 
@@ -1085,7 +1079,6 @@ async function loadData() {
         document.getElementById('total-cards').innerText = `${totalCards} ใบ`;
     }
 }
-
         // ===== Filters (Home) =====
         function applyFilters() {
             const kw = document.getElementById('search-input').value.toLowerCase().trim();

@@ -218,7 +218,7 @@
                         <h1 class="text-2xl font-extrabold tracking-tight mt-2 text-gray-900">TCG Vault</h1>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="document.getElementById('pack-modal').classList.remove('hidden')" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition-all duration-200 active:scale-90" title="บันทึกซื้อแพ็ค">📦</button>
+                        <button onclick="openPackModal()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition-all duration-200 active:scale-90" title="บันทึกซื้อแพ็ค">📦</button>
                         <button id="auth-btn-login" onclick="loginAdmin()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition-all duration-200 active:scale-90 text-sm">🔒</button>
                         <button id="auth-btn-logout" onclick="logoutAdmin()" class="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 hover:text-red-500 transition-all duration-200 active:scale-90 text-sm hidden">🔓</button>
                         <button onclick="openStatsModal()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition-all duration-200 active:scale-90">📊</button>
@@ -616,7 +616,7 @@
             <form id="pack-form" onsubmit="submitPack(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm text-gray-400 mb-1">ชื่อแพ็ค / กล่อง</label>
-                    <input type="text" id="pack-name" required placeholder="เช่น 30th Anniversary" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                    <input type="text" id="pack-name" list="set-list" required placeholder="เลือกหรือพิมพ์ชื่อแพ็ค/Set..." autocomplete="off" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -1510,6 +1510,14 @@ async function loadData() {
                 btn.disabled = false;
             }
         }
+
+function openPackModal() {
+    if (typeof adminPin === 'undefined' || !adminPin) {
+        showToast('🔒 กรุณาล็อกอินเข้าสู่ระบบผู้ดูแลก่อน', 'error');
+        return;
+    }
+    document.getElementById('pack-modal').classList.remove('hidden');
+}
 
         // ===== ส่งข้อมูลฟอร์ม (ซื้อแพ็ค) =====
 async function submitPack(e) {

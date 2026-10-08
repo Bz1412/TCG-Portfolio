@@ -656,15 +656,27 @@
     </div>
 
     <!-- Stats Modal -->
-    <div id="stats-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-100 animate-modal-pop">
-            <div class="flex justify-between items-center pb-4 border-b border-gray-100 mb-4">
-                <h2 class="font-bold text-lg text-gray-900">📊 สถิติคอลเลกชัน</h2>
-                <button onclick="document.getElementById('stats-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-900 text-2xl transition-all duration-200 active:scale-90">&times;</button>
-            </div>
-            <div id="stats-content" class="space-y-4"></div>
+<div id="stats-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-100 animate-modal-pop">
+        
+        <div class="flex justify-between items-center pb-4 border-b border-gray-100 mb-4">
+            <h2 class="font-bold text-lg text-gray-900">📊 สถิติคอลเลกชัน</h2>
+            <button onclick="document.getElementById('stats-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-900 text-2xl transition-all duration-200 active:scale-90">&times;</button>
         </div>
+        
+        <!-- ส่วนแสดงสถิติเดิม (การ์ดแยกตามธาตุ/ระดับ ฯลฯ) -->
+        <div id="stats-content" class="space-y-4 mb-4"></div>
+
+        <!-- 👇 เพิ่มส่วนแสดงต้นทุนแพ็ค (แยกออกมาให้เห็นชัดเจน) 👇 -->
+        <div class="pt-4 border-t border-gray-100">
+            <div class="flex justify-between items-center py-2">
+                <span class="text-sm font-medium text-gray-500">📦 ต้นทุนเปิดแพ็ครวม</span>
+                <span id="modal-pack-cost" class="font-bold text-red-500 text-lg">฿0</span>
+            </div>
+        </div>
+
     </div>
+</div>
 
     <!-- Lightbox -->
     <div id="image-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[70] hidden flex items-center justify-center p-4" onclick="toggleImageModal(false)">
@@ -870,12 +882,14 @@ async function loadData() {
     document.getElementById('card-grid').style.display = 'none';
     
     const cache = localStorage.getItem('tcg_cards');
-    const cachePacks = localStorage.getItem('tcg_packs'); 
+    const cachePacks = localStorage.getItem('tcg_packs');
+    const cacheSales = localStorage.getItem('tcg_sales');
     
     if (cache) {
         try {
             allCards = JSON.parse(cache);
             if (cachePacks) allPacks = JSON.parse(cachePacks);
+            if (cacheSales) allSales = JSON.parse(cacheSales);
             
             updateSetDropdowns(); applyFilters(); updateSummary();
             renderCardOfTheDay();
@@ -907,7 +921,8 @@ async function loadData() {
                 allPacks = j.packs || [];
 
                 localStorage.setItem('tcg_cards', JSON.stringify(allCards));
-                localStorage.setItem('tcg_packs', JSON.stringify(allPacks)); 
+                localStorage.setItem('tcg_packs', JSON.stringify(allPacks));
+                localStorage.setItem('tcg_sales', JSON.stringify(allSales));
 
                 updateSetDropdowns(); applyFilters(); updateSummary();
                 renderCardOfTheDay();
@@ -1030,8 +1045,11 @@ async function loadData() {
     // 3. คำนวณ "ยอดขายรวม" จากประวัติการขาย
     if (typeof allSales !== 'undefined') {
         allSales.forEach(sale => {
-            // (ปรับ .price ให้ตรงกับชื่อตัวแปรที่คุณบันทึกยอดขายไว้)
-            totalSales += Number(sale.price || sale.sellPrice || sale.total || 0);
+            let rawPrice = sale.price || sale.sellPrice || sale.soldPrice || sale.totalPrice || sale.amount || 0;
+
+            let cleanPrice = String(rawPrice).replace(/[^0-9.-]+/g, "");
+            
+            totalSales += Number(cleanPrice) || 0;
         });
     }
 
@@ -1897,48 +1915,76 @@ async function submitPack(e) {
         }
 
         function openStatsModal() {
-            const owned = allCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0);
-            const totalCost = owned.reduce((s,c) => s + (Number(c.buyPrice||0) * Number(c.qty||1)), 0);
-            const totalVal = owned.reduce((s,c) => s + (Number(c.price||0) * Number(c.qty||1)), 0);
-            const profit = totalVal - totalCost;
-            const roi = totalCost > 0 ? ((profit / totalCost) * 100).toFixed(1) : 0;
+    const owned = allCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0);
+    
+    // 1. คำนวณต้นทุนจากการซื้อการ์ดรายใบ (จากข้อมูลการ์ดเดิม)
+    const cardCost = owned.reduce((s,c) => s + (Number(c.buyPrice||0) * Number(c.qty||1)), 0);
+    
+    // 2. คำนวณต้นทุนจากการเปิดแพ็ค (ดึงจาก allPacks)
+    let packCost = 0;
+    if (typeof allPacks !== 'undefined') {
+        allPacks.forEach(pack => {
+            let rawCost = pack.totalCost || pack.price || pack.cost || 0;
+            let cleanCost = String(rawCost).replace(/[^0-9.-]+/g, ""); // กรองตัวอักษรออก
+            packCost += Number(cleanCost) || 0;
+        });
+    }
 
-            const r = {}, l = {};
-            owned.forEach(c => {
-                if (c.rarity && c.rarity !== '-') r[c.rarity] = (r[c.rarity]||0) + Number(c.qty);
-                l[c.language||'TH'] = (l[c.language||'TH']||0) + Number(c.qty);
-            });
-            const tot = owned.reduce((s,c) => s+Number(c.qty),0);
+    // 3. รวมต้นทุนทั้งหมด (รายใบ + เปิดแพ็ค)
+    const totalCost = cardCost + packCost;
+    
+    // 4. คำนวณมูลค่ารวม และ กำไร/ขาดทุน
+    const totalVal = owned.reduce((s,c) => s + (Number(c.price||0) * Number(c.qty||1)), 0);
+    const profit = totalVal - totalCost;
+    const roi = totalCost > 0 ? ((profit / totalCost) * 100).toFixed(1) : 0;
 
-            let html = `
-                <div class="bg-slate-900 text-white p-4 rounded-2xl mb-4 space-y-2">
-                    <div class="flex justify-between text-xs text-slate-300">
-                        <span>ต้นทุนรวมคลัง: ฿${totalCost.toLocaleString()}</span>
-                        <span>มูลค่าประเมินคลัง: ฿${totalVal.toLocaleString()}</span>
-                    </div>
-                    <div class="flex justify-between items-center border-t border-slate-700 pt-2">
-                        <span class="text-xs font-semibold">กำไร/ขาดทุนคาดการณ์:</span>
-                        <span class="text-base font-black ${profit >= 0 ? 'text-emerald-400' : 'text-red-400'}">
-                            ${profit >= 0 ? '+' : ''}฿${profit.toLocaleString()} (${roi}%)
-                        </span>
-                    </div>
-                </div>
-                <h3 class="text-xs font-bold text-gray-500 mb-2">⭐ ตามความหายาก (ในคลัง)</h3>
-            `;
+    const r = {}, l = {};
+    owned.forEach(c => {
+        if (c.rarity && c.rarity !== '-') r[c.rarity] = (r[c.rarity]||0) + Number(c.qty);
+        l[c.language||'TH'] = (l[c.language||'TH']||0) + Number(c.qty);
+    });
+    const tot = owned.reduce((s,c) => s+Number(c.qty),0);
 
-            Object.keys(r).sort((a,b)=>r[b]-r[a]).forEach(k => {
-                const p = tot > 0 ? (r[k]/tot*100).toFixed(0) : 0;
-                html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-gray-800 h-full rounded-full" style="width:${p}%"></div></div><span class="text-gray-500">${r[k]}</span></div>`;
-            });
-            html += '<h3 class="text-xs font-bold text-gray-500 mt-5 mb-2">🌐 ตามภาษา (ในคลัง)</h3>';
-            Object.keys(l).forEach(k => {
-                const p = tot > 0 ? (l[k]/tot*100).toFixed(0) : 0;
-                html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-emerald-500 h-full rounded-full" style="width:${p}%"></div></div><span class="text-gray-500">${l[k]}</span></div>`;
-            });
+    // 5. ปรับปรุงหน้าตา UI ให้แสดงแจกแจงต้นทุนอย่างชัดเจน
+    let html = `
+        <div class="bg-slate-900 text-white p-4 rounded-2xl mb-4 space-y-2 shadow-inner">
+            <div class="flex justify-between text-xs text-slate-300">
+                <span>💳 ทุนซื้อรายใบ: ฿${cardCost.toLocaleString()}</span>
+                <span>💎 มูลค่าประเมิน: ฿${totalVal.toLocaleString()}</span>
+            </div>
+            <div class="flex justify-between text-xs text-slate-400">
+                <span>📦 ทุนเปิดแพ็ค: ฿${packCost.toLocaleString()}</span>
+                <span></span>
+            </div>
+            
+            <div class="flex justify-between items-center border-t border-slate-700 pt-2 mt-2">
+                <span class="text-xs font-semibold text-slate-200">💰 ต้นทุนสุทธิ (รวมแพ็ค):</span>
+                <span class="text-sm font-bold text-white">฿${totalCost.toLocaleString()}</span>
+            </div>
+            
+            <div class="flex justify-between items-center border-t border-slate-700 pt-2">
+                <span class="text-xs font-semibold">กำไร/ขาดทุนคาดการณ์:</span>
+                <span class="text-base font-black ${profit >= 0 ? 'text-emerald-400' : 'text-red-400'}">
+                    ${profit >= 0 ? '+' : ''}฿${profit.toLocaleString()} (${roi}%)
+                </span>
+            </div>
+        </div>
+        <h3 class="text-xs font-bold text-gray-500 mb-2">⭐ ตามความหายาก (ในคลัง)</h3>
+    `;
 
-            document.getElementById('stats-content').innerHTML = html;
-            document.getElementById('stats-modal').classList.remove('hidden');
-        }
+    Object.keys(r).sort((a,b)=>r[b]-r[a]).forEach(k => {
+        const p = tot > 0 ? (r[k]/tot*100).toFixed(0) : 0;
+        html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-gray-800 h-full rounded-full" style="width:${p}%"></div></div><span class="text-gray-500">${r[k]}</span></div>`;
+    });
+    html += '<h3 class="text-xs font-bold text-gray-500 mt-5 mb-2">🌐 ตามภาษา (ในคลัง)</h3>';
+    Object.keys(l).forEach(k => {
+        const p = tot > 0 ? (l[k]/tot*100).toFixed(0) : 0;
+        html += `<div class="flex items-center text-xs mb-1"><span class="w-12 font-bold">${k}</span><div class="flex-1 bg-gray-100 h-2 rounded-full mx-2 overflow-hidden"><div class="bg-emerald-500 h-full rounded-full" style="width:${p}%"></div></div><span class="text-gray-500">${l[k]}</span></div>`;
+    });
+
+    document.getElementById('stats-content').innerHTML = html;
+    document.getElementById('stats-modal').classList.remove('hidden');
+}
 
         loadData();
         

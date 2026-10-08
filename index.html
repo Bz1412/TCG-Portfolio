@@ -1346,118 +1346,171 @@
             const soldPrice = Number(document.getElementById('sell-price-input').value);
 
             if (!card || sellQty < 1 || sellQty > card.qty) {
-                return showToast('จำนวนการ์ดที่จะขายไม่ถูกต้อง', 'error');
+                return showToast('จำนวนที่ขายไม่ถูกต้อง หรือเกินกว่าที่มีในคลัง', 'error');
             }
 
-            const payload = {
-                action: 'sell',
-                pin: adminPin,
-                rowIndex: ri,
-                sellQty: sellQty,
-                soldPrice: soldPrice
-            };
-
-            // อัปเดต Qty เป็น 0 หรือลดลงตามการขายจริง
-            card.qty = Math.max(0, card.qty - sellQty);
-
-            // เพิ่มเข้าประวัติการขายในเครื่องทันที
-            const now = new Date().toLocaleString('th-TH');
-            allSales.unshift({
-                timestamp: now,
-                cardId: card.id,
-                cardName: card.name,
-                soldPrice: soldPrice,
-                qty: sellQty
-            });
-
-            localStorage.setItem('tcg_cards', JSON.stringify(allCards));
-            updateSetDropdowns(); applyFilters(); updateSummary(); renderSalesBoard();
-            document.getElementById('sell-modal').classList.add('hidden');
-            showToast(`บันทึกการขาย ${card.name} เรียบร้อยแล้ว!`);
-
-            if (document.getElementById('binder-set-select').value) loadBinderSet();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ กำลังบันทึก...';
+            btn.disabled = true;
 
             try {
-                const r = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload)});
-                const j = await r.json();
-                if (j.status === 'error' && j.message.includes('Unauthorized')) logoutAdmin();
-            } catch(e) {}
+                // ส่งข้อมูลการขายไปยัง Google Apps Script
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'sell',
+                        pin: adminPin,
+                        id: card.id,
+                        rowIndex: card.rowIndex,
+                        sellQty: sellQty,
+                        soldPrice: soldPrice,
+                        cardName: card.name
+                    })
+                });
+                const result = await res.json();
+                
+                if (result.status === 'success') {
+                    showToast('✅ บันทึกการขายสำเร็จ!');
+                    document.getElementById('sell-modal').classList.add('hidden');
+                    loadData(); // โหลดข้อมูลใหม่เพื่ออัปเดตสต็อกและบอร์ดสรุป
+                } else {
+                    showToast('❌ เกิดข้อผิดพลาด: ' + result.message, 'error');
+                }
+            } catch (err) {
+                showToast('❌ เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
 
-        // ===== Submit / Delete =====
+        // ===== ส่งข้อมูลฟอร์ม (เพิ่ม/แก้ไขการ์ด) =====
         async function submitForm(e) {
             e.preventDefault();
-            if (!adminPin) return showToast('กรุณาล็อกอินก่อน', 'error');
-            const d = {
+            if (!adminPin) return showToast('กรุณาล็อกอินด้วยรหัสผู้ดูแลก่อน', 'error');
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ กำลังบันทึก...';
+            btn.disabled = true;
+
+            const mode = document.getElementById('form-mode').value;
+            const payload = {
+                action: mode === 'add' ? 'add' : 'update',
                 pin: adminPin,
+                id: document.getElementById('form-id').value,
+                rowIndex: document.getElementById('form-rowIndex').value,
                 name: document.getElementById('form-name').value,
                 set: document.getElementById('form-set').value,
                 cardNumber: document.getElementById('form-cardNumber').value,
-                buyPrice: Number(document.getElementById('form-buyPrice').value || 0),
-                price: Number(document.getElementById('form-price').value),
-                qty: Number(document.getElementById('form-qty').value),
                 rarity: document.getElementById('form-rarity').value,
                 language: document.getElementById('form-lang').value,
+                buyPrice: document.getElementById('form-buyPrice').value,
+                price: document.getElementById('form-price').value,
+                qty: document.getElementById('form-qty').value,
                 condition: document.getElementById('form-condition').value,
-                image: document.getElementById('form-image').value,
+                tags: document.getElementById('form-tags').value,
                 isWishlist: document.getElementById('form-wishlist').checked,
-                tags: document.getElementById('form-tags').value
+                image: document.getElementById('form-image').value
             };
-            const isAdd = document.getElementById('form-mode').value === 'add';
-            if (isAdd) { d.id = "CARD-" + Date.now(); d.rowIndex = allCards.length + 2; allCards.unshift(d); }
-            else {
-                d.action = 'update'; d.rowIndex = Number(document.getElementById('form-rowIndex').value); d.id = document.getElementById('form-id').value;
-                const i = allCards.findIndex(c => c.rowIndex === d.rowIndex);
-                if (i !== -1) allCards[i] = {...allCards[i], ...d};
+
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    showToast('✅ บันทึกข้อมูลการ์ดสำเร็จ');
+                    toggleModal(false);
+                    loadData();
+                } else {
+                    showToast('❌ ' + result.message, 'error');
+                }
+            } catch (err) {
+                showToast('❌ เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
-            updateSetDropdowns(); applyFilters(); updateSummary();
-            localStorage.setItem('tcg_cards', JSON.stringify(allCards));
-            toggleModal(false);
-            showToast(isAdd ? "เพิ่มการ์ดสำเร็จ" : "อัปเดตสำเร็จ");
-            if (document.getElementById('binder-set-select').value) loadBinderSet();
-            try {
-                const r = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(d)});
-                const j = await r.json();
-                if (j.status === 'error' && j.message.includes('Unauthorized')) logoutAdmin();
-            } catch(e) {}
         }
 
+        // ===== ลบการ์ด =====
         async function deleteCard() {
-            if (!confirm("ลบการ์ดใบนี้ถาวร?")) return;
-            const ri = Number(document.getElementById('form-rowIndex').value);
-            allCards = allCards.filter(c => c.rowIndex !== ri);
-            updateSetDropdowns(); applyFilters(); updateSummary();
-            localStorage.setItem('tcg_cards', JSON.stringify(allCards));
-            if (document.getElementById('binder-set-select').value) loadBinderSet();
-            toggleModal(false); showToast("ลบการ์ดแล้ว");
+            if (!adminPin) return showToast('กรุณาล็อกอินก่อน', 'error');
+            if (!confirm('⚠️ คุณแน่ใจหรือไม่ว่าต้องการลบการ์ดใบนี้ออกจากคลัง?')) return;
+
+            const btn = document.getElementById('btn-delete');
+            btn.innerHTML = '⏳...';
+            btn.disabled = true;
+
             try {
-                const r = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'delete', rowIndex:ri, pin:adminPin})});
-                const j = await r.json();
-                if (j.status === 'error' && j.message.includes('Unauthorized')) logoutAdmin();
-            } catch(e) {}
+                const payload = {
+                    action: 'delete',
+                    pin: adminPin,
+                    rowIndex: document.getElementById('form-rowIndex').value
+                };
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    showToast('🗑️ ลบข้อมูลสำเร็จ');
+                    toggleModal(false);
+                    loadData();
+                } else {
+                    showToast('❌ ' + result.message, 'error');
+                }
+            } catch (err) {
+                showToast('❌ เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว', 'error');
+            } finally {
+                btn.innerHTML = 'ลบ';
+                btn.disabled = false;
+            }
         }
 
-        // ===== Compress & Upload =====
+        // ===== ย่อขนาดและอัปโหลดรูปภาพ =====
         function compressAndUploadImage(event) {
-            const file = event.target.files[0]; if (!file) return;
-            const ov = document.getElementById('upload-overlay');
-            ov.classList.remove('hidden'); ov.classList.add('flex');
-            const reader = new FileReader(); reader.readAsDataURL(file);
-            reader.onload = e => {
-                const img = new Image(); img.src = e.target.result;
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const overlay = document.getElementById('upload-overlay');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
                 img.onload = async () => {
-                    const MAX = 800; let w = img.width, h = img.height;
-                    if (w > h) { if (w > MAX) { h = h*MAX/w; w = MAX; } } else { if (h > MAX) { w = w*MAX/h; h = MAX; } }
-                    const c = document.createElement('canvas'); c.width = w; c.height = h;
-                    c.getContext('2d').drawImage(img, 0, 0, w, h);
-                    const b64 = c.toDataURL('image/jpeg', 0.8).split(',')[1];
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800; // ย่อขนาดเพื่อไม่ให้ไฟล์หนักเกินไป
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    const base64 = canvas.toDataURL('image/jpeg', 0.8); // บีบอัดเป็น JPEG 80%
+                    
                     try {
-                        const r = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'uploadImage', pin:adminPin, fileName:file.name, mimeType:'image/jpeg', base64:b64})});
-                        const j = await r.json();
-                        if (j.status === 'success') { document.getElementById('form-image').value = j.url; document.getElementById('modal-image-preview').src = j.url; showToast('อัปโหลดสำเร็จ!'); }
-                        else { showToast('ล้มเหลว: '+j.message, 'error'); if(j.message.includes('Unauthorized')) logoutAdmin(); }
-                    } catch(e) { showToast('อัปโหลดล้มเหลว', 'error'); }
-                    finally { ov.classList.add('hidden'); ov.classList.remove('flex'); event.target.value=''; }
+                        const res = await fetch(API_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({ action: 'upload', image: base64, pin: adminPin })
+                        });
+                        const result = await res.json();
+                        
+                        if (result.status === 'success') {
+                            document.getElementById('form-image').value = result.url;
+                            document.getElementById('modal-image-preview').src = result.url;
+                            showToast('✅ อัปโหลดรูปภาพสำเร็จ');
+                        } else {
+                            showToast('❌ อัปโหลดล้มเหลว: ' + result.message, 'error');
+                        }
+                    } catch (err) {
+                        showToast('❌ อัปโหลดล้มเหลว (Network Error)', 'error');
+                    } finally {
+                        overlay.classList.add('hidden');
+                        overlay.classList.remove('flex');
+                    }
                 };
             };
         }

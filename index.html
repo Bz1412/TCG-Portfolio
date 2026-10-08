@@ -225,16 +225,42 @@
                         <button onclick="loadData()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition-all duration-200 active:scale-90">🔄</button>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3.5">
-                    <div class="bg-gray-50 p-4 rounded-3xl border border-gray-200">
-                        <p class="text-[11px] text-gray-500 font-medium">การ์ดทั้งหมดในคลัง</p>
-                        <p id="total-cards" class="text-2xl font-black mt-1 text-gray-900">0 <span class="text-xs font-normal text-gray-500">ใบ</span></p>
-                    </div>
-                    <div class="bg-gray-50 p-4 rounded-3xl border border-gray-200">
-                        <p class="text-[11px] text-gray-500 font-medium">มูลค่าประเมินรวม</p>
-                        <p id="total-price" class="text-2xl font-black mt-1 text-emerald-600">฿0</p>
-                    </div>
-                </div>
+                <!-- แดชบอร์ดสรุปยอด -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    
+    <!-- 1. ต้นทุนรวม -->
+    <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800 shadow-sm relative overflow-hidden">
+        <p class="text-gray-400 text-sm mb-1 relative z-10">📦 ต้นทุนเปิดแพ็ค</p>
+        <h3 id="summary-cost" class="text-2xl font-bold text-red-400 relative z-10">฿0</h3>
+        <div class="absolute right-0 bottom-0 text-red-500/10 text-5xl transform translate-x-2 translate-y-2">📦</div>
+    </div>
+
+    <!-- 2. ราคาประเมิน (มูลค่าของที่ยังอยู่) -->
+    <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800 shadow-sm relative overflow-hidden">
+        <p class="text-gray-400 text-sm mb-1 relative z-10">💎 ราคาประเมิน (ในคลัง)</p>
+        <h3 id="summary-estimated" class="text-2xl font-bold text-blue-400 relative z-10">฿0</h3>
+        <div class="absolute right-0 bottom-0 text-blue-500/10 text-5xl transform translate-x-2 translate-y-2">💎</div>
+    </div>
+
+    <!-- 3. ยอดขายรวม -->
+    <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800 shadow-sm relative overflow-hidden">
+        <p class="text-gray-400 text-sm mb-1 relative z-10">💰 ยอดที่ขายได้</p>
+        <h3 id="summary-sales" class="text-2xl font-bold text-green-400 relative z-10">฿0</h3>
+        <div class="absolute right-0 bottom-0 text-green-500/10 text-5xl transform translate-x-2 translate-y-2">💰</div>
+    </div>
+
+    <!-- 4. กำไร/ขาดทุน (ยอดขาย - ต้นทุน) -->
+    <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800 shadow-sm relative overflow-hidden">
+        <p class="text-gray-400 text-sm mb-1 relative z-10">📈 กำไรจริง (Realized)</p>
+        <h3 id="summary-profit" class="text-2xl font-bold relative z-10">฿0</h3>
+        <div class="absolute right-0 bottom-0 text-white/5 text-5xl transform translate-x-2 translate-y-2">📈</div>
+    </div>
+
+</div>
+
+<div class="text-right text-gray-500 text-sm mb-4">
+    จำนวนการ์ดในคลัง: <span id="total-cards" class="font-bold text-white">0 ใบ</span>
+</div>
             </div>
         </header>
 
@@ -978,13 +1004,69 @@ async function loadData() {
             }
         }
 
-        // ===== Summary =====
         function updateSummary() {
-            // 🌟 คำนวณเฉพาะการ์ดที่มี Qty > 0
-            const owned = allCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0);
-            document.getElementById('total-cards').innerHTML = `${owned.reduce((s,c) => s+Number(c.qty||0),0)} <span class="text-xs text-gray-500">ใบ</span>`;
-            document.getElementById('total-price').innerText = `฿${owned.reduce((s,c) => s+(Number(c.price||0)*Number(c.qty||0)),0).toLocaleString()}`;
+    let totalCards = 0;
+    let estimatedValue = 0;
+    let totalCost = 0;
+    let totalSales = 0;
+
+    // 1. คำนวณ "ราคาประเมิน" (ยอดที่ควรจะได้จากของที่มี)
+    if (typeof allCards !== 'undefined') {
+        allCards.forEach(card => {
+            if (card.isWishlist !== true && card.isWishlist !== 'true' && Number(card.qty) > 0) {
+                totalCards += Number(card.qty);
+                estimatedValue += (Number(card.price) || 0) * Number(card.qty);
+            }
+        });
+    }
+
+    // 2. คำนวณ "ต้นทุน" จากแพ็คทั้งหมด
+    if (typeof allPacks !== 'undefined') {
+        allPacks.forEach(pack => {
+            totalCost += Number(pack.totalCost || pack.price || pack.cost || 0);
+        });
+    }
+
+    // 3. คำนวณ "ยอดขายรวม" จากประวัติการขาย
+    if (typeof allSales !== 'undefined') {
+        allSales.forEach(sale => {
+            // (ปรับ .price ให้ตรงกับชื่อตัวแปรที่คุณบันทึกยอดขายไว้)
+            totalSales += Number(sale.price || sale.sellPrice || sale.total || 0);
+        });
+    }
+
+    // 4. คำนวณ "กำไร/ขาดทุน" (เอาเฉพาะเงินที่รับมาแล้ว ลบด้วย ต้นทุนแพ็คทั้งหมด)
+    let realProfit = totalSales - totalCost;
+
+    if(document.getElementById('summary-cost')) {
+        document.getElementById('summary-cost').innerText = `฿${totalCost.toLocaleString()}`;
+    }
+    
+    if(document.getElementById('summary-estimated')) {
+        document.getElementById('summary-estimated').innerText = `฿${estimatedValue.toLocaleString()}`;
+    }
+    
+    if(document.getElementById('summary-sales')) {
+        document.getElementById('summary-sales').innerText = `฿${totalSales.toLocaleString()}`;
+    }
+    
+    const profitEl = document.getElementById('summary-profit');
+    if(profitEl) {
+        profitEl.innerText = `${realProfit > 0 ? '+' : ''}฿${realProfit.toLocaleString()}`;
+
+        if (realProfit > 0) {
+            profitEl.className = "text-2xl font-bold relative z-10 text-green-400";
+        } else if (realProfit < 0) {
+            profitEl.className = "text-2xl font-bold relative z-10 text-red-400";
+        } else {
+            profitEl.className = "text-2xl font-bold relative z-10 text-gray-300";
         }
+    }
+
+    if(document.getElementById('total-cards')) {
+        document.getElementById('total-cards').innerText = `${totalCards} ใบ`;
+    }
+}
 
         // ===== Filters (Home) =====
         function applyFilters() {

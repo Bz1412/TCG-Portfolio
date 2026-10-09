@@ -2042,55 +2042,64 @@ async function submitPack(e) {
     }
 }
 
-        // ===== ย่อขนาดและอัปโหลดรูปภาพ =====
-        function compressAndUploadImage(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+       // ===== ย่อขนาดและอัปโหลดรูปภาพ =====
+function compressAndUploadImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const overlay = document.getElementById('upload-overlay');
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = async () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 800; // ย่อขนาดเพื่อไม่ให้ไฟล์หนักเกินไป
+            const scaleSize = MAX_WIDTH / img.width;
+            canvas.width = MAX_WIDTH;
+            canvas.height = img.height * scaleSize;
             
-            const overlay = document.getElementById('upload-overlay');
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (e) => {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = async () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800; // ย่อขนาดเพื่อไม่ให้ไฟล์หนักเกินไป
-                    const scaleSize = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scaleSize;
-                    
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    const base64 = canvas.toDataURL('image/jpeg', 0.8); // บีบอัดเป็น JPEG 80%
-                    
-                    try {
-                        const res = await fetch(API_URL, {
-                            method: 'POST',
-                            body: JSON.stringify({ action: 'upload', image: base64, pin: adminPin })
-                        });
-                        const result = await res.json();
-                        
-                        if (result.status === 'success') {
-                            document.getElementById('form-image').value = result.url;
-                            document.getElementById('modal-image-preview').src = result.url;
-                            showToast('✅ อัปโหลดรูปภาพสำเร็จ');
-                        } else {
-                            showToast('❌ อัปโหลดล้มเหลว: ' + result.message, 'error');
-                        }
-                    } catch (err) {
-                        showToast('❌ อัปโหลดล้มเหลว (Network Error)', 'error');
-                    } finally {
-                        overlay.classList.add('hidden');
-                        overlay.classList.remove('flex');
-                    }
-                };
-            };
-        }
+            // 🌟 แก้ไขที่ 1: ตัดคำนำหน้า 'data:image/jpeg;base64,' ออกก่อนส่ง
+            const base64String = canvas.toDataURL('image/jpeg', 0.8);
+            const base64Data = base64String.split(',')[1]; 
+            const fileName = "Card_" + Date.now() + ".jpg"; // สร้างชื่อไฟล์แบบสุ่ม
+            
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        action: 'uploadImage', // 🌟 แก้ไขที่ 2: เปลี่ยนชื่อ action ให้ตรงกับ Apps Script
+                        base64: base64Data,    // 🌟 แก้ไขที่ 3: เปลี่ยนชื่อตัวแปรให้ตรง และเพิ่ม fileName
+                        fileName: fileName,
+                        mimeType: 'image/jpeg',
+                        pin: adminPin 
+                    })
+                });
+                const result = await res.json();
+                
+                if (result.status === 'success') {
+                    document.getElementById('form-image').value = result.url;
+                    document.getElementById('modal-image-preview').src = result.url;
+                    showToast('✅ อัปโหลดรูปภาพสำเร็จ');
+                } else {
+                    showToast('❌ อัปโหลดล้มเหลว: ' + result.message, 'error');
+                }
+            } catch (err) {
+                showToast('❌ อัปโหลดล้มเหลว (Network Error)', 'error');
+            } finally {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+            }
+        };
+    };
+}
 
         // ==========================================
         // ระบบซ่อน/แสดง ฟิลด์การ์ดเกรด

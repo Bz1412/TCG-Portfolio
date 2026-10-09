@@ -2290,11 +2290,6 @@ async function submitPack(e) {
             txt += `\n💰 รวม: ${tot.toLocaleString()} บาท\nสนใจ IB ได้เลยครับ!`;
             navigator.clipboard.writeText(txt).then(() => showToast('คัดลอกแล้ว!'));
         }
-
-        // ==========================================
-        // ตัวแปรสำหรับระบบต่างๆ
-        // ==========================================
-        let portfolioChartInstance = null;
         
         // ==========================================
         // ฟีเจอร์ 1: สร้างลิงก์ตรวจสอบ Cert 

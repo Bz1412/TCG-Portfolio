@@ -274,6 +274,10 @@
                     <button id="clear-search-btn" onclick="clearSearch()" class="absolute right-4 text-gray-400 hidden">✕</button>
                 </div>
                 <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                    <div class="flex items-center bg-gray-100/80 rounded-xl p-1 flex-shrink-0 border border-gray-200 shadow-sm">
+                        <button onclick="toggleView('list')" id="btnViewList" class="px-3 py-1.5 rounded-lg bg-white shadow-sm font-bold text-gray-800 text-xs transition-all">📝 แถว</button>
+                        <button onclick="toggleView('binder')" id="btnViewBinder" class="px-3 py-1.5 rounded-lg text-gray-500 hover:text-gray-800 font-medium text-xs transition-all">🗂️ แฟ้ม</button>
+                    </div>
                     <button onclick="exportForSale()" class="bg-gray-900 text-white text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-black transition-all duration-200 active:scale-90">📋 โพสต์ขาย</button>
                     <button onclick="openWTSGenerator()" class="bg-indigo-600 text-white text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-indigo-700 shadow-sm transition-all duration-200 active:scale-90">🖼️ สร้างรูปภาพ</button>
                     <select id="filter-set" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none min-w-0 max-w-[130px]">
@@ -1174,37 +1178,67 @@ async function loadData() {
         function clearSearch() { document.getElementById('search-input').value = ''; applyFilters(); }
 
         function renderCards(cards) {
-            const g = document.getElementById('card-grid'); g.innerHTML = '';
-            if (!cards.length) return g.innerHTML = '<div class="col-span-2 text-center text-gray-400 py-12 text-xs">ไม่พบการ์ดที่ค้นหา</div>';
-            cards.forEach(card => {
-                const img = getSafeImageUrl(card.image);
-                const isW = String(card.isWishlist) === 'true';
-                const cNum = card.cardNumber ? `<span class="text-[9px] bg-gray-50 text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded">No.${card.cardNumber}</span>` : '';
-                const rb = card.rarity && card.rarity !== '-' ? `<span class="text-[9px] bg-gray-900 text-white px-1.5 py-0.5 rounded font-bold">${card.rarity}</span>` : '';
-                const tagHtml = card.tags ? String(card.tags).split(',').map(t => `<span class="text-[9px] bg-blue-50 text-blue-600 border border-blue-200 px-1.5 py-0.5 rounded-md inline-block mr-1 mt-1">${t.trim()}</span>`).join('') : '';
+    const g = document.getElementById('card-grid'); 
+    g.innerHTML = '';
 
-                g.innerHTML += `
-                    <div class="bg-white border ${isW?'border-amber-200 bg-amber-50/30':'border-gray-200 hover:border-gray-300'} p-3.5 rounded-3xl shadow-sm flex flex-col justify-between relative transition-transform duration-200 active:scale-95">
-                        ${isW ? '<div class="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10 animate-pulse">🎯 WANTED</div>' : ''}
-                        <div onclick="openEditForm('${card.id}')" class="cursor-pointer">
-                            <div class="w-full h-36 bg-gray-50 rounded-2xl mb-3 flex items-center justify-center p-2 border border-gray-100">
-                                <img src="${img}" loading="lazy" class="h-full object-contain rounded-lg drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
-                            </div>
-                            <div class="flex flex-wrap gap-1 mb-1.5">
-                                <span class="text-[9px] bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded font-semibold">${card.set||'-'}</span>
-                                ${cNum} ${rb}
-                            </div>
-                            <h2 class="text-xs font-bold text-gray-900 truncate">${card.name}</h2>
-                            <p class="text-[10px] text-gray-500 mt-0.5">สภาพ: ${card.condition||'NM'} • ${card.language||'TH'}</p>
-                            ${tagHtml ? `<div class="mt-1">${tagHtml}</div>` : ''}
+    if (currentView === 'binder') {
+        g.className = "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mt-4";
+    } else {
+        g.className = "grid grid-cols-2 md:grid-cols-3 gap-3 mt-4"; 
+    }
+
+    if (!cards.length) {
+        return g.innerHTML = '<div class="col-span-full text-center text-gray-400 py-12 text-xs">ไม่พบการ์ดที่ค้นหา</div>';
+    }
+
+    cards.forEach(card => {
+        const img = getSafeImageUrl(card.image);
+        const isW = String(card.isWishlist) === 'true';
+
+        if (currentView === 'binder') {
+            g.innerHTML += `
+                <div onclick="openEditForm('${card.id}')" class="relative bg-gray-900 rounded-lg overflow-hidden shadow-sm border border-gray-200 active:scale-95 transition-transform duration-200 cursor-pointer aspect-[2.5/3.5]">
+                    <img src="${img}" loading="lazy" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x280/f9fafb/9ca3af?text=No+Image'">
+                    
+                    ${isW ? '<div class="absolute top-1 right-1 bg-amber-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-sm shadow-md z-10">WANTED</div>' : ''}
+                    
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-1.5 pt-5 flex flex-col justify-end">
+                        <p class="text-white font-bold text-[9px] truncate w-full leading-tight">${card.name}</p>
+                        <div class="flex justify-between items-center mt-0.5">
+                            <span class="text-emerald-400 font-bold text-[9px]">฿${Number(card.price||0).toLocaleString()}</span>
+                            ${!isW ? `<span class="text-gray-300 font-medium text-[8px]">x${card.qty}</span>` : ''}
                         </div>
-                        <div onclick="openEditForm('${card.id}')" class="flex justify-between items-center mt-3 pt-3 border-t ${isW?'border-amber-200':'border-gray-100'} cursor-pointer">
-                            <span class="text-xs font-black text-emerald-600">฿${Number(card.price||0).toLocaleString()}</span>
-                            ${!isW ? `<span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full font-semibold">x${card.qty}</span>` : '<span class="text-[10px] text-amber-600 font-semibold">อยากได้</span>'}
+                    </div>
+                </div>
+            `;
+        } else {
+            const cNum = card.cardNumber ? `<span class="text-[9px] bg-gray-50 text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded">No.${card.cardNumber}</span>` : '';
+            const rb = card.rarity && card.rarity !== '-' ? `<span class="text-[9px] bg-gray-900 text-white px-1.5 py-0.5 rounded font-bold">${card.rarity}</span>` : '';
+            const tagHtml = card.tags ? String(card.tags).split(',').map(t => `<span class="text-[9px] bg-blue-50 text-blue-600 border border-blue-200 px-1.5 py-0.5 rounded-md inline-block mr-1 mt-1">${t.trim()}</span>`).join('') : '';
+
+            g.innerHTML += `
+                <div class="bg-white border ${isW?'border-amber-200 bg-amber-50/30':'border-gray-200 hover:border-gray-300'} p-3.5 rounded-3xl shadow-sm flex flex-col justify-between relative transition-transform duration-200 active:scale-95">
+                    ${isW ? '<div class="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10 animate-pulse">🎯 WANTED</div>' : ''}
+                    <div onclick="openEditForm('${card.id}')" class="cursor-pointer">
+                        <div class="w-full h-36 bg-gray-50 rounded-2xl mb-3 flex items-center justify-center p-2 border border-gray-100">
+                            <img src="${img}" loading="lazy" class="h-full object-contain rounded-lg drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
                         </div>
-                    </div>`;
-            });
+                        <div class="flex flex-wrap gap-1 mb-1.5">
+                            <span class="text-[9px] bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded font-semibold">${card.set||'-'}</span>
+                            ${cNum} ${rb}
+                        </div>
+                        <h2 class="text-xs font-bold text-gray-900 truncate">${card.name}</h2>
+                        <p class="text-[10px] text-gray-500 mt-0.5">สภาพ: ${card.condition||'NM'} • ${card.language||'TH'}</p>
+                        ${tagHtml ? `<div class="mt-1">${tagHtml}</div>` : ''}
+                    </div>
+                    <div onclick="openEditForm('${card.id}')" class="flex justify-between items-center mt-3 pt-3 border-t ${isW?'border-amber-200':'border-gray-100'} cursor-pointer">
+                        <span class="text-xs font-black text-emerald-600">฿${Number(card.price||0).toLocaleString()}</span>
+                        ${!isW ? `<span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full font-semibold">x${card.qty}</span>` : '<span class="text-[10px] text-amber-600 font-semibold">อยากได้</span>'}
+                    </div>
+                </div>`;
         }
+    });
+}
 
         // Card of the Day (เฉพาะที่มี Qty > 0)
         function renderCardOfTheDay() {
@@ -2032,6 +2066,25 @@ async function submitPack(e) {
             link.click();
             showToast('ดาวน์โหลดรูปภาพสำเร็จ!');
         }
+
+        let currentView = 'list';
+
+                function toggleView(viewType) {
+                    currentView = viewType;
+    
+                    const btnList = document.getElementById('btnViewList');
+                    const btnBinder = document.getElementById('btnViewBinder');
+
+                    if (viewType === 'list') {
+                        btnList.className = 'px-3 py-1.5 rounded-lg bg-white shadow-sm font-bold text-gray-800 text-xs transition-all';
+                        btnBinder.className = 'px-3 py-1.5 rounded-lg text-gray-500 hover:text-gray-800 font-medium text-xs transition-all';
+                    } else {
+                        btnBinder.className = 'px-3 py-1.5 rounded-lg bg-white shadow-sm font-bold text-gray-800 text-xs transition-all';
+                        btnList.className = 'px-3 py-1.5 rounded-lg text-gray-500 hover:text-gray-800 font-medium text-xs transition-all';
+                    }
+
+                    applyFilters();
+                }
 
         // ===== Export / Stats =====
         function exportForSale() {

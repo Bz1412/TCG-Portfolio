@@ -2425,19 +2425,7 @@ async function submitPack(e) {
                 }
             });
         }
-
-        // ==========================================
-        // ฟีเจอร์ 4: กราฟแสดงสถิติพอร์ต (Chart.js)
-        // ==========================================
-        function openChartModal() {
-            document.getElementById('chartModal').classList.remove('hidden');
-            drawChart();
-        }
-        
-        function closeChartModal() {
-            document.getElementById('chartModal').classList.add('hidden');
-        }
-        
+     
         function drawChart() {
         
             if (!historyData || historyData.length === 0) return; 

@@ -12,6 +12,7 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTgxOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTElIiBmaWxsPSIjZmZmZmZmIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAwIiBmb250LXdlaWdodD0iYm9sZCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VENHPC90ZXh0Pjwvc3ZnPg==">
     <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTgxOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTElIiBmaWxsPSIjZmZmZmZmIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAwIiBmb250LXdlaWdodD0iYm9sZCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VENHPC90ZXh0Pjwvc3ZnPg==">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
@@ -518,9 +519,44 @@
                 </div>
                 <div>
                     <label class="text-[11px] font-semibold text-gray-500">สภาพการ์ด</label>
-                    <select id="form-condition" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
-                        <option value="NM">NM (สวยไม่มีตำหนิ)</option><option value="LP">LP (มีรอยขนแมว)</option><option value="MP">MP (มีรอยชัดเจน)</option><option value="HP">HP (ตำหนิหนัก)</option><option value="Graded">Graded (มีเกรด)</option>
+                    <select id="form-condition" onchange="toggleGradingFields()" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                        <option value="NM">NM (สวยไม่มีตำหนิ)</option>
+                        <option value="LP">LP (มีรอยขนแมว)</option>
+                        <option value="MP">MP (มีรอยชัดเจน)</option>
+                        <option value="HP">HP (ตำหนิหนัก)</option>
+                        <option value="Graded">Graded (มีเกรด)</option>
                     </select>
+                </div>
+
+                <!-- 🌟 ฟิลด์ Grading (ซ่อนเป็นค่าเริ่มต้น) -->
+                <div id="grading-fields" class="hidden bg-indigo-50/50 border border-indigo-100 rounded-xl p-3 space-y-3">
+                    <p class="text-[11px] font-bold text-indigo-700 uppercase tracking-widest border-b border-indigo-100 pb-1">รายละเอียดการ์ดเกรด</p>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] font-semibold text-gray-500">ค่ายที่เกรด</label>
+                            <select id="form-gradeCompany" class="w-full mt-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="PSA">PSA</option>
+                                <option value="BGS">BGS</option>
+                                <option value="CGC">CGC</option>
+                                <option value="ARS">ARS</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-semibold text-gray-500">คะแนน (Grade)</label>
+                            <input type="text" id="form-gradeScore" placeholder="เช่น 10, 9.5" class="w-full mt-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-semibold text-gray-500">เลข Cert (Certification Number)</label>
+                        <div class="flex gap-2 mt-1">
+                            <input type="text" id="form-certNumber" placeholder="สแกน หรือ กรอกเลข" class="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                            <button type="button" onclick="startScanner()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 rounded-lg text-xs font-bold transition-all duration-200 active:scale-95 shadow-sm">
+                                📷 สแกน
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div>
                     <label class="text-[11px] font-semibold text-gray-500">แท็ก (คั่นด้วยลูกน้ำ)</label>
@@ -670,6 +706,28 @@
 
     </div>
 </div>
+
+    <!-- MODAL: สแกนบาร์โค้ด (Html5-Qrcode) -->
+    <div id="scanner-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-[90] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl border border-gray-100 animate-modal-pop space-y-4">
+            <div class="flex justify-between items-center pb-2 border-b border-gray-100">
+                <h2 class="font-bold text-base text-gray-900">📷 สแกนบาร์โค้ดการ์ดเกรด</h2>
+                <button type="button" onclick="stopScanner()" class="text-gray-400 hover:text-gray-900 text-2xl transition-all duration-200 active:scale-90">&times;</button>
+            </div>
+            
+            <div class="flex justify-center bg-black rounded-xl overflow-hidden relative">
+                <div id="reader" style="width: 100%; min-height: 250px;"></div>
+                <div id="scanner-loading" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/50 text-white text-xs font-bold pointer-events-none">
+                    <div class="w-8 h-8 border-4 border-gray-400 border-t-white rounded-full animate-spin mb-2"></div>
+                    กำลังเปิดกล้อง...
+                </div>
+            </div>
+
+            <button type="button" onclick="stopScanner()" class="w-full py-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl font-bold text-sm transition-all duration-200 active:scale-95">
+                ❌ ยกเลิกการสแกน
+            </button>
+        </div>
+    </div>
 
     <!-- Lightbox -->
     <div id="image-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[70] hidden flex items-center justify-center p-4" onclick="toggleImageModal(false)">
@@ -1485,6 +1543,10 @@ async function loadData() {
             document.getElementById('modal-image-preview').src = 'https://placehold.co/150/f9fafb/9ca3af?text=No+Image';
             document.getElementById('form-tags').value = '';
             document.getElementById('form-buyPrice').value = '';
+            document.getElementById('form-gradeCompany').value = 'PSA';
+            document.getElementById('form-gradeScore').value = '';
+            document.getElementById('form-certNumber').value = '';
+            toggleGradingFields();
             checkAuthUI(); toggleModal(true);
         }
 
@@ -1501,6 +1563,10 @@ async function loadData() {
             document.getElementById('form-rarity').value = card.rarity || '-';
             document.getElementById('form-lang').value = card.language || 'TH';
             document.getElementById('form-condition').value = card.condition || 'NM';
+            document.getElementById('form-gradeCompany').value = card.gradeCompany || 'PSA';
+            document.getElementById('form-gradeScore').value = card.gradeScore || '';
+            document.getElementById('form-certNumber').value = card.certNumber || '';
+            toggleGradingFields();
             document.getElementById('form-image').value = card.image || '';
             document.getElementById('form-wishlist').checked = String(card.isWishlist) === 'true';
             document.getElementById('modal-title').innerText = adminPin ? (Number(card.qty) === 0 ? '📦 ปรับสต็อก/แก้ไขข้อมูล' : '🛠️ แก้ไขข้อมูล') : '🔍 รายละเอียดการ์ด';
@@ -1643,7 +1709,10 @@ async function loadData() {
                 condition: document.getElementById('form-condition').value,
                 tags: document.getElementById('form-tags').value,
                 isWishlist: document.getElementById('form-wishlist').checked,
-                image: document.getElementById('form-image').value
+                image: document.getElementById('form-image').value,
+                gradeCompany: document.getElementById('form-condition').value === 'Graded' ? document.getElementById('form-gradeCompany').value : '',
+                gradeScore: document.getElementById('form-condition').value === 'Graded' ? document.getElementById('form-gradeScore').value : '',
+                certNumber: document.getElementById('form-condition').value === 'Graded' ? document.getElementById('form-certNumber').value : ''
             };
 
             try {
@@ -1790,6 +1859,76 @@ async function submitPack(e) {
                     }
                 };
             };
+        }
+
+        // ==========================================
+        // ระบบซ่อน/แสดง ฟิลด์การ์ดเกรด
+        // ==========================================
+        function toggleGradingFields() {
+            const condition = document.getElementById("form-condition").value;
+            const gradingFields = document.getElementById("grading-fields");
+
+            if (condition === "Graded") {
+                gradingFields.classList.remove('hidden');
+            } else {
+                gradingFields.classList.add('hidden');
+                // ล้างค่าเมื่อไม่ได้เลือก Graded
+                document.getElementById("form-gradeCompany").value = "PSA";
+                document.getElementById("form-gradeScore").value = "";
+                document.getElementById("form-certNumber").value = "";
+            }
+        }
+
+        // ==========================================
+        // ระบบสแกนกล้องด้วย Html5-Qrcode
+        // ==========================================
+        let html5QrcodeScanner = null;
+
+        function startScanner() {
+            document.getElementById("scanner-modal").classList.remove('hidden');
+            document.getElementById("scanner-loading").style.display = "flex";
+
+            if (!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5Qrcode("reader");
+            }
+            
+            const config = { 
+                fps: 10, 
+                qrbox: { width: 250, height: 100 },
+                aspectRatio: 1.0 
+            };
+
+            html5QrcodeScanner.start(
+                { facingMode: "environment" },
+                config, 
+                (decodedText) => {
+                    document.getElementById("form-certNumber").value = decodedText;
+                    stopScanner();
+                    showToast('สแกนสำเร็จ: ' + decodedText, 'success');
+                },
+                (errorMessage) => {
+                }
+            ).then(() => {
+                document.getElementById("scanner-loading").style.display = "none";
+            }).catch((err) => {
+                console.error("Error opening camera:", err);
+                showToast("ไม่สามารถเปิดกล้องได้", "error");
+                stopScanner();
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
+                html5QrcodeScanner.stop().then(() => {
+                    html5QrcodeScanner.clear();
+                    document.getElementById("scanner-modal").classList.add('hidden');
+                }).catch((err) => {
+                    console.error("Stop error:", err);
+                    document.getElementById("scanner-modal").classList.add('hidden');
+                });
+            } else {
+                document.getElementById("scanner-modal").classList.add('hidden');
+            }
         }
 
         function openWTSGenerator() {

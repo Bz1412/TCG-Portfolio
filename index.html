@@ -75,10 +75,10 @@
         .binder-grid {
             flex: 1;
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(4, 1fr);
-            gap: 8px;
-            padding: 12px;
+            grid-template-columns: repeat(3, 1fr); /* 3 คอลัมน์ */
+            grid-template-rows: repeat(3, 1fr);    /* 3 แถว (รวมเป็น 9 ช่อง) */
+            gap: 6px;
+            padding: 10px;
             overflow: hidden;
         }
 
@@ -404,7 +404,7 @@
                 <div class="binder-ring"></div>
             </div>
             <div class="binder-page-content">
-                <div class="binder-grid" id="binder-grid">
+                <div class="binder-grid" id="binder-grid"></div>
                 </div>
                 <div class="binder-pagination">
                     <button class="page-btn" id="binder-prev" onclick="changePage(-1)">◀ ก่อนหน้า</button>
@@ -823,7 +823,7 @@
 
         // ===== Config =====
         const API_URL = "https://script.google.com/macros/s/AKfycbyxUtqszvNC3tsfCnp2pH2dMJplBRX6KKX1f-JqzK3q57aAylJ3BOkGEFUJ0bxAI8e-/exec";
-        const CARDS_PER_PAGE = 8;
+        const CARDS_PER_PAGE = 9;
         let allCards = [], currentFiltered = [];
         let allSales = [];
         let adminPin = localStorage.getItem('tcg_pin') || '';
@@ -1011,7 +1011,7 @@ async function loadData() {
                 renderSalesBoard();
                 
                 showToast(`✅ โหลดสำเร็จ (${allCards.filter(c => Number(c.qty) > 0).length} ใบ)`);
-                if (document.getElementById('binder-set-select').value) loadBinderSet();
+                if (document.getElementById('binder-set-select').value) loadBinderSet(true);
             }
         } catch(err) {
             // 🌟 4. ปรับให้ลองดึงข้อมูลใหม่สูงสุด 3 ครั้ง (เดิม 2 ครั้ง)
@@ -1399,12 +1399,28 @@ async function loadData() {
             return maxTotal;
         }
 
-        function loadBinderSet() {
+        // ===== BINDER LOGIC =====
+        function parseCardNum(str) {
+            if (!str) return null;
+            const m = String(str).match(/^(\d+)/);
+            return m ? parseInt(m[1], 10) : null;
+        }
+
+        function getTotalFromSet(setCards) {
+            let maxTotal = 0;
+            setCards.forEach(c => {
+                const m = String(c.cardNumber||'').match(/\/(\d+)/);
+                if (m) maxTotal = Math.max(maxTotal, parseInt(m[1], 10));
+            });
+            return maxTotal;
+        }
+
+        // 🌟 เพิ่มพารามิเตอร์ keepPage เพื่อไม่ให้เด้งกลับหน้าแรกเวลาเซฟ
+        function loadBinderSet(keepPage = false) {
             const setName = document.getElementById('binder-set-select').value.trim();
             if (!setName) return;
 
             const setCards = allCards.filter(c => String(c.set || '').trim() === setName);
-            // 🌟 กรองเฉพาะที่มี Qty > 0
             const ownedCount = setCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0).length;
             const totalCards = getTotalFromSet(setCards);
 
@@ -1429,7 +1445,9 @@ async function loadData() {
                 for (let i = 1; i <= totalCards; i++) {
                     const card = cardMap[i] || null;
                     const isOwned = card && String(card.isWishlist) !== 'true' && Number(card.qty) > 0;
-                    binderSlots.push({ num: i, card: isOwned ? card : null });
+                    
+                    // 🌟 ใส่ข้อมูลการ์ดลงใน slot เสมอ (แม้จะเป็น Wishlist) เพื่อนำไปแสดงแบบจางๆ
+                    binderSlots.push({ num: i, card: card });
                     
                     if (!isOwned) {
                         window.currentMissingList.push(i);
@@ -1466,8 +1484,7 @@ async function loadData() {
                     binderSlots.push({ isSpecialHeader: true, label: '⭐ การ์ดพิเศษ (AR,SAR,UR,FUR,RGB)', sublabel: 'Secret / Extra' });
                     for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
                     specialNumCards.forEach(c => {
-                        const isOwned = Number(c.qty) > 0;
-                        binderSlots.push({ num: parseCardNum(c.cardNumber), card: isOwned ? c : null, isSpecial: true });
+                        binderSlots.push({ num: parseCardNum(c.cardNumber), card: c, isSpecial: true });
                     });
                 }
 
@@ -1476,8 +1493,7 @@ async function loadData() {
                     binderSlots.push({ isSpecialHeader: true, label: '🎴 การ์ดพิเศษ (Energy,etc.)', sublabel: 'Promo / Non-Numbered' });
                     for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
                     nonNumCards.forEach(c => {
-                        const isOwned = Number(c.qty) > 0;
-                        binderSlots.push({ num: null, numLabel: String(c.cardNumber || '?'), card: isOwned ? c : null, isSpecial: true });
+                        binderSlots.push({ num: null, numLabel: String(c.cardNumber || '?'), card: c, isSpecial: true });
                     });
                 }
 
@@ -1489,18 +1505,25 @@ async function loadData() {
                     .filter(c => parseCardNum(c.cardNumber) === null || /[a-zA-Z]/.test(String(c.cardNumber||'').split('/')[0]))
                     .sort((a, b) => String(a.cardNumber).localeCompare(String(b.cardNumber)));
 
-                numCards.forEach(c => binderSlots.push({ num: parseCardNum(c.cardNumber), card: Number(c.qty) > 0 ? c : null }));
+                numCards.forEach(c => binderSlots.push({ num: parseCardNum(c.cardNumber), card: c }));
 
                 if (nonNum.length > 0) {
                     const rem = binderSlots.length % CARDS_PER_PAGE;
                     if (rem !== 0) for (let i = 0; i < (CARDS_PER_PAGE - rem); i++) binderSlots.push({ isFiller: true });
                     binderSlots.push({ isSpecialHeader: true, label: '🎴 การ์ดพิเศษ', sublabel: 'Promo / Non-Numbered' });
                     for (let i = 1; i < CARDS_PER_PAGE; i++) binderSlots.push({ isFiller: true });
-                    nonNum.forEach(c => binderSlots.push({ num: null, numLabel: String(c.cardNumber || '?'), card: Number(c.qty) > 0 ? c : null, isSpecial: true }));
+                    nonNum.forEach(c => binderSlots.push({ num: null, numLabel: String(c.cardNumber || '?'), card: c, isSpecial: true }));
                 }
             }
 
-            binderPage = 0;
+            // 🌟 ตรวจสอบว่าต้องจำหน้าเดิมไว้หรือไม่
+            if (!keepPage) {
+                binderPage = 0;
+            } else {
+                const totalPages = Math.max(1, Math.ceil(binderSlots.length / CARDS_PER_PAGE));
+                if (binderPage >= totalPages) binderPage = totalPages - 1;
+            }
+
             renderBinderPage();
         }
 
@@ -1533,9 +1556,9 @@ async function loadData() {
                     grid.innerHTML += `
                         <div class="card-slot flex items-center justify-center bg-gray-900 rounded-xl border-0" style="aspect-ratio:unset; min-height:0">
                             <div class="text-center text-white px-2">
-                                <div style="font-size:20px">${slot.label?.split(' ')[0] || '⭐'}</div>
-                                <div class="font-extrabold text-[11px] mt-1 leading-tight">${slot.label?.split(' ').slice(1).join(' ') || 'การ์ดพิเศษ'}</div>
-                                <div class="text-[9px] opacity-60 mt-0.5">${slot.sublabel || ''}</div>
+                                <div style="font-size:16px">${slot.label?.split(' ')[0] || '⭐'}</div>
+                                <div class="font-extrabold text-[10px] mt-0.5 leading-tight">${slot.label?.split(' ').slice(1).join(' ') || 'การ์ดพิเศษ'}</div>
+                                <div class="text-[8px] opacity-60 mt-0.5">${slot.sublabel || ''}</div>
                             </div>
                         </div>`;
                     continue;
@@ -1564,15 +1587,18 @@ async function loadData() {
                         <div class="card-slot is-missing">
                             ${numLabel}
                             <div class="slot-missing-label">
-                                <span style="font-size:18px">☐</span>
+                                <span style="font-size:16px">☐</span>
                                 <span>ยังไม่มี</span>
                             </div>
                         </div>`;
                 } else {
                     const isW = String(card.isWishlist) === 'true';
+                    const isSoldOut = Number(card.qty) <= 0;
+                    const isDimmed = isW || isSoldOut; // 🌟 ถ้าเป็น Wishlist หรือขายหมดแล้วให้จางลง
                     const img = getSafeImageUrl(card.image);
+
                     grid.innerHTML += `
-                        <div class="card-slot has-card ${isW ? 'opacity-60' : ''} ${slot.isSpecial ? 'ring-2 ring-amber-400' : ''}" onclick="openEditForm('${card.id}')">
+                        <div class="card-slot has-card ${isDimmed ? 'opacity-40 grayscale-[20%]' : ''} ${slot.isSpecial ? 'ring-2 ring-amber-400' : ''}" onclick="openEditForm('${card.id}')">
                             ${numLabel}
                             <img src="${img}" loading="lazy" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=?'">
                             ${card.qty > 1 && !isW ? `<span class="slot-qty">x${card.qty}</span>` : ''}

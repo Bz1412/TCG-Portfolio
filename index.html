@@ -200,6 +200,140 @@
         .animate-modal-pop {
             animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
+
+        /* Compact collection layout: show cards in the first mobile viewport. */
+        .hidden { display: none !important; }
+        .vault-home { min-height: 100vh; padding-bottom: 108px; }
+        .vault-shell { max-width: 1120px; margin: 0 auto; }
+        .vault-header { background: #fff; padding: 12px 14px 10px; border-bottom: 1px solid #e5e7eb; }
+        .vault-brand-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+        .vault-eyebrow { display: block; color: #6b7280; font-size: 8px; letter-spacing: .1em; text-transform: uppercase; }
+        .vault-brand-row h1 { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.2; letter-spacing: -.035em; }
+        .vault-header-actions { display: flex; gap: 5px; flex-shrink: 0; }
+        .vault-icon-btn { display: flex; align-items: center; justify-content: center; width: 34px; height: 36px; border: 1px solid #e5e7eb; border-radius: 11px; background: #f9fafb; font-size: 15px; cursor: pointer; }
+        .vault-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+        .summary-tile { min-width: 0; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 4px; padding: 8px 6px; border: 1px solid #e5e7eb; border-radius: 12px; background: #fafafa; text-align: left; }
+        .summary-label { font-size: 9px; color: #6b7280; line-height: 1.4; }
+        .summary-value { margin: 0; font-size: clamp(11px, 3.5vw, 15px); font-weight: 700; line-height: 1.2; color: #1f2937; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+        .summary-sales-button { background: #ecfdf5; border-color: #d1fae5; cursor: pointer; transition: background .2s; }
+        .summary-sales-button:hover { background: #d1fae5; }
+        .summary-sales-button .summary-label, .summary-sales-button .summary-value { color: #047857; }
+        .summary-value.is-positive { color: #059669; }
+        .summary-value.is-negative { color: #ef4444; }
+        .vault-main { padding: 12px 14px 0; }
+        .vault-main > section + section { margin-top: 12px; }
+        .featured-card { display: flex; align-items: center; gap: 8px; min-height: 80px; padding: 8px 10px; border-radius: 16px; background: #111827; color: white; }
+        .featured-card-main { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; text-align: left; background: transparent; border: 0; padding: 0; color: inherit; cursor: pointer; }
+        .featured-image { width: 44px; height: 62px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #1f2937; border-radius: 7px; padding: 2px; }
+        .featured-image img { height: 100%; max-width: 100%; object-fit: contain; border-radius: 4px; }
+        .featured-info { flex: 1; min-width: 0; }
+        .featured-label { display: block; font-size: 8px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #cbd5e1; line-height: 12px; }
+        .featured-name { margin: 1px 0; font-size: 12px; font-weight: 600; line-height: 17px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .featured-details { display: block; color: #9ca3af; font-size: 9px; line-height: 14px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .featured-price-row { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+        .featured-price { font-size: 12px; font-weight: 700; }
+        .featured-rarity { font-size: 8px; line-height: 12px; border: 1px solid #4b5563; padding: 0 5px; border-radius: 4px; color: #e5e7eb; }
+        .featured-controls { display: flex; flex-direction: column; gap: 4px; }
+        .featured-control { width: 32px; height: 28px; border: 1px solid #374151; background: #1f2937; color: #e5e7eb; border-radius: 8px; font-size: 15px; cursor: pointer; }
+        .featured-control:disabled { opacity: .35; cursor: default; }
+        .collection-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+        .collection-heading h2 { margin: 0; font-size: 13px; font-weight: 700; line-height: 20px; }
+        .collection-count { color: #6b7280; font-size: 9px; text-align: right; }
+        .collection-count strong { color: #111827; font-weight: 600; }
+        .collection-search { position: relative; display: flex; align-items: center; }
+        .collection-search-icon { position: absolute; left: 12px; font-size: 13px; pointer-events: none; }
+        .collection-search input { width: 100%; height: 42px; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; padding: 10px 40px 10px 36px; font-size: 12px; outline: none; appearance: none; }
+        .collection-search input:focus { border-color: #111827; box-shadow: 0 0 0 1px #111827; }
+        .collection-search input::-webkit-search-cancel-button { appearance: none; }
+        .collection-clear { position: absolute; right: 5px; width: 32px; height: 32px; border: 0; border-radius: 8px; color: #6b7280; background: transparent; cursor: pointer; }
+        .collection-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+        .collection-view-tabs { display: flex; gap: 3px; padding: 3px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 11px; }
+        .collection-view-tabs button { border: 0; min-height: 28px; padding: 5px 10px; border-radius: 8px; font-size: 10px; color: #6b7280; background: transparent; cursor: pointer; }
+        .collection-view-tabs button[aria-pressed="true"] { background: #fff; color: #111827; font-weight: 600; box-shadow: 0 1px 3px #0000000d; }
+        .collection-filter-toggle { min-height: 36px; padding: 7px 11px; background: #fff; border: 1px solid #e5e7eb; border-radius: 11px; color: #374151; font-size: 10px; cursor: pointer; }
+        .collection-filter-toggle[aria-expanded="true"] { background: #f3f4f6; border-color: #9ca3af; }
+        .collection-options { margin-top: 10px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 14px; background: #fff; }
+        .collection-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .collection-filters label { display: block; min-width: 0; font-size: 9px; color: #6b7280; }
+        .collection-filters select { display: block; margin-top: 3px; width: 100%; min-width: 0; height: 36px; padding: 6px; border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb; color: #374151; font-size: 10px; outline: none; }
+        .collection-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #f3f4f6; }
+        .collection-tools button { min-height: 34px; padding: 7px 10px; border: 1px solid #e5e7eb; border-radius: 9px; background: #f9fafb; color: #374151; font-size: 10px; cursor: pointer; }
+        .collection-tools .tool-primary { background: #111827; border-color: #111827; color: white; }
+        .collection-tools button.is-selecting { background: #dbeafe; border-color: #3b82f6; color: #1d4ed8; }
+        .vault-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+        .vault-card { position: relative; min-width: 0; display: flex; flex-direction: column; background: #fff; border: 1px solid #e5e7eb; border-radius: 17px; padding: 9px; cursor: pointer; box-shadow: 0 1px 3px #00000004; transition: border-color .2s, box-shadow .2s; }
+        .vault-card:hover { border-color: #9ca3af; }
+        .vault-card.is-selected { border-color: #3b82f6; box-shadow: 0 0 0 2px #3b82f6; background: #eff6ff; }
+        .vault-card.is-wishlist { border-color: #fde68a; background: #fffbeb; }
+        .vault-card-image { position: relative; height: 148px; display: flex; align-items: center; justify-content: center; padding: 5px; background: #f9fafb; border-radius: 11px; overflow: hidden; }
+        .vault-card-image img { max-width: 100%; height: 100%; object-fit: contain; border-radius: 5px; }
+        .vault-card-title { font-size: 12px; font-weight: 600; line-height: 17px; margin: 8px 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .vault-card-set { font-size: 9px; line-height: 13px; color: #6b7280; margin: 0 0 5px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
+        .vault-card-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+        .vault-card-badge { font-size: 9px; line-height: 13px; padding: 2px 5px; border-radius: 5px; background: #f3f4f6; color: #4b5563; overflow-wrap: anywhere; }
+        .vault-rarity-badge { background: #111827; color: #fff; }
+        .vault-grade-badge { background: #fef3c7; color: #92400e; }
+        .vault-card-secondary { font-size: 9px; line-height: 13px; margin: 5px 0 0; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .vault-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-top: auto; padding-top: 8px; }
+        .vault-card-price { font-size: 12px; font-weight: 700; color: #059669; overflow-wrap: anywhere; }
+        .vault-card-qty { font-size: 9px; color: #4b5563; background: #f3f4f6; border-radius: 6px; padding: 2px 5px; flex-shrink: 0; }
+        .vault-cert-link { position: absolute; bottom: 5px; left: 5px; border-radius: 5px; padding: 3px 5px; font-size: 8px; line-height: 12px; background: #111827dd; color: #fff; }
+        .vault-card-checkbox { position: absolute; top: 14px; left: 14px; width: 18px; height: 18px; accent-color: #2563eb; z-index: 2; }
+        .vault-wanted-badge { position: absolute; top: 14px; right: 14px; background: #f59e0b; color: #fff; font-size: 8px; font-weight: 600; padding: 2px 5px; border-radius: 5px; z-index: 1; }
+        .vault-card-grid.binder-mode { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+        .binder-mode .vault-card { padding: 6px; border-radius: 12px; }
+        .binder-mode .vault-card-image { height: auto; aspect-ratio: 2.5 / 3.5; padding: 2px; border-radius: 7px; }
+        .binder-mode .vault-card-title { font-size: 10px; line-height: 14px; margin-top: 5px; }
+        .binder-mode .vault-card-badge { font-size: 8px; padding: 1px 3px; }
+        .binder-mode .vault-card-price { font-size: 10px; }
+        .binder-mode .vault-card-qty { font-size: 8px; }
+        .vault-empty { grid-column: 1 / -1; padding: 36px 16px; text-align: center; font-size: 12px; color: #9ca3af; }
+        .vault-skeleton { height: 270px; border: 1px solid #e5e7eb; border-radius: 17px; background: linear-gradient(110deg, #fff 25%, #f3f4f6 50%, #fff 75%); background-size: 200% 100%; animation: vault-loading 1.5s linear infinite; }
+        .vault-top-cards { padding-top: 14px; border-top: 1px solid #e5e7eb; }
+        .vault-top-cards h2 { font-size: 12px; font-weight: 600; margin: 0 0 9px; }
+        .sales-board-modal { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; background: #11182766; backdrop-filter: blur(4px); padding: 12px; }
+        .sales-board-modal.hidden { display: none; }
+        .sales-board-panel { width: 100%; max-width: 460px; max-height: 85dvh; overflow-y: auto; background: #fff; border: 1px solid #f3f4f6; border-radius: 24px; padding: 20px; box-shadow: 0 20px 60px #00000026; }
+        .sales-board-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
+        .sales-board-heading h2 { margin: 0; font-size: 16px; font-weight: 700; }
+        .sales-board-close { width: 36px; height: 36px; border: 0; border-radius: 50%; background: #f3f4f6; color: #6b7280; font-size: 22px; cursor: pointer; }
+        .sales-board-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 14px; border: 1px solid #e5e7eb; border-radius: 15px; background: #f9fafb; }
+        .sales-board-stats p { margin: 0; }
+        .sales-stat-label { color: #6b7280; font-size: 10px; }
+        .sales-stat-value { margin-top: 4px !important; font-size: 20px; line-height: 1.4; font-weight: 700; overflow-wrap: anywhere; }
+        .sales-board-subtitle { margin: 17px 0 8px; font-size: 11px; font-weight: 600; color: #4b5563; }
+        .sales-board-history { width: 100%; padding: 11px; margin-top: 14px; border: 1px solid #e5e7eb; border-radius: 11px; background: #f9fafb; color: #374151; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .vault-icon-btn:focus-visible, .summary-sales-button:focus-visible, .featured-card button:focus-visible, .collection-toolbar button:focus-visible, .collection-tools button:focus-visible, .vault-card:focus-visible, .sales-board-panel button:focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
+        nav.vault-bottom-nav { bottom: max(10px, env(safe-area-inset-bottom)); }
+        @keyframes vault-loading { to { background-position: -200% 0; } }
+        @media (min-width: 360px) { .vault-card-image { height: 160px; } }
+        @media (min-width: 480px) { .vault-card-image { height: 180px; } }
+        @media (min-width: 640px) {
+            .vault-header { padding: 18px 24px 16px; }
+            .vault-brand-row h1 { font-size: 24px; }
+            .vault-eyebrow { font-size: 9px; }
+            .vault-icon-btn { width: 38px; height: 38px; }
+            .vault-summary { gap: 10px; }
+            .summary-tile { padding: 12px; gap: 5px; }
+            .summary-label { font-size: 11px; }
+            .summary-value { font-size: 20px; }
+            .vault-main { padding: 18px 24px 0; }
+            .featured-card { max-width: 480px; }
+            .collection-heading h2 { font-size: 16px; }
+            .collection-count { font-size: 11px; }
+            .collection-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .sales-board-modal { align-items: center; padding: 20px; }
+        }
+        @media (min-width: 768px) {
+            .vault-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+            .vault-card-grid.binder-mode { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+            .vault-card { padding: 12px; }
+            .vault-card-image { height: 190px; }
+            .vault-card-title { font-size: 13px; }
+            .vault-card-set, .vault-card-badge, .vault-card-secondary { font-size: 10px; }
+        }
+        @media (min-width: 1024px) { .vault-card-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+        @media (prefers-reduced-motion: reduce) { .vault-skeleton { animation: none; } .vault-card, .summary-sales-button { transition: none; } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 selection:bg-gray-200 selection:text-gray-900">
@@ -211,162 +345,90 @@
     </div>
 
     <!-- ===================== VIEW: HOME ===================== -->
-    <div id="view-home" class="min-h-screen pb-28">
-        <header class="bg-white pt-8 pb-6 px-6 rounded-b-[2.5rem] shadow-sm border-b border-gray-200">
-            <div class="max-w-md mx-auto">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <span class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold bg-gray-100 px-3 py-1 rounded-full border border-gray-200">Thai Collection</span>
-                        <h1 class="text-2xl font-extrabold tracking-tight mt-2 text-gray-900">TCG Vault</h1>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="openPackModal()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition-all duration-200 active:scale-90" title="บันทึกซื้อแพ็ค">📦</button>
-                        <button id="auth-btn-login" onclick="loginAdmin()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition-all duration-200 active:scale-90 text-sm">🔒</button>
-                        <button id="auth-btn-logout" onclick="logoutAdmin()" class="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 hover:text-red-500 transition-all duration-200 active:scale-90 text-sm hidden">🔓</button>
-                        <button onclick="openStatsModal()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition-all duration-200 active:scale-90">📊</button>
-                        <button onclick="loadData()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm text-gray-600 transition-all duration-200 active:scale-90">🔄</button>
+    <div id="view-home" class="vault-home">
+        <header class="vault-header">
+            <div class="vault-shell">
+                <div class="vault-brand-row">
+                    <div><span class="vault-eyebrow">Thai Collection</span><h1>TCG Vault</h1></div>
+                    <div class="vault-header-actions">
+                        <button type="button" onclick="openPackModal()" class="vault-icon-btn" title="บันทึกซื้อแพ็ค" aria-label="บันทึกซื้อแพ็ค">📦</button>
+                        <button type="button" id="auth-btn-login" onclick="loginAdmin()" class="vault-icon-btn" title="เข้าสู่ระบบผู้ดูแล" aria-label="เข้าสู่ระบบผู้ดูแล">🔒</button>
+                        <button type="button" id="auth-btn-logout" onclick="logoutAdmin()" class="vault-icon-btn hidden" title="ออกจากระบบ" aria-label="ออกจากระบบ">🔓</button>
+                        <button type="button" onclick="openStatsModal()" class="vault-icon-btn" title="สถิติคลัง" aria-label="สถิติคลัง">📊</button>
+                        <button type="button" onclick="loadData()" class="vault-icon-btn" title="รีเฟรชข้อมูล" aria-label="รีเฟรชข้อมูล">🔄</button>
                     </div>
                 </div>
-    
-    <!-- แดชบอร์ดสรุปยอด (Minimal ขาว-เทา) -->
-<div class="w-full grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-    
-    <!-- 1. ต้นทุนรวม -->
-    <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm relative overflow-hidden transition-all hover:shadow-md">
-        <p class="text-gray-500 text-sm mb-1 relative z-10 font-medium">📦 ต้นทุนเปิดแพ็ค</p>
-        <h3 id="summary-cost" class="text-2xl font-bold text-gray-800 relative z-10">฿0</h3>
-        <div class="absolute right-0 bottom-0 text-5xl transform translate-x-2 translate-y-2 opacity-10 grayscale">📦</div>
-    </div>
-
-    <!-- 2. ราคาประเมิน (มูลค่าของที่ยังอยู่) -->
-    <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm relative overflow-hidden transition-all hover:shadow-md">
-        <p class="text-gray-500 text-sm mb-1 relative z-10 font-medium">💎 ราคาประเมิน (ในคลัง)</p>
-        <h3 id="summary-estimated" class="text-2xl font-bold text-gray-800 relative z-10">฿0</h3>
-        <div class="absolute right-0 bottom-0 text-5xl transform translate-x-2 translate-y-2 opacity-10 grayscale">💎</div>
-    </div>
-
-    <!-- 3. ยอดขายรวม -->
-    <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm relative overflow-hidden transition-all hover:shadow-md">
-        <p class="text-gray-500 text-sm mb-1 relative z-10 font-medium">💰 ยอดที่ขายได้</p>
-        <h3 id="summary-sales" class="text-2xl font-bold text-gray-800 relative z-10">฿0</h3>
-        <div class="absolute right-0 bottom-0 text-5xl transform translate-x-2 translate-y-2 opacity-10 grayscale">💰</div>
-    </div>
-
-    <!-- 4. กำไร/ขาดทุน (ยอดขาย - ต้นทุน) -->
-    <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm relative overflow-hidden transition-all hover:shadow-md">
-        <p class="text-gray-500 text-sm mb-1 relative z-10 font-medium">📈 กำไรจริง (Realized)</p>
-        <h3 id="summary-profit" class="text-2xl font-bold text-gray-800 relative z-10">฿0</h3>
-        <div class="absolute right-0 bottom-0 text-5xl transform translate-x-2 translate-y-2 opacity-10 grayscale">📈</div>
-    </div>
-
-</div>
-
-<div class="text-right text-gray-500 text-sm mb-4">
-    จำนวนการ์ดในคลัง: <span id="total-cards" class="font-bold text-black">0 ใบ</span>
-</div>
+                <div class="vault-summary" aria-label="สรุปมูลค่าคอลเล็กชัน">
+                    <div class="summary-tile"><span class="summary-label">ต้นทุนแพ็ค</span><p id="summary-cost" class="summary-value">฿0</p></div>
+                    <div class="summary-tile"><span class="summary-label">ประเมินในคลัง</span><p id="summary-estimated" class="summary-value">฿0</p></div>
+                    <button type="button" id="summary-sales-button" class="summary-tile summary-sales-button" onclick="openSalesBoardModal()" aria-haspopup="dialog" aria-controls="sales-board-modal" title="เปิดบอร์ดสรุปการขาย">
+                        <span class="summary-label">ยอดที่ขายได้ ↗</span><span id="summary-sales" class="summary-value">฿0</span>
+                    </button>
+                    <div class="summary-tile"><span class="summary-label">กำไรจริง</span><p id="summary-profit" class="summary-value">฿0</p></div>
+                </div>
             </div>
         </header>
 
-        <main class="max-w-md mx-auto p-5 space-y-4">
-            <div class="space-y-3">
-                <div class="relative flex items-center">
-                    <span class="absolute left-4 text-gray-400">🔍</span>
-                    <input type="text" id="search-input" placeholder="ค้นหาการ์ด, ซีรีส์..." class="w-full pl-11 pr-10 py-3.5 bg-white placeholder-gray-400 rounded-2xl shadow-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm" oninput="applyFilters()">
-                    <button id="clear-search-btn" onclick="clearSearch()" class="absolute right-4 text-gray-400 hidden">✕</button>
-                </div>
-                <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                    <div class="flex items-center bg-gray-100/80 rounded-xl p-1 flex-shrink-0 border border-gray-200 shadow-sm">
-                        <button onclick="toggleView('list')" id="btnViewList" class="px-3 py-1.5 rounded-lg bg-white shadow-sm font-bold text-gray-800 text-xs transition-all">📝 แถว</button>
-                        <button onclick="toggleView('binder')" id="btnViewBinder" class="px-3 py-1.5 rounded-lg text-gray-500 hover:text-gray-800 font-medium text-xs transition-all">🗂️ แฟ้ม</button>
-                    </div>
-                    <button onclick="exportForSale()" class="bg-gray-900 text-white text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-black transition-all duration-200 active:scale-90">📋 โพสต์ขาย</button>
-                    <button onclick="openChartModal()" class="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-gray-50 shadow-sm transition-all active:scale-90">📊 สถิติพอร์ต</button>
-                    <button onclick="toggleSelectMode()" id="btnSelectMode" class="bg-gray-100 border border-gray-300 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-gray-200 shadow-sm transition-all active:scale-90">☑️ เลือกหลายใบ</button>
-                    <button onclick="openWTSGenerator()" class="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-gray-50 shadow-sm transition-all duration-200 active:scale-90">🖼️ สร้างรูปภาพ</button>
-                    <select id="filter-set" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none min-w-0 max-w-[130px]">
-                        <option value="">📁 ทุกชุด</option>
-                    </select>
-                    <select id="filter-status" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
-                        <option value="all">สถานะทั้งหมด</option><option value="owned">✅ มีในคลัง</option><option value="wishlist">🎯 Wishlist</option>
-                    </select>
-                    <select id="sort-select" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
-                        <option value="newest">🔥 ล่าสุด</option><option value="price_desc">💰 ราคา ↓</option><option value="price_asc">📉 ราคา ↑</option><option value="name_asc">🔤 ชื่อ A-Z</option>
-                    </select>
-                    <select id="filter-rarity" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
-                        <option value="all">ระดับทั้งหมด</option><option value="RGB">RGB</option><option value="FUR">FUR</option><option value="UR">UR</option><option value="SAR">SAR</option><option value="SR">SR</option><option value="AR">AR</option><option value="RR">RR</option><option value="R">R</option><option value="U">U</option><option value="C">C</option>
-                    </select>
-                    <select id="filter-lang" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
-                        <option value="all">ทุกภาษา</option><option value="TH">ไทย (TH)</option><option value="JP">ญี่ปุ่น (JP)</option><option value="EN">อังกฤษ (EN)</option>
-                    </select>
-                    <select id="filter-condition" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none">
-                        <option value="all">ทุกสภาพ</option><option value="NM">NM</option><option value="LP">LP</option><option value="MP">MP</option><option value="HP">HP</option><option value="Graded">Graded</option>
-                    </select>
-                </div>
-                <div id="showcase-section" class="mb-6 space-y-4">
-                    <div id="card-of-the-day-container" class="bg-gray-900 rounded-3xl p-4 text-white shadow-md border border-gray-800 flex items-center gap-4 relative overflow-hidden">
-                        <div id="cotd-img-box" class="w-20 h-28 bg-gray-800 rounded-xl flex-shrink-0 flex items-center justify-center border border-gray-700 p-1">
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-1.5 mb-1">
-                                <span class="text-[10px] font-extrabold bg-white text-gray-900 px-2 py-0.5 rounded-full uppercase tracking-wider">Card of the Day</span>
-                            </div>
-                            <h3 id="cotd-name" class="font-bold text-sm truncate text-white">กำลังสุ่มการ์ดเด่น...</h3>
-                            <p id="cotd-details" class="text-xs text-gray-400 mt-0.5 truncate">-</p>
-                            <div class="mt-2 flex items-center gap-2">
-                                <span id="cotd-price" class="text-sm font-black text-white">฿0</span>
-                                <span id="cotd-rarity" class="text-[10px] border border-gray-600 px-2 py-0.5 rounded text-gray-300">UR</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <h2 class="text-xs font-bold text-gray-700 flex items-center gap-1">
-                                <span>🏆 Top Valued Cards</span>
-                                <span class="text-[10px] text-gray-400 font-normal">(สุดยอดการ์ดประจำคลัง)</span>
-                            </h2>
-                        </div>
-                        <div id="hall-of-fame-grid" class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                        </div>
-                    </div>
-
-                    <!-- 🌟 ส่วนแสดงบอร์ดสรุปการขาย + ประวัติ 3 รายการล่าสุด -->
-                    <div class="bg-white border border-gray-200 rounded-3xl p-4 shadow-sm space-y-3">
-                        <div class="flex justify-between items-center">
-                            <h2 class="text-xs font-bold text-gray-900 flex items-center gap-1.5">
-                                <span>🛒 บอร์ดสรุปการขาย</span>
-                            </h2>
-                            <span class="text-[10px] text-gray-500 font-bold bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">Live History</span>
-                        </div>
-
-                        <!-- การ์ดแสดงสรุปรายได้และจำนวนใบ -->
-                        <div class="grid grid-cols-2 gap-2.5 bg-gray-50 border border-gray-200 text-gray-900 p-3.5 rounded-2xl">
-                            <div>
-                                <p class="text-[10px] text-gray-500 font-semibold">ขายได้แล้วรวม</p>
-                                <p id="sales-stat-qty" class="text-lg font-black mt-0.5 text-gray-900">0 <span class="text-xs font-normal text-gray-500">ใบ</span></p>
-                            </div>
-                            <div>
-                                <p class="text-[10px] text-gray-500 font-semibold">รายได้สะสมรวม</p>
-                                <p id="sales-stat-revenue" class="text-lg font-black mt-0.5 text-gray-900">฿0</p>
-                            </div>
-                        </div>
-
-                        <!-- แสดงรายการขาย 3 อันล่าสุด -->
-                        <div id="recent-sales-list" class="space-y-2">
-                            <div class="text-xs text-gray-400 text-center py-3">กำลังโหลดประวัติการขาย...</div>
-                        </div>
-
-                        <button onclick="openAllSalesModal()" class="w-full py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5">
-                            <span>📜 ดูประวัติการขายทั้งหมด</span>
-                        </button>
+        <main class="vault-shell vault-main">
+            <section id="showcase-section" aria-label="การ์ดเด่น">
+                <div id="card-of-the-day-container" class="featured-card">
+                    <button type="button" id="cotd-card-btn" class="featured-card-main" onclick="openFeaturedCard()" aria-label="ดูรายละเอียดการ์ดเด่น" disabled>
+                        <span id="cotd-img-box" class="featured-image"></span>
+                        <span class="featured-info">
+                            <span class="featured-label">Card of the Day</span>
+                            <span id="cotd-name" class="featured-name" style="display:block">กำลังสุ่มการ์ดเด่น...</span>
+                            <span id="cotd-details" class="featured-details">สุ่มใหม่ทุก 10 วินาที</span>
+                            <span class="featured-price-row"><span id="cotd-price" class="featured-price">฿0</span><span id="cotd-rarity" class="featured-rarity">—</span></span>
+                        </span>
+                    </button>
+                    <div class="featured-controls">
+                        <button type="button" id="cotd-shuffle-btn" class="featured-control" onclick="shuffleCardOfTheDay()" title="สุ่มการ์ดใหม่" aria-label="สุ่มการ์ดใหม่" disabled>↻</button>
+                        <button type="button" id="cotd-pause-btn" class="featured-control" onclick="toggleCardOfTheDayRotation()" title="หยุดสุ่มอัตโนมัติ" aria-label="หยุดสุ่มอัตโนมัติ" aria-pressed="false" disabled>Ⅱ</button>
                     </div>
                 </div>
-            </div>
-            <div id="loading" class="grid grid-cols-2 gap-4">
-                <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-56"></div>
-                <div class="bg-white border border-gray-200 p-3.5 rounded-3xl animate-pulse h-56"></div>
-            </div>
-            <div id="card-grid" class="grid grid-cols-2 gap-4 hidden"></div>
+            </section>
+
+            <section id="collection-section" aria-labelledby="collection-title">
+                <div class="collection-heading">
+                    <h2 id="collection-title">การ์ดในคลัง</h2>
+                    <div class="collection-count"><strong id="total-cards">0 ใบ</strong> · <span id="filtered-count">0 รายการ</span></div>
+                </div>
+                <div class="collection-search">
+                    <span class="collection-search-icon" aria-hidden="true">🔍</span>
+                    <input type="search" id="search-input" placeholder="ค้นหาชื่อ, Set, ระดับ, เกรด..." aria-label="ค้นหาการ์ด" oninput="applyFilters()">
+                    <button type="button" id="clear-search-btn" onclick="clearSearch()" class="collection-clear hidden" aria-label="ล้างคำค้นหา">✕</button>
+                </div>
+                <div class="collection-toolbar">
+                    <div class="collection-view-tabs" role="group" aria-label="รูปแบบแสดงการ์ด">
+                        <button type="button" onclick="toggleView('list')" id="btnViewList" aria-pressed="true">▦ การ์ด</button>
+                        <button type="button" onclick="toggleView('binder')" id="btnViewBinder" aria-pressed="false">🗂️ แฟ้ม</button>
+                    </div>
+                    <button type="button" id="filter-toggle" onclick="toggleCollectionOptions()" class="collection-filter-toggle" aria-expanded="false" aria-controls="collection-options">⚙️ <span id="filter-toggle-label">ตัวกรอง / เครื่องมือ</span></button>
+                </div>
+                <div id="collection-options" class="collection-options hidden">
+                    <div class="collection-filters">
+                        <label>Set / ชุด<select id="filter-set" onchange="applyFilters()"><option value="">ทุกชุด</option></select></label>
+                        <label>สถานะ<select id="filter-status" onchange="applyFilters()"><option value="all">สถานะทั้งหมด</option><option value="owned">มีในคลัง</option><option value="wishlist">Wishlist</option></select></label>
+                        <label>เรียงตาม<select id="sort-select" onchange="applyFilters()"><option value="newest">ล่าสุด</option><option value="price_desc">ราคา ↓</option><option value="price_asc">ราคา ↑</option><option value="name_asc">ชื่อ A-Z</option></select></label>
+                        <label>ระดับ / ความหายาก<select id="filter-rarity" onchange="applyFilters()"><option value="all">ระดับทั้งหมด</option><option value="RGB">RGB</option><option value="FUR">FUR</option><option value="UR">UR</option><option value="SAR">SAR</option><option value="SR">SR</option><option value="AR">AR</option><option value="RR">RR</option><option value="R">R</option><option value="U">U</option><option value="C">C</option></select></label>
+                        <label>ภาษา<select id="filter-lang" onchange="applyFilters()"><option value="all">ทุกภาษา</option><option value="TH">ไทย (TH)</option><option value="JP">ญี่ปุ่น (JP)</option><option value="EN">อังกฤษ (EN)</option></select></label>
+                        <label>สภาพ / เกรด<select id="filter-condition" onchange="applyFilters()"><option value="all">ทุกสภาพ</option><option value="NM">NM</option><option value="LP">LP</option><option value="MP">MP</option><option value="HP">HP</option><option value="Graded">Graded</option></select></label>
+                    </div>
+                    <div class="collection-tools">
+                        <button type="button" onclick="exportForSale()" class="tool-primary">📋 โพสต์ขาย</button>
+                        <button type="button" onclick="openChartModal()">📊 สถิติพอร์ต</button>
+                        <button type="button" onclick="toggleSelectMode()" id="btnSelectMode">☑️ เลือกหลายใบ</button>
+                        <button type="button" onclick="openWTSGenerator()">🖼️ สร้างรูปภาพ</button>
+                    </div>
+                </div>
+                <div id="loading" class="vault-card-grid" role="status" aria-label="กำลังโหลดการ์ด"><div class="vault-skeleton"></div><div class="vault-skeleton"></div></div>
+                <div id="card-grid" class="vault-card-grid hidden"></div>
+            </section>
+
+            <section id="top-cards-section" class="vault-top-cards" aria-label="การ์ดมูลค่าสูงสุด">
+                <h2>🏆 Top Valued Cards</h2>
+                <div id="hall-of-fame-grid" class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"></div>
+            </section>
         </main>
     </div>
 
@@ -633,6 +695,23 @@
         </div>
     </div>
 
+    <!-- Sales board appears only after tapping the sales summary. -->
+    <div id="sales-board-modal" class="sales-board-modal hidden" role="dialog" aria-modal="true" aria-labelledby="sales-board-title" onclick="if(event.target === this) closeSalesBoardModal()">
+        <div id="sales-board-panel" class="sales-board-panel animate-modal-pop" tabindex="-1">
+            <div class="sales-board-heading">
+                <h2 id="sales-board-title">🛒 บอร์ดสรุปการขาย</h2>
+                <button type="button" class="sales-board-close" onclick="closeSalesBoardModal()" aria-label="ปิดบอร์ดสรุปการขาย">&times;</button>
+            </div>
+            <div class="sales-board-stats">
+                <div><p class="sales-stat-label">ขายได้แล้วรวม</p><p id="sales-stat-qty" class="sales-stat-value">0 ใบ</p></div>
+                <div><p class="sales-stat-label">รายได้สะสมรวม</p><p id="sales-stat-revenue" class="sales-stat-value">฿0</p></div>
+            </div>
+            <p class="sales-board-subtitle">3 รายการขายล่าสุด</p>
+            <div id="recent-sales-list" class="space-y-2"></div>
+            <button type="button" onclick="openAllSalesModal()" class="sales-board-history">📜 ดูประวัติการขายทั้งหมด</button>
+        </div>
+    </div>
+
     <!-- 🌟 MODAL: ประวัติการขายทั้งหมด -->
     <div id="all-sales-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-gray-100 animate-modal-pop space-y-4 max-h-[85vh] flex flex-col">
@@ -792,7 +871,7 @@
 </div>
 
     <!-- Bottom Nav -->
-    <nav class="fixed bottom-5 left-5 right-5 bg-white/95 backdrop-blur-xl border border-gray-200 py-3 px-6 shadow-[0_10px_40px_rgba(0,0,0,0.1)] max-w-sm mx-auto rounded-[2rem] flex justify-around items-center z-40">
+    <nav class="vault-bottom-nav fixed bottom-5 left-5 right-5 bg-white/95 backdrop-blur-xl border border-gray-200 py-3 px-6 shadow-[0_10px_40px_rgba(0,0,0,0.1)] max-w-sm mx-auto rounded-[2rem] flex justify-around items-center z-40">
         <button onclick="switchTab('home')" id="nav-btn-home" class="flex flex-col items-center text-gray-900 transition-all duration-200 active:scale-90">
             <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 001 1m-6 0h6" /></svg>
             <span class="text-[10px] font-semibold">หน้าแรก</span>
@@ -934,6 +1013,70 @@ function verifyPin() {
             return url;
         }
 
+        const CARD_PLACEHOLDER = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="180" height="252" viewBox="0 0 180 252"><rect width="180" height="252" rx="12" fill="#e5e7eb"/><rect x="8" y="8" width="164" height="236" rx="8" fill="#f9fafb" stroke="#d1d5db"/><text x="90" y="120" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="700" fill="#9ca3af">TCG</text><text x="90" y="143" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#9ca3af">NO IMAGE</text></svg>');
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
+        }
+
+        function getGradeLabel(card) {
+            return [card.gradeCompany, card.gradeScore].filter(value => value !== undefined && value !== null && String(value).trim() !== '').join(' ').trim() || 'Graded';
+        }
+
+        function toggleCollectionOptions() {
+            const panel = document.getElementById('collection-options');
+            const expanded = panel.classList.contains('hidden');
+            panel.classList.toggle('hidden', !expanded);
+            document.getElementById('filter-toggle').setAttribute('aria-expanded', String(expanded));
+        }
+
+        function saleNumber(value) {
+            return Number(String(value ?? 0).replace(/[^0-9.-]/g, '')) || 0;
+        }
+
+        function getSaleTotal(sale) {
+            if (sale.totalPrice != null && sale.totalPrice !== '') return saleNumber(sale.totalPrice);
+            if (sale.amount != null && sale.amount !== '') return saleNumber(sale.amount);
+            return saleNumber(sale.soldPrice ?? sale.sellPrice ?? sale.price) * (Number(sale.qty) || 1);
+        }
+
+        let salesBoardPreviousFocus = null;
+        let salesBoardPreviousOverflow = '';
+
+        function openSalesBoardModal() {
+            const modal = document.getElementById('sales-board-modal');
+            renderSalesBoard();
+            if (!modal.classList.contains('hidden')) return;
+            salesBoardPreviousFocus = document.activeElement;
+            salesBoardPreviousOverflow = document.body.style.overflow;
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            document.getElementById('sales-board-panel').focus();
+        }
+
+        function closeSalesBoardModal(restoreFocus = true) {
+            const modal = document.getElementById('sales-board-modal');
+            if (modal.classList.contains('hidden')) return;
+            modal.classList.add('hidden');
+            document.body.style.overflow = salesBoardPreviousOverflow;
+            if (restoreFocus && salesBoardPreviousFocus) salesBoardPreviousFocus.focus();
+        }
+
+        document.addEventListener('keydown', event => {
+            const modal = document.getElementById('sales-board-modal');
+            if (modal.classList.contains('hidden')) return;
+            if (event.key === 'Escape') { event.preventDefault(); closeSalesBoardModal(); }
+            if (event.key === 'Tab') {
+                const buttons = [...modal.querySelectorAll('button:not([disabled]), [href], [tabindex="0"]')];
+                const first = buttons[0], last = buttons[buttons.length - 1];
+                if (event.shiftKey && (document.activeElement === first || document.activeElement === document.getElementById('sales-board-panel'))) {
+                    event.preventDefault(); last.focus();
+                } else if (!event.shiftKey && (document.activeElement === last || document.activeElement === document.getElementById('sales-board-panel'))) {
+                    event.preventDefault(); first.focus();
+                }
+            }
+        });
+
         // ===== Datalist & Dropdowns =====
         function updateSetDropdowns() {
             const uniqueSets = [...new Set(allCards.map(c => String(c.set || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'th'));
@@ -971,6 +1114,7 @@ async function loadData() {
             updateSetDropdowns(); applyFilters(); updateSummary();
             renderCardOfTheDay();
             renderHallOfFame();
+            renderSalesBoard();
             document.getElementById('loading').style.display = 'none';
             document.getElementById('card-grid').style.display = 'grid';
         } catch(e) { 
@@ -1034,9 +1178,9 @@ async function loadData() {
             const revStatEl = document.getElementById('sales-stat-revenue');
 
             const totalQty = allSales.reduce((s, item) => s + Number(item.qty || 1), 0);
-            const totalRev = allSales.reduce((s, item) => s + (Number(item.soldPrice || 0) * Number(item.qty || 1)), 0);
+            const totalRev = allSales.reduce((sum, item) => sum + getSaleTotal(item), 0);
 
-            if (qtyStatEl) qtyStatEl.innerHTML = `${totalQty.toLocaleString()} <span class="text-xs font-normal text-emerald-200">ใบ</span>`;
+            if (qtyStatEl) qtyStatEl.innerHTML = `${totalQty.toLocaleString()} <span class="text-xs font-normal text-gray-500">ใบ</span>`;
             if (revStatEl) revStatEl.innerText = `฿${totalRev.toLocaleString()}`;
 
             if (!listEl) return;
@@ -1048,9 +1192,9 @@ async function loadData() {
 
             // แสดงเฉพาะ 3 อันล่าสุด
             listEl.innerHTML = allSales.slice(0, 3).map(s => `
-                <div onclick="viewSoldCardDetail('${s.cardId}', '${encodeURIComponent(s.cardName)}')" class="bg-white border-gray-200 hover:bg-emerald-100/80 border border-emerald-100 p-2.5 rounded-2xl flex items-center justify-between gap-2 cursor-pointer transition-all duration-200 active:scale-98">
+                <div onclick="viewSoldCardDetail('${s.cardId}', '${encodeURIComponent(s.cardName || '').replace(/'/g, '%27')}')" class="bg-white border-gray-200 hover:bg-emerald-100/80 border border-emerald-100 p-2.5 rounded-2xl flex items-center justify-between gap-2 cursor-pointer transition-all duration-200 active:scale-98">
                     <div class="min-w-0 flex-1">
-                        <p class="text-xs font-bold text-gray-900 truncate">${s.cardName || 'ไม่ระบุชื่อ'}</p>
+                        <p class="text-xs font-bold text-gray-900 truncate">${escapeHtml(s.cardName || 'ไม่ระบุชื่อ')}</p>
                         <p class="text-[9px] text-gray-400 mt-0.5">🕒 ${s.timestamp || '-'}</p>
                     </div>
                     <div class="text-right flex-shrink-0">
@@ -1063,14 +1207,15 @@ async function loadData() {
 
         // 🌟 เปิด Modal ดูประวัติการขายทั้งหมด
         function openAllSalesModal() {
+            closeSalesBoardModal(false);
             const container = document.getElementById('full-sales-list');
             if (!allSales || allSales.length === 0) {
                 container.innerHTML = '<div class="text-xs text-gray-400 text-center py-6">ยังไม่มีประวัติการขาย</div>';
             } else {
                 container.innerHTML = allSales.map(s => `
-                    <div onclick="viewSoldCardDetail('${s.cardId}', '${encodeURIComponent(s.cardName)}')" class="bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 p-3 rounded-2xl flex items-center justify-between gap-2 cursor-pointer transition-all duration-200 active:scale-98">
+                    <div onclick="viewSoldCardDetail('${s.cardId}', '${encodeURIComponent(s.cardName || '').replace(/'/g, '%27')}')" class="bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 p-3 rounded-2xl flex items-center justify-between gap-2 cursor-pointer transition-all duration-200 active:scale-98">
                         <div class="min-w-0 flex-1">
-                            <p class="text-xs font-bold text-gray-900 truncate">${s.cardName || 'ไม่ระบุชื่อ'}</p>
+                            <p class="text-xs font-bold text-gray-900 truncate">${escapeHtml(s.cardName || 'ไม่ระบุชื่อ')}</p>
                             <p class="text-[10px] text-gray-400 mt-0.5">🕒 ${s.timestamp || '-'}</p>
                         </div>
                         <div class="text-right flex-shrink-0">
@@ -1092,6 +1237,7 @@ async function loadData() {
             }
 
             if (card) {
+                closeSalesBoardModal(false);
                 document.getElementById('all-sales-modal').classList.add('hidden');
                 openEditForm(card.id);
             } else {
@@ -1100,67 +1246,22 @@ async function loadData() {
         }
 
         function updateSummary() {
-    let totalCards = 0;
-    let estimatedValue = 0;
-    let totalCost = 0;
-    let totalSales = 0;
+            const owned = allCards.filter(card => String(card.isWishlist) !== 'true' && Number(card.qty) > 0);
+            const totalCards = owned.reduce((sum, card) => sum + Number(card.qty), 0);
+            const estimatedValue = owned.reduce((sum, card) => sum + (Number(card.price) || 0) * Number(card.qty), 0);
+            const totalCost = allPacks.reduce((sum, pack) => sum + Number(pack.totalCost ?? pack.price ?? pack.cost ?? 0), 0);
+            const totalSales = allSales.reduce((sum, sale) => sum + getSaleTotal(sale), 0);
+            const realProfit = totalSales - totalCost;
 
-    // 1. คำนวณ "ราคาประเมิน" (ยอดที่ควรจะได้จากของที่มี)
-    if (typeof allCards !== 'undefined') {
-        allCards.forEach(card => {
-            if (card.isWishlist !== true && card.isWishlist !== 'true' && Number(card.qty) > 0) {
-                totalCards += Number(card.qty);
-                estimatedValue += (Number(card.price) || 0) * Number(card.qty);
-            }
-        });
-    }
-
-    // 2. คำนวณ "ต้นทุน" จากแพ็คทั้งหมด
-    if (typeof allPacks !== 'undefined') {
-        allPacks.forEach(pack => {
-            totalCost += Number(pack.totalCost || pack.price || pack.cost || 0);
-        });
-    }
-
-    // 3. คำนวณ "ยอดขายรวม" จากประวัติการขาย
-    if (typeof allSales !== 'undefined') {
-        allSales.forEach(sale => {
-            let rawPrice = sale.price || sale.sellPrice || sale.soldPrice || sale.totalPrice || sale.amount || 0;
-
-            let cleanPrice = String(rawPrice).replace(/[^0-9.-]+/g, "");
-            
-            totalSales += Number(cleanPrice) || 0;
-        });
-    }
-
-    // 4. คำนวณ "กำไร/ขาดทุน" (เอาเฉพาะเงินที่รับมาแล้ว ลบด้วย ต้นทุนแพ็คทั้งหมด)
-    let realProfit = totalSales - totalCost;
-
-    if(document.getElementById('summary-cost')) {
-        document.getElementById('summary-cost').innerText = `฿${totalCost.toLocaleString()}`;
-    }
-    
-    if(document.getElementById('summary-estimated')) {
-        document.getElementById('summary-estimated').innerText = `฿${estimatedValue.toLocaleString()}`;
-    }
-    
-    if(document.getElementById('summary-sales')) {
-        document.getElementById('summary-sales').innerText = `฿${totalSales.toLocaleString()}`;
-    }
-    
-    const profitEl = document.getElementById('summary-profit');
-        if (realProfit > 0) {
-            profitEl.className = "text-2xl font-bold relative z-10 text-emerald-600";
-        } else if (realProfit < 0) {
-            profitEl.className = "text-2xl font-bold relative z-10 text-red-500";
-        } else {
-            profitEl.className = "text-2xl font-bold relative z-10 text-gray-800";
+            document.getElementById('summary-cost').textContent = `฿${totalCost.toLocaleString()}`;
+            document.getElementById('summary-estimated').textContent = `฿${estimatedValue.toLocaleString()}`;
+            document.getElementById('summary-sales').textContent = `฿${totalSales.toLocaleString()}`;
+            const profitEl = document.getElementById('summary-profit');
+            profitEl.textContent = `฿${realProfit.toLocaleString()}`;
+            profitEl.className = `summary-value${realProfit > 0 ? ' is-positive' : realProfit < 0 ? ' is-negative' : ''}`;
+            document.getElementById('total-cards').textContent = `${totalCards.toLocaleString()} ใบ`;
         }
 
-    if(document.getElementById('total-cards')) {
-        document.getElementById('total-cards').innerText = `${totalCards} ใบ`;
-    }
-}
         // ===== Filters (Home) =====
         function applyFilters() {
             const kw = document.getElementById('search-input').value.toLowerCase().trim();
@@ -1185,7 +1286,8 @@ async function loadData() {
                 if (lang !== 'all' && card.language !== lang) return false;
                 if (condition !== 'all' && card.condition !== condition) return false;
 
-                const matchKw = !kw || String(card.name).toLowerCase().includes(kw) || String(card.set).toLowerCase().includes(kw) || String(card.cardNumber||'').toLowerCase().includes(kw) || String(card.tags||'').toLowerCase().includes(kw);
+                const searchText = [card.name, card.set, card.cardNumber, card.tags, card.rarity, card.language, card.condition, card.condition === 'Graded' ? getGradeLabel(card) : ''].filter(Boolean).join(' ').toLowerCase();
+                const matchKw = !kw || searchText.includes(kw);
                 
                 return matchKw && (rarity === 'all' || card.rarity === rarity);
             });
@@ -1195,105 +1297,78 @@ async function loadData() {
                 if (sort === 'name_asc') return String(a.name).localeCompare(String(b.name));
                 return 0;
             });
+            const activeFilters = [filterSetVal !== '', status !== 'all', rarity !== 'all', lang !== 'all', condition !== 'all', sort !== 'newest'].filter(Boolean).length;
+            document.getElementById('filter-toggle-label').textContent = activeFilters ? `ตัวกรอง (${activeFilters}) / เครื่องมือ` : 'ตัวกรอง / เครื่องมือ';
             renderCards(currentFiltered);
         }
 
         function clearSearch() { document.getElementById('search-input').value = ''; applyFilters(); }
 
-        function renderCards(cards) {
-            const g = document.getElementById('card-grid'); 
-            g.innerHTML = '';
-        
-            if (typeof currentView === 'undefined') window.currentView = 'list';
-        
-            if (currentView === 'binder') {
-                g.className = "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mt-4";
-            } else {
-                g.className = "grid grid-cols-2 md:grid-cols-3 gap-3 mt-4"; 
+        // Random spotlight: never repeat the current card when another is available.
+        const COTD_ROTATION_MS = 10000;
+        let cotdTimer = null;
+        let currentFeaturedCardId = null;
+        let cotdRotationPaused = false;
+
+        function syncCardOfTheDayTimer() {
+            if (cotdTimer !== null) { clearInterval(cotdTimer); cotdTimer = null; }
+            const ownedCount = allCards.filter(card => String(card.isWishlist) !== 'true' && Number(card.qty) > 0).length;
+            if (!cotdRotationPaused && !document.hidden && document.getElementById('view-home').style.display !== 'none' && ownedCount > 1) {
+                cotdTimer = setInterval(renderCardOfTheDay, COTD_ROTATION_MS);
             }
-        
-            if (!cards.length) {
-                return g.innerHTML = '<div class="col-span-full text-center text-gray-400 py-12 text-xs">ไม่พบการ์ดที่ค้นหา</div>';
-            }
-        
-            cards.forEach(card => {
-                const img = getSafeImageUrl(card.image);
-                const isW = String(card.isWishlist) === 'true';
-                
-                // เช็คว่าการ์ดใบนี้ถูกเลือกอยู่หรือไม่ (สำหรับโหมดเลือกหลายใบ)
-                const isSelected = typeof selectedCards !== 'undefined' && selectedCards.has(card.id);
-                const selectStyle = isSelected ? 'ring-4 ring-emerald-500 transform scale-95' : '';
-        
-                if (currentView === 'binder') {
-                    g.innerHTML += `
-                        <div id="card-ui-${card.id}" onclick="handleCardClick('${card.id}')" class="relative bg-gray-900 rounded-lg overflow-hidden shadow-sm border border-gray-200 active:scale-95 transition-all duration-200 cursor-pointer aspect-[2.5/3.5] ${selectStyle}">
-                            <img src="${img}" loading="lazy" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x280/f9fafb/9ca3af?text=No+Image'">
-                            
-                            ${isW ? '<div class="absolute top-1 right-1 bg-amber-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-sm shadow-md z-10">WANTED</div>' : ''}
-                            
-                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-1.5 pt-5 flex flex-col justify-end pointer-events-none">
-                                <p class="text-white font-bold text-[9px] truncate w-full leading-tight">${card.name}</p>
-                                <div class="flex justify-between items-center mt-0.5">
-                                    <span class="text-emerald-400 font-bold text-[9px]">฿${Number(card.price||0).toLocaleString()}</span>
-                                    ${!isW ? `<span class="text-gray-300 font-medium text-[8px]">x${card.qty}</span>` : ''}
-                                </div>
-                            </div>
-                            ${isSelected ? '<div class="absolute inset-0 bg-emerald-500/20 pointer-events-none flex items-center justify-center"><span class="bg-emerald-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg shadow-lg">✓</span></div>' : ''}
-                        </div>
-                    `;
-                } else {
-                    const cNum = card.cardNumber ? `<span class="text-[9px] bg-gray-50 text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded">No.${card.cardNumber}</span>` : '';
-                    const rb = card.rarity && card.rarity !== '-' ? `<span class="text-[9px] bg-gray-900 text-white px-1.5 py-0.5 rounded font-bold">${card.rarity}</span>` : '';
-                    const tagHtml = card.tags ? String(card.tags).split(',').map(t => `<span class="text-[9px] bg-blue-50 text-blue-600 border border-blue-200 px-1.5 py-0.5 rounded-md inline-block mr-1 mt-1">${t.trim()}</span>`).join('') : '';
-        
-                    g.innerHTML += `
-                        <div id="card-ui-${card.id}" class="bg-white border ${isW?'border-amber-200 bg-amber-50/30':'border-gray-200 hover:border-gray-300'} p-3.5 rounded-3xl shadow-sm flex flex-col justify-between relative transition-all duration-200 active:scale-95 ${selectStyle}">
-                            ${isW ? '<div class="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10 animate-pulse">🎯 WANTED</div>' : ''}
-                            
-                            <div onclick="handleCardClick('${card.id}')" class="cursor-pointer">
-                                <div class="w-full h-36 bg-gray-50 rounded-2xl mb-3 flex items-center justify-center p-2 border border-gray-100 relative">
-                                    <img src="${img}" loading="lazy" class="h-full object-contain rounded-lg drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
-                                    ${isSelected ? '<div class="absolute inset-0 bg-emerald-500/10 rounded-2xl flex items-center justify-center backdrop-blur-[1px]"><span class="bg-emerald-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl shadow-lg border-2 border-white">✓</span></div>' : ''}
-                                </div>
-                                <div class="flex flex-wrap gap-1 mb-1.5">
-                                    <span class="text-[9px] bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded font-semibold">${card.set||'-'}</span>
-                                    ${cNum} ${rb}
-                                </div>
-                                <h2 class="text-xs font-bold text-gray-900 truncate">${card.name}</h2>
-                                <p class="text-[10px] text-gray-500 mt-0.5">สภาพ: ${card.condition||'NM'} • ${card.language||'TH'}</p>
-                                ${tagHtml ? `<div class="mt-1">${tagHtml}</div>` : ''}
-                            </div>
-                            <div onclick="handleCardClick('${card.id}')" class="flex justify-between items-center mt-3 pt-3 border-t ${isW?'border-amber-200':'border-gray-100'} cursor-pointer">
-                                <span class="text-xs font-black text-emerald-600">฿${Number(card.price||0).toLocaleString()}</span>
-                                ${!isW ? `<span class="text-[10px] font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-lg">x${card.qty}</span>` : ''}
-                            </div>
-                        </div>
-                    `;
-                }
-            });
         }
 
-        // Card of the Day (เฉพาะที่มี Qty > 0)
         function renderCardOfTheDay() {
-            const owned = allCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0);
-            if (!owned.length) return;
-
-            const todayStr = new Date().toISOString().split('T')[0];
-            let hash = 0;
-            for (let i = 0; i < todayStr.length; i++) {
-                hash = todayStr.charCodeAt(i) + ((hash << 5) - hash);
+            const owned = allCards.filter(card => String(card.isWishlist) !== 'true' && Number(card.qty) > 0);
+            const mainButton = document.getElementById('cotd-card-btn');
+            const shuffleButton = document.getElementById('cotd-shuffle-btn');
+            const pauseButton = document.getElementById('cotd-pause-btn');
+            mainButton.disabled = owned.length === 0;
+            shuffleButton.disabled = owned.length < 2;
+            pauseButton.disabled = owned.length < 2;
+            if (!owned.length) {
+                currentFeaturedCardId = null;
+                document.getElementById('cotd-name').textContent = 'ยังไม่มีการ์ดในคลัง';
+                document.getElementById('cotd-details').textContent = 'เพิ่มการ์ดเพื่อเริ่มสุ่มการ์ดเด่น';
+                document.getElementById('cotd-price').textContent = '฿0';
+                document.getElementById('cotd-rarity').textContent = '—';
+                document.getElementById('cotd-img-box').innerHTML = '';
+                syncCardOfTheDayTimer();
+                return;
             }
-            const idx = Math.abs(hash) % owned.length;
-            const card = owned[idx];
-
-            document.getElementById('cotd-name').textContent = card.name;
-            document.getElementById('cotd-details').textContent = `${card.set || '-'} • No.${card.cardNumber || '-'} (${card.condition || 'NM'})`;
+            const candidates = owned.filter(card => String(card.id) !== String(currentFeaturedCardId));
+            const pool = candidates.length ? candidates : owned;
+            const card = pool[Math.floor(Math.random() * pool.length)];
+            currentFeaturedCardId = card.id;
+            document.getElementById('cotd-name').textContent = card.name || 'ไม่ระบุชื่อ';
+            document.getElementById('cotd-details').textContent = `${card.set || 'ไม่ระบุ Set'} · ${card.cardNumber || '—'} · ${card.condition === 'Graded' ? getGradeLabel(card) : (card.condition || 'NM')}`;
+            document.getElementById('cotd-details').title = document.getElementById('cotd-details').textContent;
             document.getElementById('cotd-price').textContent = `฿${Number(card.price || 0).toLocaleString()}`;
-            document.getElementById('cotd-rarity').textContent = card.rarity || 'RARE';
-            document.getElementById('cotd-img-box').innerHTML = `
-                <img src="${getSafeImageUrl(card.image)}" class="h-full object-contain rounded-md card-holo shadow-lg" onerror="this.src='https://placehold.co/100/f9fafb/9ca3af?text=Card'">
-            `;
+            document.getElementById('cotd-rarity').textContent = card.rarity && card.rarity !== '-' ? card.rarity : '—';
+            document.getElementById('cotd-img-box').innerHTML = `<img src="${escapeHtml(getSafeImageUrl(card.image))}" alt="${escapeHtml(card.name)}" onerror="this.onerror=null;this.src=CARD_PLACEHOLDER">`;
+            mainButton.setAttribute('aria-label', `ดูรายละเอียด ${card.name || 'การ์ดเด่น'}`);
+            syncCardOfTheDayTimer();
         }
+
+        function shuffleCardOfTheDay() { renderCardOfTheDay(); }
+
+        function toggleCardOfTheDayRotation() {
+            cotdRotationPaused = !cotdRotationPaused;
+            const button = document.getElementById('cotd-pause-btn');
+            button.textContent = cotdRotationPaused ? '▶' : 'Ⅱ';
+            button.setAttribute('aria-pressed', String(cotdRotationPaused));
+            button.title = cotdRotationPaused ? 'เปิดสุ่มอัตโนมัติทุก 10 วินาที' : 'หยุดสุ่มอัตโนมัติ';
+            button.setAttribute('aria-label', button.title);
+            syncCardOfTheDayTimer();
+        }
+
+        function openFeaturedCard() {
+            if (currentFeaturedCardId !== null) openEditForm(currentFeaturedCardId);
+        }
+
+        document.addEventListener('visibilitychange', syncCardOfTheDayTimer);
+        window.addEventListener('pagehide', () => { clearInterval(cotdTimer); cotdTimer = null; });
+        window.addEventListener('pageshow', syncCardOfTheDayTimer);
 
         initCardTiltEffect();
 
@@ -1352,6 +1427,8 @@ async function loadData() {
             document.getElementById('nav-btn-home').classList.toggle('text-gray-400', tab !== 'home');
             document.getElementById('nav-btn-binder').classList.toggle('text-gray-900', tab === 'binder');
             document.getElementById('nav-btn-binder').classList.toggle('text-gray-400', tab !== 'binder');
+
+            syncCardOfTheDayTimer();
 
             if (tab === 'binder') {
                 const sel = document.getElementById('binder-set-select');
@@ -1619,22 +1696,6 @@ async function loadData() {
 // ==========================================
 let isSelectMode = false;
 let selectedCards = new Set();
-
-function toggleSelectMode() {
-    isSelectMode = !isSelectMode;
-    selectedCards.clear();
-    
-    const bar = document.getElementById('bulkActionBar');
-    if (isSelectMode) {
-        bar.classList.remove('translate-y-24', 'opacity-0');
-        showToast("☑️ เปิดโหมดเลือกหลายใบ", "success");
-    } else {
-        bar.classList.add('translate-y-24', 'opacity-0');
-    }
-    
-    updateSelectedCount();
-    applyFilters(); 
-}
 
 function handleCardClick(id) {
     if (isSelectMode) {
@@ -2313,22 +2374,12 @@ function compressAndUploadImage(event) {
 
         let currentView = 'list';
 
-                function toggleView(viewType) {
-                    currentView = viewType;
-    
-                    const btnList = document.getElementById('btnViewList');
-                    const btnBinder = document.getElementById('btnViewBinder');
-
-                    if (viewType === 'list') {
-                        btnList.className = 'px-3 py-1.5 rounded-lg bg-white shadow-sm font-bold text-gray-800 text-xs transition-all';
-                        btnBinder.className = 'px-3 py-1.5 rounded-lg text-gray-500 hover:text-gray-800 font-medium text-xs transition-all';
-                    } else {
-                        btnBinder.className = 'px-3 py-1.5 rounded-lg bg-white shadow-sm font-bold text-gray-800 text-xs transition-all';
-                        btnList.className = 'px-3 py-1.5 rounded-lg text-gray-500 hover:text-gray-800 font-medium text-xs transition-all';
-                    }
-
-                    applyFilters();
-                }
+        function toggleView(viewType) {
+            currentView = viewType;
+            document.getElementById('btnViewList').setAttribute('aria-pressed', String(viewType === 'list'));
+            document.getElementById('btnViewBinder').setAttribute('aria-pressed', String(viewType === 'binder'));
+            applyFilters();
+        }
 
         // ===== Export / Stats =====
         function exportForSale() {
@@ -2368,10 +2419,10 @@ function compressAndUploadImage(event) {
             const bar = document.getElementById('bulkActionBar');
         
             if (isSelectMode) {
-                btn.classList.add('bg-blue-100', 'border-blue-500', 'text-blue-700');
+                btn.classList.add('is-selecting');
                 bar.classList.remove('translate-y-24', 'opacity-0');
             } else {
-                btn.classList.remove('bg-blue-100', 'border-blue-500', 'text-blue-700');
+                btn.classList.remove('is-selecting');
                 bar.classList.add('translate-y-24', 'opacity-0');
             }
             
@@ -2387,94 +2438,44 @@ function compressAndUploadImage(event) {
                 selectedCards.add(cardId);
             }
             updateBulkCount();
+            applyFilters();
         }
         
         function updateBulkCount() {
             document.getElementById('selectedCount').innerText = `เลือก ${selectedCards.size} ใบ`;
         }
         
-        function calcBulkValue() {
-            if (selectedCards.size === 0) return alert('กรุณาเลือกการ์ดอย่างน้อย 1 ใบ');
-            
-            let totalVal = 0;
-            // allCardsData คือตัวแปรที่คุณเก็บข้อมูลการ์ดทั้งหมดไว้ (เปลี่ยนชื่อให้ตรงกับโค้ดของคุณ)
-            allCardsData.forEach(card => {
-                if (selectedCards.has(card.id)) {
-                    totalVal += (Number(card.price) || 0) * (Number(card.qty) || 1);
-                }
-            });
-            alert(`💰 มูลค่ารวมของการ์ดที่เลือก (${selectedCards.size} ใบ)\n\nรวมทั้งหมด: ฿${totalVal.toLocaleString()}`);
-        }
-        
         // ==========================================
         // อัปเดตฟังก์ชัน renderCards (ใส่ปุ่ม Cert & Checkbox)
         // ==========================================
         function renderCards(cards) {
-            const g = document.getElementById('card-grid'); 
-            g.innerHTML = '';
-        
-            if (currentView === 'binder') g.className = "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mt-4";
-            else g.className = "grid grid-cols-2 md:grid-cols-3 gap-3 mt-4"; 
-        
-            if (!cards.length) return g.innerHTML = '<div class="col-span-full text-center text-gray-400 py-12 text-xs">ไม่พบการ์ดที่ค้นหา</div>';
-        
-            cards.forEach(card => {
-                const img = getSafeImageUrl(card.image);
+            const grid = document.getElementById('card-grid');
+            grid.className = `vault-card-grid${currentView === 'binder' ? ' binder-mode' : ''}`;
+            document.getElementById('filtered-count').textContent = `${cards.length.toLocaleString()} รายการ`;
+            if (!cards.length) {
+                grid.innerHTML = '<div class="vault-empty">ไม่พบการ์ด ลองเปลี่ยนคำค้นหาหรือตัวกรองค่ะ</div>';
+                return;
+            }
+            grid.innerHTML = cards.map((card, index) => {
                 const isW = String(card.isWishlist) === 'true';
                 const isGraded = card.condition === 'Graded';
-                
-                // 🌟 สร้าง UI สำหรับ Checkbox (แสดงเมื่อเปิด Select Mode)
-                const isChecked = selectedCards.has(card.id) ? 'checked' : '';
-                const checkboxHtml = isSelectMode ? `
-                    <div class="absolute top-2 left-2 z-20">
-                        <input type="checkbox" ${isChecked} onclick="toggleCardSelection('${card.id}', event)" class="w-5 h-5 accent-blue-600 cursor-pointer shadow-sm rounded">
-                    </div>
-                ` : '';
-        
-                // 🌟 สร้างลิงก์ Cert
-                const certLinkHtml = (isGraded && card.certNumber) 
-                    ? `<a href="${getCertUrl(card.gradeCompany, card.certNumber)}" target="_blank" onclick="event.stopPropagation()" class="absolute bottom-2 left-2 bg-black/80 text-white text-[8px] px-1.5 py-0.5 rounded flex items-center gap-1 hover:bg-blue-600 transition z-20">🔗 เช็ค Cert</a>` 
-                    : '';
-        
-                if (currentView === 'binder') {
-                    g.innerHTML += `
-                        <div onclick="${isSelectMode ? `toggleCardSelection('${card.id}', event)` : `openEditForm('${card.id}')`}" class="relative bg-gray-900 rounded-lg overflow-hidden shadow-sm border ${selectedCards.has(card.id) ? 'border-4 border-blue-500 scale-95' : 'border-gray-200'} active:scale-95 transition-all duration-200 cursor-pointer aspect-[2.5/3.5]">
-                            ${checkboxHtml}
-                            <img src="${img}" loading="lazy" class="w-full h-full object-cover opacity-${selectedCards.has(card.id) ? '50' : '100'}" onerror="this.src='https://placehold.co/200x280/f9fafb/9ca3af?text=No+Image'">
-                            ${isW ? '<div class="absolute top-1 right-1 bg-amber-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-sm shadow-md z-10">WANTED</div>' : ''}
-                            ${certLinkHtml}
-                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-1.5 pt-5 flex flex-col justify-end pointer-events-none">
-                                <p class="text-white font-bold text-[9px] truncate w-full leading-tight">${card.name}</p>
-                                <div class="flex justify-between items-center mt-0.5">
-                                    <span class="text-emerald-400 font-bold text-[9px]">฿${Number(card.price||0).toLocaleString()}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    // โหมดปกติ (List)
-                    g.innerHTML += `
-                        <div onclick="${isSelectMode ? `toggleCardSelection('${card.id}', event)` : `openEditForm('${card.id}')`}" class="bg-white border ${selectedCards.has(card.id) ? 'border-2 border-blue-500 bg-blue-50/30' : (isW?'border-amber-200 bg-amber-50/30':'border-gray-200 hover:border-gray-300')} p-3.5 rounded-3xl shadow-sm flex flex-col justify-between relative transition-all duration-200 cursor-pointer">
-                            ${checkboxHtml}
-                            ${isW ? '<div class="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10 animate-pulse">🎯 WANTED</div>' : ''}
-                            
-                            <div class="w-full h-36 bg-gray-50 rounded-2xl mb-3 flex items-center justify-center p-2 border border-gray-100 relative overflow-hidden">
-                                <img src="${img}" loading="lazy" class="h-full object-contain drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
-                                ${certLinkHtml}
-                            </div>
-                            
-                            <h2 class="text-xs font-bold text-gray-900 truncate mt-1">${card.name}</h2>
-                            ${isGraded ? `<p class="text-[10px] text-amber-600 font-bold mt-0.5">${card.gradeCompany}${card.gradeScore}</p>` : `<p class="text-[10px] text-gray-500 mt-0.5">สภาพ: ${card.condition||'NM'}</p>`}
-                            
-                            <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 pointer-events-none">
-                                <span class="text-xs font-black text-emerald-600">฿${Number(card.price||0).toLocaleString()}</span>
-                                <span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full font-semibold">x${card.qty}</span>
-                            </div>
-                        </div>`;
-                }
-            });
+                const isSelected = selectedCards.has(card.id);
+                const grade = isGraded ? `เกรด ${getGradeLabel(card)}` : `สภาพ ${card.condition || 'NM'}`;
+                const rarity = card.rarity && card.rarity !== '-' ? card.rarity : '—';
+                const certLink = isGraded && card.certNumber ? `<a href="${escapeHtml(getCertUrl(String(card.gradeCompany || ''), String(card.certNumber)))}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" onkeydown="event.stopPropagation()" class="vault-cert-link">🔗 เช็ค Cert</a>` : '';
+                const checkbox = isSelectMode ? `<input type="checkbox" aria-label="เลือก ${escapeHtml(card.name)}" ${isSelected ? 'checked' : ''} data-card-id="${escapeHtml(card.id)}" onclick="toggleCardSelection(this.dataset.cardId, event)" onkeydown="event.stopPropagation()" class="vault-card-checkbox">` : '';
+                return `<div data-card-id="${escapeHtml(card.id)}" role="button" tabindex="0" aria-label="${escapeHtml(card.name)}" onclick="handleCardClick(this.dataset.cardId)" onkeydown="if(event.key === 'Enter' || event.key === ' '){event.preventDefault();handleCardClick(this.dataset.cardId)}" class="vault-card${isW ? ' is-wishlist' : ''}${isSelected ? ' is-selected' : ''}">
+                    ${checkbox}${isW ? '<span class="vault-wanted-badge">WANTED</span>' : ''}
+                    <div class="vault-card-image"><img src="${escapeHtml(getSafeImageUrl(card.image))}" loading="${index < 4 ? 'eager' : 'lazy'}" decoding="async" alt="${escapeHtml(card.name)}" onerror="this.onerror=null;this.src=CARD_PLACEHOLDER">${certLink}</div>
+                    <h2 class="vault-card-title" title="${escapeHtml(card.name)}">${escapeHtml(card.name || 'ไม่ระบุชื่อ')}</h2>
+                    <p class="vault-card-set" title="${escapeHtml(card.set || 'ไม่ระบุ Set')}">Set · ${escapeHtml(card.set || 'ไม่ระบุ Set')}</p>
+                    <div class="vault-card-badges"><span class="vault-card-badge vault-rarity-badge">ระดับ ${escapeHtml(rarity)}</span><span class="vault-card-badge${isGraded ? ' vault-grade-badge' : ''}">${escapeHtml(grade)}</span></div>
+                    <p class="vault-card-secondary" title="${escapeHtml(card.cardNumber || '—')} · ${escapeHtml(card.language || 'TH')}">${card.cardNumber ? `No.${escapeHtml(card.cardNumber)} · ` : ''}${escapeHtml(card.language || 'TH')}</p>
+                    <div class="vault-card-footer"><span class="vault-card-price">฿${Number(card.price || 0).toLocaleString()}</span>${!isW ? `<span class="vault-card-qty">x${Number(card.qty) || 0}</span>` : ''}</div>
+                </div>`;
+            }).join('');
         }
-     
+
         function drawChart() {
         
             if (!historyData || historyData.length === 0) return; 

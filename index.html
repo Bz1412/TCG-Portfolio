@@ -726,6 +726,26 @@
                     <div class="sale-profit-line sale-profit-total"><span>กำไรสุทธิ</span><strong id="sell-preview-profit">—</strong></div>
                     <p id="sell-preview-note" class="sale-profit-note"></p>
                 </div>
+                <div>
+                    <label for="sell-status-input" class="text-xs text-gray-500">
+                        สถานะการขาย
+                    </label>
+                    <select id="sell-status-input"
+                        class="w-full mt-1 p-3 border rounded-xl text-sm">
+                        <option value="pending_payment">รอชำระเงิน</option>
+                        <option value="pending_shipping">ชำระแล้ว / รอส่ง</option>
+                        <option value="shipped">ส่งแล้ว</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="sell-tracking-input" class="text-xs text-gray-500">
+                        เลขพัสดุ
+                    </label>
+                    <input id="sell-tracking-input" type="text" maxlength="80"
+                        placeholder="เว้นว่างได้"
+                        class="w-full mt-1 p-3 border rounded-xl text-sm">
+                </div>
                 <button type="submit" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md">✅ ยืนยันบันทึกการขาย</button>
             </form>
         </div>
@@ -1272,6 +1292,118 @@ async function loadData() {
             };
         }
 
+        function renderSaleDelivery(sale) {
+            const statuses = {
+                pending_payment: 'รอชำระเงิน',
+                pending_shipping: 'ชำระแล้ว / รอส่ง',
+                shipped: 'ส่งแล้ว'
+            };
+        
+            const statusText =
+                statuses[sale.deliveryStatus] || 'ยังไม่ระบุสถานะ';
+        
+            const summary = `
+                <p class="text-xs text-gray-500">
+                    ${escapeHtml(statusText)}
+                    ${sale.trackingNumber
+                        ? ` · พัสดุ: ${escapeHtml(sale.trackingNumber)}`
+                        : ''}
+                </p>
+            `;
+        
+            if (!adminPin) return summary;
+        
+            if (!sale.saleId) {
+                return summary + `
+                    <p class="text-xs text-amber-600">
+                        รายการเก่ายังไม่มี SaleId จึงยังแก้สถานะไม่ได้
+                    </p>
+                `;
+            }
+        
+            const options = Object.entries(statuses).map(([value, label]) =>
+                `<option value="${value}"
+                    ${sale.deliveryStatus === value ? 'selected' : ''}>
+                    ${label}
+                </option>`
+            ).join('');
+        
+            return `
+                <div class="p-3 bg-gray-50 rounded-xl space-y-2"
+                    data-sale-id="${escapeHtml(sale.saleId)}">
+                    ${summary}
+        
+                    <select data-field="status"
+                        class="w-full p-2 border rounded-lg text-xs">
+                        <option value="" disabled
+                            ${!statuses[sale.deliveryStatus] ? 'selected' : ''}>
+                            เลือกสถานะ
+                        </option>
+                        ${options}
+                    </select>
+        
+                    <input data-field="tracking" type="text" maxlength="80"
+                        value="${escapeHtml(sale.trackingNumber || '')}"
+                        placeholder="เลขพัสดุ"
+                        class="w-full p-2 border rounded-lg text-xs">
+        
+                    <button type="button" onclick="saveSaleDelivery(this)"
+                        class="w-full p-2 bg-gray-900 text-white rounded-lg text-xs">
+                        บันทึกสถานะ / เลขพัสดุ
+                    </button>
+                </div>
+            `;
+        }
+        
+        async function saveSaleDelivery(button) {
+            if (!adminPin) {
+                return showToast('กรุณาล็อกอินก่อน', 'error');
+            }
+            if (button.disabled) return;
+        
+            const box = button.closest('[data-sale-id]');
+            const status = box.querySelector('[data-field="status"]').value;
+            const tracking = box.querySelector('[data-field="tracking"]').value.trim();
+        
+            if (!status) {
+                return showToast('กรุณาเลือกสถานะ', 'error');
+            }
+        
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = 'กำลังบันทึก...';
+        
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'updateSaleDelivery',
+                        pin: adminPin,
+                        saleId: box.dataset.saleId,
+                        deliveryStatus: status,
+                        trackingNumber: tracking
+                    })
+                });
+        
+                const result = await response.json();
+                if (result.status !== 'success') {
+                    throw new Error(result.message || 'บันทึกไม่สำเร็จ');
+                }
+        
+                await loadData();
+        
+                document.getElementById('full-sales-list').innerHTML =
+                    allSales.map(renderSaleRow).join('');
+        
+                showToast('✅ บันทึกสถานะและเลขพัสดุแล้ว');
+            } catch (error) {
+                showToast('❌ ' + error.message, 'error');
+            } finally {
+                button.disabled = false;
+                button.textContent = originalText;
+            }
+        }
+
         function renderSaleRow(sale) {
             const profit = getSaleProfit(sale);
             const missingFields = [
@@ -1297,7 +1429,8 @@ async function loadData() {
                 <span class="sale-history-meta" style="display:block">${escapeHtml(sale.timestamp || '—')} · ${Number(sale.qty) || 1} ใบ × ${formatSaleMoney(sale.soldPrice || 0)}</span>
                 <span class="sale-history-profit ${profit === null ? 'profit-unknown' : profit < 0 ? 'profit-negative' : 'profit-positive'}" style="display:block">${profit === null ? 'กำไร: ยังไม่ทราบ' : `กำไรสุทธิ ${formatSaleMoney(profit)}`}</span>
                 <span class="sale-history-meta" style="display:block">${escapeHtml(detail)}</span>
-            </button>`;
+            </button>
+            ${renderSaleDelivery(sale)}`;
         }
 
         function renderSalesBoard() {
@@ -2107,6 +2240,8 @@ function closeChartModal() {
             document.getElementById('sell-cost-input').value = card.buyPrice ?? '';
             document.getElementById('sell-fees-input').value = 0;
             document.getElementById('sell-shipping-input').value = 0;
+            document.getElementById('sell-status-input').value = 'pending_payment';
+            document.getElementById('sell-tracking-input').value = '';
             updateSellProfitPreview();
             toggleModal(false);
             document.getElementById('sell-modal').classList.remove('hidden');
@@ -2129,6 +2264,8 @@ function closeChartModal() {
             button.innerHTML = '⏳ กำลังบันทึก...';
             try {
                 const response = await fetch(API_URL, {method: 'POST', body: JSON.stringify({
+                    deliveryStatus: document.getElementById('sell-status-input').value,
+                    trackingNumber: document.getElementById('sell-tracking-input').value.trim(),
                     action: 'sell', pin: adminPin, id: card.id, rowIndex: card.rowIndex,
                     sellQty: values.qty, soldPrice: values.price, unitCost: values.unitCost,
                     fees: values.fees, shippingCost: values.shippingCost, saleId: currentSaleId

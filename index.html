@@ -704,13 +704,21 @@
                 <div>
                     <label for="sell-cost-input" class="text-[11px] font-semibold text-gray-500">ต้นทุน/ใบ (บาท)</label>
                     <input type="number" id="sell-cost-input" min="0" step="0.01" placeholder="เว้นว่างถ้ายังไม่ทราบ" class="w-full mt-1 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm">
-                    <p class="sale-profit-note">0 หมายถึงไม่มีต้นทุน • การ์ดเปิดแพ็คให้กรอกต้นทุนที่จัดสรรต่อใบ</p>
+                    <p class="sale-profit-note">
+                        การ์ดเปิดแพ็คให้ใส่ 0 แล้วบันทึกค่าแพ็คในต้นทุนเปิดแพ็ค
+                        • การ์ดซื้อแยกให้ใส่ต้นทุนต่อใบจริง
+                        • เว้นว่างเมื่อยังไม่ทราบต้นทุน
+                    </p>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label for="sell-fees-input" class="text-[11px] font-semibold text-gray-500">ค่าธรรมเนียมรวม (บาท)</label><input type="number" id="sell-fees-input" min="0" step="0.01" value="0" class="w-full mt-1 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"></div>
                     <div><label for="sell-shipping-input" class="text-[11px] font-semibold text-gray-500">ค่าส่งที่เราออก (บาท)</label><input type="number" id="sell-shipping-input" min="0" step="0.01" value="0" class="w-full mt-1 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"></div>
                 </div>
-                <p class="sale-profit-note">ค่าธรรมเนียมและค่าส่งเป็นยอดรวมของรายการนี้ หากผู้ซื้อออกค่าส่งทั้งหมดให้ใส่ 0</p>
+                <p class="sale-profit-note">
+                    ยอดรวม = ยอดขาย − ต้นทุนซื้อแยกของการ์ดที่ขาย
+                    − ค่าธรรมเนียม − ค่าส่งที่เราออก − ต้นทุนแพ็คทั้งหมด
+                    โดยการ์ดเปิดแพ็คใช้ต้นทุนต่อใบเป็น 0
+                </p>
                 <div class="sale-profit-preview" aria-live="polite">
                     <div class="sale-profit-line"><span>ยอดขายรวม</span><strong id="sell-preview-revenue">—</strong></div>
                     <div class="sale-profit-line"><span>ต้นทุนการ์ดรวม</span><strong id="sell-preview-cost">—</strong></div>
@@ -735,7 +743,11 @@
                 <div><p class="sales-stat-label">รายได้สะสมรวม</p><p id="sales-stat-revenue" class="sales-stat-value">฿0</p></div>
                 <div class="sales-profit-summary"><p class="sales-stat-label">กำไรสุทธิที่คำนวณได้</p><p id="sales-stat-profit" class="sales-stat-value">—</p><p id="sales-profit-coverage" class="sale-profit-note"></p></div>
             </div>
-            <p class="sale-profit-note">กำไร = ยอดขาย − ต้นทุนต่อใบ × จำนวน − ค่าธรรมเนียม − ค่าส่งที่เราออก โดยไม่หักต้นทุนแพ็คซ้ำ</p>
+            <p class="sale-profit-note">
+                ยอดรวม = ยอดขาย − ต้นทุนซื้อแยกของการ์ดที่ขาย
+                − ค่าธรรมเนียม − ค่าส่งที่เราออก − ต้นทุนแพ็คทั้งหมด
+                โดยการ์ดเปิดแพ็คใช้ต้นทุนต่อใบเป็น 0
+            </p>    
             <p class="sales-board-subtitle">3 รายการขายล่าสุด</p>
             <div id="recent-sales-list" class="space-y-2"></div>
             <button type="button" onclick="openAllSalesModal()" class="sales-board-history">📜 ดูประวัติการขายทั้งหมด</button>
@@ -1233,9 +1245,31 @@ async function loadData() {
         }
 
         function saleProfitSummary() {
-            const known = allSales.map(getSaleProfit).filter(profit => profit !== null);
-            return {profit: known.reduce((cents, profit) => cents + Math.round(profit * 100), 0) / 100,
-                known: known.length, missing: allSales.length - known.length};
+            const known = allSales
+                .map(getSaleProfit)
+                .filter(profit => profit !== null);
+        
+            const salesProfitCents = known.reduce(
+                (sum, profit) => sum + Math.round(profit * 100),
+                0
+            );
+        
+            const packCostCents = allPacks.reduce((sum, pack) => {
+                const cost = Number(
+                    pack.totalCost ?? pack.price ?? pack.cost ?? 0
+                );
+        
+                return sum + (
+                    Number.isFinite(cost) ? Math.round(cost * 100) : 0
+                );
+            }, 0);
+        
+            return {
+                profit: (salesProfitCents - packCostCents) / 100,
+                packCost: packCostCents / 100,
+                known: known.length,
+                missing: allSales.length - known.length
+            };
         }
 
         function renderSaleRow(sale) {
@@ -1258,10 +1292,21 @@ async function loadData() {
             document.getElementById('sales-stat-revenue').textContent = formatSaleMoney(totalRevenue);
             const profitEl = document.getElementById('sales-stat-profit');
             profitEl.textContent = stats.known || !allSales.length ? formatSaleMoney(stats.profit) : '—';
-            profitEl.className = `sales-stat-value ${stats.known ? stats.profit < 0 ? 'profit-negative' : 'profit-positive' : 'profit-unknown'}`;
-            document.getElementById('sales-profit-coverage').textContent = allSales.length
-                ? `คำนวณได้ ${stats.known}/${allSales.length} รายการ${stats.missing ? ` • ยังไม่รวม ${stats.missing} รายการที่ข้อมูลไม่ครบ` : ''}`
-                : 'ยังไม่มีรายการขาย';
+            const canCalculate = stats.known > 0 || allSales.length === 0;
+
+            profitEl.className = `sales-stat-value ${
+                !canCalculate ? 'profit-unknown'
+                : stats.profit < 0 ? 'profit-negative'
+                : 'profit-positive'
+            }`;
+            document.getElementById('sales-profit-coverage').textContent =
+                `หักต้นทุนแพ็คทั้งหมด ${formatSaleMoney(stats.packCost)} แล้ว` +
+                (allSales.length
+                    ? ` • ใช้ข้อมูลขาย ${stats.known}/${allSales.length} รายการ`
+                    : ' • ยังไม่มีรายการขาย') +
+                (stats.missing
+                    ? ` • ยอดยังไม่ครบ เพราะ ${stats.missing} รายการขาดข้อมูล`
+                    : '');
             document.getElementById('recent-sales-list').innerHTML = allSales.length ? allSales.slice(0, 3).map(renderSaleRow).join('') : '<div class="text-xs text-gray-400 text-center py-3">ยังไม่มีประวัติการขาย</div>';
         }
 
@@ -2086,6 +2131,44 @@ function closeChartModal() {
             }
         }
 
+                function findDuplicateCard(newCard) {
+            const normalize = value => String(value ?? '')
+                .normalize('NFKC')
+                .trim()
+                .replace(/\s+/g, ' ')
+                .toLowerCase();
+        
+            const isWishlist = card => String(card.isWishlist) === 'true';
+        
+            // ต้องมี Set และเลขการ์ด จึงจะตรวจได้
+            if (!normalize(newCard.set) || !normalize(newCard.cardNumber)) {
+                return null;
+            }
+        
+            return allCards.find(card => {
+                if (isWishlist(card) !== isWishlist(newCard)) return false;
+        
+                const fields = ['set', 'cardNumber', 'language', 'condition'];
+                if (!fields.every(key =>
+                    normalize(card[key]) === normalize(newCard[key])
+                )) return false;
+        
+                if (normalize(newCard.condition) === 'graded') {
+                    const gradeFields = ['gradeCompany', 'gradeScore'];
+                    if (!gradeFields.every(key =>
+                        normalize(card[key]) === normalize(newCard[key])
+                    )) return false;
+        
+                    // คนละเลขใบรับรอง ถือเป็นคนละใบ
+                    const oldCert = normalize(card.certNumber);
+                    const newCert = normalize(newCard.certNumber);
+                    if (oldCert && newCert && oldCert !== newCert) return false;
+                }
+        
+                return true;
+            });
+        }
+
         // ===== ส่งข้อมูลฟอร์ม (เพิ่ม/แก้ไขการ์ด) =====
         async function submitForm(e) {
             e.preventDefault();
@@ -2120,6 +2203,22 @@ function closeChartModal() {
             };
 
             try {
+                        if (mode === 'add') {
+                const duplicate = findDuplicateCard(payload);
+        
+                if (duplicate) {
+                    const shouldContinue = window.confirm(
+                        `พบการ์ดที่อาจซ้ำ: ${duplicate.name}\n` +
+                        `Set: ${duplicate.set} • เลข: ${duplicate.cardNumber}\n` +
+                        `จำนวนในรายการเดิม: ${duplicate.qty ?? 0} ใบ\n\n` +
+                        `ต้องการเพิ่มเป็นรายการใหม่แยกจากเดิมไหม?\n` +
+                        `ตกลง = เพิ่มรายการใหม่\n` +
+                        `ยกเลิก = กลับไปตรวจข้อมูล`
+                    );
+        
+                    if (!shouldContinue) return;
+                }
+            }
                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await res.json();
                 if (result.status === 'success') {

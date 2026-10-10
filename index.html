@@ -1274,8 +1274,24 @@ async function loadData() {
 
         function renderSaleRow(sale) {
             const profit = getSaleProfit(sale);
-            const detail = profit === null ? 'ยังคำนวณกำไรไม่ได้ • ขาดข้อมูลต้นทุนหรือค่าใช้จ่าย'
-                : `ทุน ${formatSaleMoney(sale.unitCost)} × ${sale.qty} · ค่าธรรมเนียม ${formatSaleMoney(sale.fees)} · ค่าส่ง ${formatSaleMoney(sale.shippingCost)}`;
+            const missingFields = [
+                ['unitCost', 'ต้นทุนต่อใบ'],
+                ['fees', 'ค่าธรรมเนียม'],
+                ['shippingCost', 'ค่าส่ง'],
+                ['soldPrice', 'ราคาขาย']
+            ]
+                .filter(([key]) => optionalSaleMoney(sale[key]) === null)
+                .map(([, label]) => label);
+            
+            if (!Number.isSafeInteger(Number(sale.qty)) || Number(sale.qty) < 1) {
+                missingFields.push('จำนวนที่ขาย');
+            }
+            
+            const detail = profit === null
+                ? `ข้อมูลขาดหรือไม่ถูกต้อง: ${missingFields.join(', ')}`
+                : `ทุน ${formatSaleMoney(sale.unitCost)} × ${sale.qty}
+                   · ค่าธรรมเนียม ${formatSaleMoney(sale.fees)}
+                   · ค่าส่ง ${formatSaleMoney(sale.shippingCost)}`;
             return `<button type="button" class="sale-history-item" data-card-id="${escapeHtml(sale.cardId || '')}" data-card-name="${escapeHtml(encodeURIComponent(sale.cardName || ''))}" onclick="viewSoldCardDetail(this.dataset.cardId, this.dataset.cardName)">
                 <span class="sale-history-top"><span class="sale-history-name">${escapeHtml(sale.cardName || 'ไม่ระบุชื่อ')}</span><span class="sale-history-amount">${formatSaleMoney(getSaleTotal(sale))}</span></span>
                 <span class="sale-history-meta" style="display:block">${escapeHtml(sale.timestamp || '—')} · ${Number(sale.qty) || 1} ใบ × ${formatSaleMoney(sale.soldPrice || 0)}</span>

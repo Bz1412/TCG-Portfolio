@@ -374,6 +374,14 @@
                         <button type="button" id="auth-btn-logout" onclick="logoutAdmin()" class="vault-icon-btn hidden" title="ออกจากระบบ" aria-label="ออกจากระบบ">🔓</button>
                         <button type="button" onclick="openStatsModal()" class="vault-icon-btn" title="สถิติคลัง" aria-label="สถิติคลัง">📊</button>
                         <button type="button" onclick="loadData()" class="vault-icon-btn" title="รีเฟรชข้อมูล" aria-label="รีเฟรชข้อมูล">🔄</button>
+                        <button type="button"
+                            onclick="openCollectionShowcase()"
+                            class="vault-icon-btn"
+                            title="โชว์คอลเล็กชัน"
+                            aria-label="เปิดโหมดโชว์คอลเล็กชัน"
+                            aria-haspopup="dialog">
+                            🖼️
+                        </button>
                     </div>
                 </div>
                 <div class="vault-summary" aria-label="สรุปมูลค่าคอลเล็กชัน">
@@ -953,6 +961,39 @@
             <span class="text-[10px] font-semibold">ผู้ดูแล</span>
         </button>
     </nav>
+
+    <dialog id="collection-showcase-modal"
+    aria-labelledby="collection-showcase-title"
+    class="m-auto w-[96vw] max-w-6xl h-[92vh] max-h-[92vh]
+           rounded-2xl p-0 bg-white">
+
+    <div class="h-full flex flex-col">
+        <div class="flex items-center justify-between gap-3
+                    p-4 border-b shrink-0">
+            <div>
+                <h2 id="collection-showcase-title"
+                    class="font-bold text-gray-900">
+                    🖼️ My Collection
+                </h2>
+                <p id="collection-showcase-count"
+                    class="text-xs text-gray-500 mt-1"></p>
+            </div>
+
+            <button type="button" autofocus
+                onclick="document.getElementById('collection-showcase-modal').close()"
+                class="px-4 py-2 rounded-xl bg-gray-100 text-sm">
+                ปิด
+            </button>
+        </div>
+
+        <div class="flex-1 min-h-0 overflow-y-auto p-4">
+            <div id="collection-showcase-grid"
+                class="grid grid-cols-2 sm:grid-cols-3
+                       md:grid-cols-4 lg:grid-cols-5 gap-4">
+            </div>
+        </div>
+    </div>
+</dialog>
 
     <script>
         // ===== PWA Manifest =====
@@ -2320,6 +2361,89 @@ function closeChartModal() {
         
                 return true;
             });
+        }
+
+        function openCollectionShowcase() {
+            const cards = allCards.filter(card =>
+                String(card.isWishlist) !== 'true' &&
+                Number(card.qty) > 0
+            );
+        
+            const totalQty = cards.reduce(
+                (sum, card) => sum + Number(card.qty),
+                0
+            );
+        
+            document.getElementById('collection-showcase-count').textContent =
+                `${cards.length.toLocaleString()} รายการ • ` +
+                `${totalQty.toLocaleString()} ใบ`;
+        
+            const grid = document.getElementById('collection-showcase-grid');
+        
+            grid.innerHTML = cards.length
+                ? cards.map(card => {
+                    const grade = card.condition === 'Graded'
+                        ? getGradeLabel(card)
+                        : card.condition;
+        
+                    const badges = [
+                        card.rarity,
+                        card.language,
+                        grade
+                    ]
+                        .filter(value =>
+                            value !== undefined &&
+                            value !== null &&
+                            String(value).trim() !== '' &&
+                            value !== '-'
+                        )
+                        .map(value => `
+                            <span class="px-2 py-1 rounded-lg
+                                         bg-gray-100 text-gray-600 text-[10px]">
+                                ${escapeHtml(value)}
+                            </span>
+                        `).join('');
+        
+                    return `
+                        <article class="border border-gray-100
+                                        rounded-2xl p-3 bg-white shadow-sm">
+                            <img
+                                src="${escapeHtml(getSafeImageUrl(String(card.image || '')))}"
+                                alt="${escapeHtml(card.name || 'การ์ด')}"
+                                loading="lazy"
+                                class="w-full aspect-[5/7] object-contain rounded-xl"
+                                onerror="this.onerror=null;this.src=CARD_PLACEHOLDER;">
+        
+                            <h3 class="mt-3 font-semibold text-sm
+                                       text-gray-900 break-words">
+                                ${escapeHtml(card.name || 'ไม่ระบุชื่อ')}
+                            </h3>
+        
+                            <p class="mt-1 text-[11px] text-gray-500 break-words">
+                                ${escapeHtml(card.set || 'ไม่ระบุ Set')}
+                                ${card.cardNumber
+                                    ? ` • ${escapeHtml(card.cardNumber)}`
+                                    : ''}
+                            </p>
+        
+                            <div class="flex flex-wrap gap-1 mt-2">
+                                ${badges}
+                            </div>
+        
+                            <p class="mt-2 text-xs text-gray-500">
+                                มี ${Number(card.qty).toLocaleString()} ใบ
+                            </p>
+                        </article>
+                    `;
+                }).join('')
+                : `
+                    <p class="col-span-full py-12 text-center text-gray-400">
+                        ยังไม่มีการ์ดในคลัง
+                    </p>
+                `;
+        
+            const modal = document.getElementById('collection-showcase-modal');
+            if (!modal.open) modal.showModal();
         }
 
         // ===== ส่งข้อมูลฟอร์ม (เพิ่ม/แก้ไขการ์ด) =====

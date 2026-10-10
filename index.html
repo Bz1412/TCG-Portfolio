@@ -280,9 +280,9 @@
                         <button onclick="toggleView('binder')" id="btnViewBinder" class="px-3 py-1.5 rounded-lg text-gray-500 hover:text-gray-800 font-medium text-xs transition-all">🗂️ แฟ้ม</button>
                     </div>
                     <button onclick="exportForSale()" class="bg-gray-900 text-white text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-black transition-all duration-200 active:scale-90">📋 โพสต์ขาย</button>
-                    <button onclick="openChartModal()" class="bg-rose-500 text-white text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-rose-600 shadow-sm transition-all active:scale-90">📈 สถิติพอร์ต</button>
+                    <button onclick="openChartModal()" class="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-gray-50 shadow-sm transition-all active:scale-90">📊 สถิติพอร์ต</button>
                     <button onclick="toggleSelectMode()" id="btnSelectMode" class="bg-gray-100 border border-gray-300 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-gray-200 shadow-sm transition-all active:scale-90">☑️ เลือกหลายใบ</button>
-                    <button onclick="openWTSGenerator()" class="bg-indigo-600 text-white text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-indigo-700 shadow-sm transition-all duration-200 active:scale-90">🖼️ สร้างรูปภาพ</button>
+                    <button onclick="openWTSGenerator()" class="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2 flex-shrink-0 hover:bg-gray-50 shadow-sm transition-all duration-200 active:scale-90">🖼️ สร้างรูปภาพ</button>
                     <select id="filter-set" onchange="applyFilters()" class="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2 shadow-sm flex-shrink-0 outline-none min-w-0 max-w-[130px]">
                         <option value="">📁 ทุกชุด</option>
                     </select>
@@ -303,19 +303,18 @@
                     </select>
                 </div>
                 <div id="showcase-section" class="mb-6 space-y-4">
-                    <div id="card-of-the-day-container" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-4 text-white shadow-xl border border-indigo-500/30 flex items-center gap-4 relative overflow-hidden">
-                        <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
-                        <div id="cotd-img-box" class="w-20 h-28 bg-black/40 rounded-xl flex-shrink-0 flex items-center justify-center border border-white/10 p-1">
+                    <div id="card-of-the-day-container" class="bg-gray-900 rounded-3xl p-4 text-white shadow-md border border-gray-800 flex items-center gap-4 relative overflow-hidden">
+                        <div id="cotd-img-box" class="w-20 h-28 bg-gray-800 rounded-xl flex-shrink-0 flex items-center justify-center border border-gray-700 p-1">
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5 mb-1">
-                                <span class="text-[10px] font-extrabold bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full uppercase tracking-wider">🌟 Card of the Day</span>
+                                <span class="text-[10px] font-extrabold bg-white text-gray-900 px-2 py-0.5 rounded-full uppercase tracking-wider">Card of the Day</span>
                             </div>
-                            <h3 id="cotd-name" class="font-bold text-sm truncate text-amber-200">กำลังสุ่มการ์ดเด่น...</h3>
-                            <p id="cotd-details" class="text-xs text-slate-300 mt-0.5 truncate">-</p>
+                            <h3 id="cotd-name" class="font-bold text-sm truncate text-white">กำลังสุ่มการ์ดเด่น...</h3>
+                            <p id="cotd-details" class="text-xs text-gray-400 mt-0.5 truncate">-</p>
                             <div class="mt-2 flex items-center gap-2">
-                                <span id="cotd-price" class="text-sm font-black text-emerald-400">฿0</span>
-                                <span id="cotd-rarity" class="text-[10px] bg-white/10 px-2 py-0.5 rounded border border-white/10 text-slate-300">UR</span>
+                                <span id="cotd-price" class="text-sm font-black text-white">฿0</span>
+                                <span id="cotd-rarity" class="text-[10px] border border-gray-600 px-2 py-0.5 rounded text-gray-300">UR</span>
                             </div>
                         </div>
                     </div>
@@ -337,18 +336,18 @@
                             <h2 class="text-xs font-bold text-gray-900 flex items-center gap-1.5">
                                 <span>🛒 บอร์ดสรุปการขาย</span>
                             </h2>
-                            <span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Live History</span>
+                            <span class="text-[10px] text-gray-500 font-bold bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">Live History</span>
                         </div>
 
                         <!-- การ์ดแสดงสรุปรายได้และจำนวนใบ -->
-                        <div class="grid grid-cols-2 gap-2.5 bg-emerald-950 text-white p-3.5 rounded-2xl">
+                        <div class="grid grid-cols-2 gap-2.5 bg-gray-50 border border-gray-200 text-gray-900 p-3.5 rounded-2xl">
                             <div>
-                                <p class="text-[10px] text-emerald-300 font-semibold">ขายได้แล้วรวม</p>
-                                <p id="sales-stat-qty" class="text-lg font-black mt-0.5 text-white">0 <span class="text-xs font-normal text-emerald-200">ใบ</span></p>
+                                <p class="text-[10px] text-gray-500 font-semibold">ขายได้แล้วรวม</p>
+                                <p id="sales-stat-qty" class="text-lg font-black mt-0.5 text-gray-900">0 <span class="text-xs font-normal text-gray-500">ใบ</span></p>
                             </div>
                             <div>
-                                <p class="text-[10px] text-emerald-300 font-semibold">รายได้สะสมรวม</p>
-                                <p id="sales-stat-revenue" class="text-lg font-black mt-0.5 text-emerald-400">฿0</p>
+                                <p class="text-[10px] text-gray-500 font-semibold">รายได้สะสมรวม</p>
+                                <p id="sales-stat-revenue" class="text-lg font-black mt-0.5 text-gray-900">฿0</p>
                             </div>
                         </div>
 
@@ -1049,7 +1048,7 @@ async function loadData() {
 
             // แสดงเฉพาะ 3 อันล่าสุด
             listEl.innerHTML = allSales.slice(0, 3).map(s => `
-                <div onclick="viewSoldCardDetail('${s.cardId}', '${encodeURIComponent(s.cardName)}')" class="bg-emerald-50/60 hover:bg-emerald-100/80 border border-emerald-100 p-2.5 rounded-2xl flex items-center justify-between gap-2 cursor-pointer transition-all duration-200 active:scale-98">
+                <div onclick="viewSoldCardDetail('${s.cardId}', '${encodeURIComponent(s.cardName)}')" class="bg-white border-gray-200 hover:bg-emerald-100/80 border border-emerald-100 p-2.5 rounded-2xl flex items-center justify-between gap-2 cursor-pointer transition-all duration-200 active:scale-98">
                     <div class="min-w-0 flex-1">
                         <p class="text-xs font-bold text-gray-900 truncate">${s.cardName || 'ไม่ระบุชื่อ'}</p>
                         <p class="text-[9px] text-gray-400 mt-0.5">🕒 ${s.timestamp || '-'}</p>

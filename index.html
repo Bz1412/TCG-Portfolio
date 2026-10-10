@@ -1414,16 +1414,26 @@ async function loadData() {
             return maxTotal;
         }
 
-        // 🌟 เพิ่มพารามิเตอร์ keepPage เพื่อไม่ให้เด้งกลับหน้าแรกเวลาเซฟ
         function loadBinderSet(keepPage = false) {
             const setName = document.getElementById('binder-set-select').value.trim();
             if (!setName) return;
 
             const setCards = allCards.filter(c => String(c.set || '').trim() === setName);
-            const ownedCount = setCards.filter(c => String(c.isWishlist) !== 'true' && Number(c.qty) > 0).length;
-            const totalCards = getTotalFromSet(setCards);
 
+            const totalCards = getTotalFromSet(setCards);
             const total = totalCards || setCards.length;
+
+            const ownedCount = setCards.filter(c => {
+                const isOwned = String(c.isWishlist) !== 'true' && Number(c.qty) > 0;
+                if (!isOwned) return false;
+
+                if (totalCards > 0) {
+                    const num = parseCardNum(c.cardNumber);
+                    return num !== null && num <= totalCards;
+                }
+                return true;
+            }).length;
+
             const percentage = total > 0 ? Math.round((ownedCount / total) * 100) : 0;
             document.getElementById('binder-owned-count').innerText = `${ownedCount}/${total} (${percentage}%)`;
             document.getElementById('binder-progress-bar').style.width = `${percentage}%`;
@@ -1444,8 +1454,7 @@ async function loadData() {
                 for (let i = 1; i <= totalCards; i++) {
                     const card = cardMap[i] || null;
                     const isOwned = card && String(card.isWishlist) !== 'true' && Number(card.qty) > 0;
-                    
-                    // 🌟 ใส่ข้อมูลการ์ดลงใน slot เสมอ (แม้จะเป็น Wishlist) เพื่อนำไปแสดงแบบจางๆ
+
                     binderSlots.push({ num: i, card: card });
                     
                     if (!isOwned) {
@@ -1515,7 +1524,6 @@ async function loadData() {
                 }
             }
 
-            // 🌟 ตรวจสอบว่าต้องจำหน้าเดิมไว้หรือไม่
             if (!keepPage) {
                 binderPage = 0;
             } else {

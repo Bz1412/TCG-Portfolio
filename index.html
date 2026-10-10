@@ -334,6 +334,24 @@
         }
         @media (min-width: 1024px) { .vault-card-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
         @media (prefers-reduced-motion: reduce) { .vault-skeleton { animation: none; } .vault-card, .summary-sales-button { transition: none; } }
+
+        .sale-entry-panel { max-height: 90dvh; overflow-y: auto; }
+        .sale-profit-preview { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; }
+        .sale-profit-line { display: flex; justify-content: space-between; gap: 12px; margin: 4px 0; color: #6b7280; font-size: 11px; }
+        .sale-profit-line strong { color: #374151; font-weight: 600; overflow-wrap: anywhere; }
+        .sale-profit-total { border-top: 1px solid #e5e7eb; padding-top: 8px; margin-top: 8px; font-size: 13px; font-weight: 600; }
+        .profit-positive { color: #059669 !important; }
+        .profit-negative { color: #dc2626 !important; }
+        .profit-unknown { color: #92400e !important; }
+        .sale-profit-note { margin: 7px 0 0; color: #6b7280; font-size: 10px; line-height: 1.6; }
+        .sale-history-item { display: block; width: 100%; padding: 12px; text-align: left; border: 1px solid #e5e7eb; border-radius: 14px; background: #fff; cursor: pointer; }
+        .sale-history-item:hover { background: #f9fafb; }
+        .sale-history-top { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
+        .sale-history-name { min-width: 0; font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
+        .sale-history-amount { flex-shrink: 0; font-size: 12px; font-weight: 700; color: #047857; }
+        .sale-history-meta { margin-top: 4px; font-size: 9px; color: #6b7280; line-height: 1.5; }
+        .sale-history-profit { margin-top: 8px; padding-top: 7px; border-top: 1px solid #f3f4f6; font-size: 11px; font-weight: 600; }
+        .sales-profit-summary { grid-column: 1 / -1; padding-top: 12px; border-top: 1px solid #e5e7eb; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 selection:bg-gray-200 selection:text-gray-900">
@@ -364,7 +382,7 @@
                     <button type="button" id="summary-sales-button" class="summary-tile summary-sales-button" onclick="openSalesBoardModal()" aria-haspopup="dialog" aria-controls="sales-board-modal" title="เปิดบอร์ดสรุปการขาย">
                         <span class="summary-label">ยอดที่ขายได้ ↗</span><span id="summary-sales" class="summary-value">฿0</span>
                     </button>
-                    <div class="summary-tile"><span class="summary-label">กำไรจริง</span><p id="summary-profit" class="summary-value">฿0</p></div>
+                    <button type="button" class="summary-tile" onclick="openSalesBoardModal()" aria-haspopup="dialog" aria-controls="sales-board-modal" title="กำไรเฉพาะรายการที่มีข้อมูลต้นทุนและค่าใช้จ่ายครบ"><span class="summary-label">กำไรขาย*</span><span id="summary-profit" class="summary-value">—</span></button>
                 </div>
             </div>
         </header>
@@ -429,7 +447,8 @@
                 <div id="loading" class="vault-card-grid" role="status" aria-label="กำลังโหลดการ์ด"><div class="vault-skeleton"></div><div class="vault-skeleton"></div></div>
                 <div id="card-grid" class="vault-card-grid hidden"></div>
             </section>
-            
+
+
         </main>
     </div>
 
@@ -573,12 +592,12 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-[11px] font-semibold text-gray-500">ต้นทุนซื้อ (บาท)</label>
-                        <input type="number" id="form-buyPrice" placeholder="0" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                        <label class="text-[11px] font-semibold text-gray-500">ต้นทุนซื้อแยกต่อใบ (บาท)</label>
+                        <input type="number" id="form-buyPrice" min="0" step="0.01" placeholder="เว้นว่างถ้ายังไม่ทราบ" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
                     </div>
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">ราคาประเมิน/ขาย (บาท)</label>
-                        <input type="number" id="form-price" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
+                        <input type="number" id="form-price" required min="0" step="0.01" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
                     </div>
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">จำนวนคงเหลือ</label>
@@ -666,32 +685,40 @@
         </div>
     </div>
 
-    <!-- MODAL: บันทึกการขาย -->
-    <div id="sell-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-100 animate-modal-pop space-y-4">
+    <!-- MODAL: Sale costs are snapshots; fees and shipping apply once to the entire sale. -->
+    <div id="sell-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="sell-title">
+        <div class="sale-entry-panel bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl border border-gray-100 animate-modal-pop space-y-3">
             <div class="flex justify-between items-center pb-2 border-b border-gray-100">
-                <h2 class="font-bold text-base text-gray-900 flex items-center gap-2">🏷️ บันทึกการขายการ์ด</h2>
-                <button onclick="document.getElementById('sell-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-900 text-2xl transition-all duration-200 active:scale-90">&times;</button>
+                <h2 id="sell-title" class="font-bold text-base text-gray-900">🏷️ บันทึกการขาย</h2>
+                <button type="button" onclick="document.getElementById('sell-modal').classList.add('hidden')" aria-label="ปิดหน้าขาย" class="text-gray-400 text-2xl">&times;</button>
             </div>
-            
             <div>
-                <p class="text-xs text-gray-500">การ์ดที่จะขาย:</p>
-                <p id="sell-card-name" class="font-bold text-sm text-gray-900 truncate mt-0.5">-</p>
-                <p class="text-[10px] text-gray-400 mt-0.5">จำนวนในคลังที่มี: <span id="sell-max-qty" class="font-bold text-gray-700">0</span> ใบ</p>
+                <p id="sell-card-name" class="font-bold text-sm text-gray-900 truncate">-</p>
+                <p class="text-[10px] text-gray-400 mt-0.5">มีในคลัง <span id="sell-max-qty" class="font-bold text-gray-700">0</span> ใบ</p>
             </div>
-
-            <form onsubmit="submitSell(event)" class="space-y-3">
-                <div>
-                    <label class="text-[11px] font-semibold text-gray-500">จำนวนที่ขาย (ใบ)</label>
-                    <input type="number" id="sell-qty-input" required min="1" value="1" class="w-full mt-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+            <form id="sell-form" onsubmit="submitSell(event)" oninput="updateSellProfitPreview()" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label for="sell-qty-input" class="text-[11px] font-semibold text-gray-500">จำนวนที่ขาย (ใบ)</label><input type="number" id="sell-qty-input" required min="1" step="1" value="1" class="w-full mt-1 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"></div>
+                    <div><label for="sell-price-input" class="text-[11px] font-semibold text-gray-500">ราคาขาย/ใบ (บาท)</label><input type="number" id="sell-price-input" required min="0" step="0.01" placeholder="0" class="w-full mt-1 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"></div>
                 </div>
                 <div>
-                    <label class="text-[11px] font-semibold text-gray-500">ราคาขายจริงต่อใบ (บาท)</label>
-                    <input type="number" id="sell-price-input" required min="0" placeholder="0" class="w-full mt-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                    <label for="sell-cost-input" class="text-[11px] font-semibold text-gray-500">ต้นทุน/ใบ (บาท)</label>
+                    <input type="number" id="sell-cost-input" min="0" step="0.01" placeholder="เว้นว่างถ้ายังไม่ทราบ" class="w-full mt-1 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm">
+                    <p class="sale-profit-note">0 หมายถึงไม่มีต้นทุน • การ์ดเปิดแพ็คให้กรอกต้นทุนที่จัดสรรต่อใบ</p>
                 </div>
-                <button type="submit" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md transition-all duration-200 active:scale-95">
-                    ✅ ยืนยันบันทึกการขาย
-                </button>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label for="sell-fees-input" class="text-[11px] font-semibold text-gray-500">ค่าธรรมเนียมรวม (บาท)</label><input type="number" id="sell-fees-input" min="0" step="0.01" value="0" class="w-full mt-1 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"></div>
+                    <div><label for="sell-shipping-input" class="text-[11px] font-semibold text-gray-500">ค่าส่งที่เราออก (บาท)</label><input type="number" id="sell-shipping-input" min="0" step="0.01" value="0" class="w-full mt-1 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"></div>
+                </div>
+                <p class="sale-profit-note">ค่าธรรมเนียมและค่าส่งเป็นยอดรวมของรายการนี้ หากผู้ซื้อออกค่าส่งทั้งหมดให้ใส่ 0</p>
+                <div class="sale-profit-preview" aria-live="polite">
+                    <div class="sale-profit-line"><span>ยอดขายรวม</span><strong id="sell-preview-revenue">—</strong></div>
+                    <div class="sale-profit-line"><span>ต้นทุนการ์ดรวม</span><strong id="sell-preview-cost">—</strong></div>
+                    <div class="sale-profit-line"><span>ค่าธรรมเนียม + ค่าส่ง</span><strong id="sell-preview-expenses">—</strong></div>
+                    <div class="sale-profit-line sale-profit-total"><span>กำไรสุทธิ</span><strong id="sell-preview-profit">—</strong></div>
+                    <p id="sell-preview-note" class="sale-profit-note"></p>
+                </div>
+                <button type="submit" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md">✅ ยืนยันบันทึกการขาย</button>
             </form>
         </div>
     </div>
@@ -706,7 +733,9 @@
             <div class="sales-board-stats">
                 <div><p class="sales-stat-label">ขายได้แล้วรวม</p><p id="sales-stat-qty" class="sales-stat-value">0 ใบ</p></div>
                 <div><p class="sales-stat-label">รายได้สะสมรวม</p><p id="sales-stat-revenue" class="sales-stat-value">฿0</p></div>
+                <div class="sales-profit-summary"><p class="sales-stat-label">กำไรสุทธิที่คำนวณได้</p><p id="sales-stat-profit" class="sales-stat-value">—</p><p id="sales-profit-coverage" class="sale-profit-note"></p></div>
             </div>
+            <p class="sale-profit-note">กำไร = ยอดขาย − ต้นทุนต่อใบ × จำนวน − ค่าธรรมเนียม − ค่าส่งที่เราออก โดยไม่หักต้นทุนแพ็คซ้ำ</p>
             <p class="sales-board-subtitle">3 รายการขายล่าสุด</p>
             <div id="recent-sales-list" class="space-y-2"></div>
             <button type="button" onclick="openAllSalesModal()" class="sales-board-history">📜 ดูประวัติการขายทั้งหมด</button>
@@ -721,7 +750,7 @@
                 <button onclick="document.getElementById('all-sales-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-900 text-2xl transition-all duration-200 active:scale-90">&times;</button>
             </div>
             
-            <p class="text-xs text-gray-400 flex-shrink-0">คลิกที่รายการการ์ดเพื่อดูรายละเอียดข้อมูลการ์ด:</p>
+            <p class="text-xs text-gray-400 flex-shrink-0">กำไรใช้ต้นทุน ณ วันที่ขาย • คลิกรายการเพื่อดูข้อมูลการ์ด</p>
             
             <div id="full-sales-list" class="space-y-2 overflow-y-auto flex-1 scrollbar-hide py-1">
             </div>
@@ -904,6 +933,8 @@
         const CARDS_PER_PAGE = 9;
         let allCards = [], currentFiltered = [];
         let allSales = [];
+        let salesSchemaVersion = 0;
+        let currentSaleId = '';
         let adminPin = localStorage.getItem('tcg_pin') || '';
         let binderSlots = [];
         let binderPage = 0;
@@ -1111,6 +1142,7 @@ async function loadData() {
             allCards = JSON.parse(cache);
             if (cachePacks) allPacks = JSON.parse(cachePacks);
             if (cacheSales) allSales = JSON.parse(cacheSales);
+            salesSchemaVersion = Number(localStorage.getItem('tcg_sales_schema_version')) || 0;
             
             updateSetDropdowns(); applyFilters(); updateSummary();
             renderCardOfTheDay();
@@ -1142,6 +1174,8 @@ async function loadData() {
             if (j.status === "success") {
                 allCards = j.data;
                 allSales = j.sales || [];
+                salesSchemaVersion = Number(j.salesSchemaVersion) || 0;
+                localStorage.setItem('tcg_sales_schema_version', String(salesSchemaVersion));
                 allPacks = j.packs || [];
 
                 localStorage.setItem('tcg_cards', JSON.stringify(allCards));
@@ -1173,59 +1207,67 @@ async function loadData() {
     await tryFetch();
 }
 
-        function renderSalesBoard() {
-            const listEl = document.getElementById('recent-sales-list');
-            const qtyStatEl = document.getElementById('sales-stat-qty');
-            const revStatEl = document.getElementById('sales-stat-revenue');
-
-            const totalQty = allSales.reduce((s, item) => s + Number(item.qty || 1), 0);
-            const totalRev = allSales.reduce((sum, item) => sum + getSaleTotal(item), 0);
-
-            if (qtyStatEl) qtyStatEl.innerHTML = `${totalQty.toLocaleString()} <span class="text-xs font-normal text-gray-500">ใบ</span>`;
-            if (revStatEl) revStatEl.innerText = `฿${totalRev.toLocaleString()}`;
-
-            if (!listEl) return;
-
-            if (!allSales || allSales.length === 0) {
-                listEl.innerHTML = '<div class="text-xs text-gray-400 text-center py-3">ยังไม่มีประวัติการขาย</div>';
-                return;
-            }
-
-            // แสดงเฉพาะ 3 อันล่าสุด
-            listEl.innerHTML = allSales.slice(0, 3).map(s => `
-                <div onclick="viewSoldCardDetail('${s.cardId}', '${encodeURIComponent(s.cardName || '').replace(/'/g, '%27')}')" class="bg-white border-gray-200 hover:bg-emerald-100/80 border border-emerald-100 p-2.5 rounded-2xl flex items-center justify-between gap-2 cursor-pointer transition-all duration-200 active:scale-98">
-                    <div class="min-w-0 flex-1">
-                        <p class="text-xs font-bold text-gray-900 truncate">${escapeHtml(s.cardName || 'ไม่ระบุชื่อ')}</p>
-                        <p class="text-[9px] text-gray-400 mt-0.5">🕒 ${s.timestamp || '-'}</p>
-                    </div>
-                    <div class="text-right flex-shrink-0">
-                        <p class="text-xs font-black text-emerald-600">฿${Number(s.soldPrice || 0).toLocaleString()}</p>
-                        <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-full font-bold">x${s.qty || 1} ใบ</span>
-                    </div>
-                </div>
-            `).join('');
+        function formatSaleMoney(value) {
+            return '฿' + Number(value).toLocaleString('th-TH', {maximumFractionDigits: 2});
         }
 
-        // 🌟 เปิด Modal ดูประวัติการขายทั้งหมด
+        function optionalSaleMoney(value) {
+            if (value === '' || value === null || value === undefined) return null;
+            const amount = Number(value);
+            return Number.isFinite(amount) && amount >= 0 ? Math.round((amount + Number.EPSILON) * 100) / 100 : null;
+        }
+
+        function calculateSaleProfit(price, qty, unitCost, fees, shippingCost) {
+            const revenueCents = Math.round(price * 100) * qty;
+            const costCents = unitCost === null ? null : Math.round(unitCost * 100) * qty;
+            const expenseCents = Math.round(fees * 100) + Math.round(shippingCost * 100);
+            return {revenue: revenueCents / 100, cost: costCents === null ? null : costCents / 100,
+                expenses: expenseCents / 100, profit: costCents === null ? null : (revenueCents - costCents - expenseCents) / 100};
+        }
+
+        function getSaleProfit(sale) {
+            const unitCost = optionalSaleMoney(sale.unitCost), fees = optionalSaleMoney(sale.fees), shipping = optionalSaleMoney(sale.shippingCost);
+            const price = optionalSaleMoney(sale.soldPrice), qty = Number(sale.qty);
+            if ([unitCost, fees, shipping, price].some(value => value === null) || !Number.isSafeInteger(qty) || qty < 1) return null;
+            return calculateSaleProfit(price, qty, unitCost, fees, shipping).profit;
+        }
+
+        function saleProfitSummary() {
+            const known = allSales.map(getSaleProfit).filter(profit => profit !== null);
+            return {profit: known.reduce((cents, profit) => cents + Math.round(profit * 100), 0) / 100,
+                known: known.length, missing: allSales.length - known.length};
+        }
+
+        function renderSaleRow(sale) {
+            const profit = getSaleProfit(sale);
+            const detail = profit === null ? 'ยังคำนวณกำไรไม่ได้ • ขาดข้อมูลต้นทุนหรือค่าใช้จ่าย'
+                : `ทุน ${formatSaleMoney(sale.unitCost)} × ${sale.qty} · ค่าธรรมเนียม ${formatSaleMoney(sale.fees)} · ค่าส่ง ${formatSaleMoney(sale.shippingCost)}`;
+            return `<button type="button" class="sale-history-item" data-card-id="${escapeHtml(sale.cardId || '')}" data-card-name="${escapeHtml(encodeURIComponent(sale.cardName || ''))}" onclick="viewSoldCardDetail(this.dataset.cardId, this.dataset.cardName)">
+                <span class="sale-history-top"><span class="sale-history-name">${escapeHtml(sale.cardName || 'ไม่ระบุชื่อ')}</span><span class="sale-history-amount">${formatSaleMoney(getSaleTotal(sale))}</span></span>
+                <span class="sale-history-meta" style="display:block">${escapeHtml(sale.timestamp || '—')} · ${Number(sale.qty) || 1} ใบ × ${formatSaleMoney(sale.soldPrice || 0)}</span>
+                <span class="sale-history-profit ${profit === null ? 'profit-unknown' : profit < 0 ? 'profit-negative' : 'profit-positive'}" style="display:block">${profit === null ? 'กำไร: ยังไม่ทราบ' : `กำไรสุทธิ ${formatSaleMoney(profit)}`}</span>
+                <span class="sale-history-meta" style="display:block">${escapeHtml(detail)}</span>
+            </button>`;
+        }
+
+        function renderSalesBoard() {
+            const totalQty = allSales.reduce((sum, sale) => sum + Number(sale.qty || 1), 0);
+            const totalRevenue = allSales.reduce((sum, sale) => sum + Math.round(getSaleTotal(sale) * 100), 0) / 100;
+            const stats = saleProfitSummary();
+            document.getElementById('sales-stat-qty').textContent = `${totalQty.toLocaleString()} ใบ`;
+            document.getElementById('sales-stat-revenue').textContent = formatSaleMoney(totalRevenue);
+            const profitEl = document.getElementById('sales-stat-profit');
+            profitEl.textContent = stats.known || !allSales.length ? formatSaleMoney(stats.profit) : '—';
+            profitEl.className = `sales-stat-value ${stats.known ? stats.profit < 0 ? 'profit-negative' : 'profit-positive' : 'profit-unknown'}`;
+            document.getElementById('sales-profit-coverage').textContent = allSales.length
+                ? `คำนวณได้ ${stats.known}/${allSales.length} รายการ${stats.missing ? ` • ยังไม่รวม ${stats.missing} รายการที่ข้อมูลไม่ครบ` : ''}`
+                : 'ยังไม่มีรายการขาย';
+            document.getElementById('recent-sales-list').innerHTML = allSales.length ? allSales.slice(0, 3).map(renderSaleRow).join('') : '<div class="text-xs text-gray-400 text-center py-3">ยังไม่มีประวัติการขาย</div>';
+        }
+
         function openAllSalesModal() {
             closeSalesBoardModal(false);
-            const container = document.getElementById('full-sales-list');
-            if (!allSales || allSales.length === 0) {
-                container.innerHTML = '<div class="text-xs text-gray-400 text-center py-6">ยังไม่มีประวัติการขาย</div>';
-            } else {
-                container.innerHTML = allSales.map(s => `
-                    <div onclick="viewSoldCardDetail('${s.cardId}', '${encodeURIComponent(s.cardName || '').replace(/'/g, '%27')}')" class="bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 p-3 rounded-2xl flex items-center justify-between gap-2 cursor-pointer transition-all duration-200 active:scale-98">
-                        <div class="min-w-0 flex-1">
-                            <p class="text-xs font-bold text-gray-900 truncate">${escapeHtml(s.cardName || 'ไม่ระบุชื่อ')}</p>
-                            <p class="text-[10px] text-gray-400 mt-0.5">🕒 ${s.timestamp || '-'}</p>
-                        </div>
-                        <div class="text-right flex-shrink-0">
-                            <p class="text-xs font-black text-emerald-600">฿${Number(s.soldPrice || 0).toLocaleString()}</p>
-                            <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-full font-bold">x${s.qty || 1} ใบ</span>
-                        </div>
-                    </div>
-                `).join('');
-            }
+            document.getElementById('full-sales-list').innerHTML = allSales.length ? allSales.map(renderSaleRow).join('') : '<div class="text-xs text-gray-400 text-center py-6">ยังไม่มีประวัติการขาย</div>';
             document.getElementById('all-sales-modal').classList.remove('hidden');
         }
 
@@ -1252,13 +1294,15 @@ async function loadData() {
             const estimatedValue = owned.reduce((sum, card) => sum + (Number(card.price) || 0) * Number(card.qty), 0);
             const totalCost = allPacks.reduce((sum, pack) => sum + Number(pack.totalCost ?? pack.price ?? pack.cost ?? 0), 0);
             const totalSales = allSales.reduce((sum, sale) => sum + getSaleTotal(sale), 0);
-            const realProfit = totalSales - totalCost;
+            const saleStats = saleProfitSummary();
+            const realProfit = saleStats.profit;
 
             document.getElementById('summary-cost').textContent = `฿${totalCost.toLocaleString()}`;
             document.getElementById('summary-estimated').textContent = `฿${estimatedValue.toLocaleString()}`;
             document.getElementById('summary-sales').textContent = `฿${totalSales.toLocaleString()}`;
             const profitEl = document.getElementById('summary-profit');
-            profitEl.textContent = `฿${realProfit.toLocaleString()}`;
+            profitEl.textContent = saleStats.known || !allSales.length ? formatSaleMoney(realProfit) : '—';
+            profitEl.title = `กำไรจาก ${saleStats.known}/${allSales.length} รายการที่มีข้อมูลครบ`;
             profitEl.className = `summary-value${realProfit > 0 ? ' is-positive' : realProfit < 0 ? ' is-negative' : ''}`;
             document.getElementById('total-cards').textContent = `${totalCards.toLocaleString()} ใบ`;
         }
@@ -1912,7 +1956,7 @@ function closeChartModal() {
 
             document.getElementById('modal-image-preview').src = getSafeImageUrl(card.image);
             document.getElementById('form-tags').value = card.tags || '';
-            document.getElementById('form-buyPrice').value = card.buyPrice || '';
+            document.getElementById('form-buyPrice').value = card.buyPrice ?? '';
             checkAuthUI(); toggleModal(true);
         }
 
@@ -1949,69 +1993,96 @@ function closeChartModal() {
             showToast('ดึงข้อมูลการ์ดแล้ว กรุณาปรับจำนวนและกดบันทึก');
         }
 
-        // เปิด Modal ขายการ์ด
-        function openSellModal() {
-            const ri = Number(document.getElementById('form-rowIndex').value);
-            const card = allCards.find(c => c.rowIndex === ri);
-            if (!card) return;
+        function readSellFormValues() {
+            const qty = Number(document.getElementById('sell-qty-input').value);
+            if (!Number.isSafeInteger(qty) || qty < 1) throw new Error('จำนวนที่ขายต้องเป็นจำนวนเต็มตั้งแต่ 1 ใบ');
+            const readMoney = (id, blank, label) => {
+                const raw = document.getElementById(id).value.trim();
+                if (raw === '' && blank !== undefined) return blank;
+                const amount = optionalSaleMoney(raw);
+                if (amount === null || !Number.isSafeInteger(Math.round(amount * 100))) throw new Error(label + ' ต้องเป็นจำนวนเงินตั้งแต่ 0 ขึ้นไป');
+                return amount;
+            };
+            const price = readMoney('sell-price-input', undefined, 'ราคาขาย');
+            const unitCost = readMoney('sell-cost-input', null, 'ต้นทุน');
+            const fees = readMoney('sell-fees-input', 0, 'ค่าธรรมเนียม');
+            const shippingCost = readMoney('sell-shipping-input', 0, 'ค่าส่ง');
+            const amounts = calculateSaleProfit(price, qty, unitCost, fees, shippingCost);
+            if (![amounts.revenue, amounts.cost, amounts.expenses, amounts.profit].filter(value => value !== null).every(value => Number.isFinite(value) && Math.abs(value) <= Number.MAX_SAFE_INTEGER / 100)) throw new Error('มูลค่ารายการสูงเกินกว่าที่ระบบรองรับ');
+            return {qty, price, unitCost, fees, shippingCost, amounts};
+        }
 
-            document.getElementById('sell-card-name').innerText = card.name;
-            document.getElementById('sell-max-qty').innerText = card.qty;
+        function updateSellProfitPreview() {
+            const profit = document.getElementById('sell-preview-profit');
+            const note = document.getElementById('sell-preview-note');
+            try {
+                const values = readSellFormValues();
+                const amount = values.amounts;
+                document.getElementById('sell-preview-revenue').textContent = formatSaleMoney(amount.revenue);
+                document.getElementById('sell-preview-cost').textContent = amount.cost === null ? 'ยังไม่ทราบ' : formatSaleMoney(amount.cost);
+                document.getElementById('sell-preview-expenses').textContent = formatSaleMoney(amount.expenses);
+                profit.textContent = amount.profit === null ? '—' : formatSaleMoney(amount.profit);
+                profit.className = amount.profit === null ? 'profit-unknown' : amount.profit < 0 ? 'profit-negative' : 'profit-positive';
+                note.textContent = amount.profit === null ? 'บันทึกขายได้ แต่รายการนี้จะยังไม่รวมในกำไรจนกว่าจะมีข้อมูลต้นทุน' : 'ต้นทุนและค่าใช้จ่ายนี้จะเก็บไว้กับรายการขาย';
+            } catch (error) {
+                ['sell-preview-revenue','sell-preview-cost','sell-preview-expenses','sell-preview-profit'].forEach(id => document.getElementById(id).textContent = '—');
+                profit.className = 'profit-unknown';
+                note.textContent = error.message;
+            }
+        }
+
+        function openSellModal() {
+            if (salesSchemaVersion < 2) return showToast('กรุณาอัปเดต รหัส.gs และ Deploy เวอร์ชันใหม่ก่อนบันทึกขาย', 'error');
+            const ri = Number(document.getElementById('form-rowIndex').value);
+            const card = allCards.find(card => Number(card.rowIndex) === ri);
+            if (!card) return;
+            if (String(card.isWishlist) === 'true' || Number(card.qty) < 1) return showToast('การ์ดนี้ไม่มีสต็อกสำหรับขาย', 'error');
+            currentSaleId = 'SALE-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+            document.getElementById('sell-card-name').textContent = card.name;
+            document.getElementById('sell-max-qty').textContent = card.qty;
             document.getElementById('sell-qty-input').value = 1;
             document.getElementById('sell-qty-input').max = card.qty;
             document.getElementById('sell-price-input').value = card.price || 0;
-
+            document.getElementById('sell-cost-input').value = card.buyPrice ?? '';
+            document.getElementById('sell-fees-input').value = 0;
+            document.getElementById('sell-shipping-input').value = 0;
+            updateSellProfitPreview();
             toggleModal(false);
             document.getElementById('sell-modal').classList.remove('hidden');
         }
 
-        // ส่งข้อมูลการขายการ์ด
-        async function submitSell(e) {
-            e.preventDefault();
+        async function submitSell(event) {
+            event.preventDefault();
             if (!adminPin) return showToast('กรุณาล็อกอินก่อน', 'error');
-
-            const ri = Number(document.getElementById('form-rowIndex').value);
-            const card = allCards.find(c => c.rowIndex === ri);
-            const sellQty = Number(document.getElementById('sell-qty-input').value);
-            const soldPrice = Number(document.getElementById('sell-price-input').value);
-
-            if (!card || sellQty < 1 || sellQty > card.qty) {
-                return showToast('จำนวนที่ขายไม่ถูกต้อง หรือเกินกว่าที่มีในคลัง', 'error');
-            }
-
-            const btn = e.target.querySelector('button[type="submit"]');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '⏳ กำลังบันทึก...';
-            btn.disabled = true;
-
+            if (salesSchemaVersion < 2) return showToast('กรุณาอัปเดต รหัส.gs และ Deploy เวอร์ชันใหม่ก่อนบันทึกขาย', 'error');
+            const card = allCards.find(card => Number(card.rowIndex) === Number(document.getElementById('form-rowIndex').value));
+            let values;
+            try { values = readSellFormValues(); }
+            catch (error) { return showToast(error.message, 'error'); }
+            if (!card || values.qty > Number(card.qty) || String(card.isWishlist) === 'true') return showToast('จำนวนที่ขายไม่ถูกต้อง หรือเกินสต็อก', 'error');
+            if (!currentSaleId) return showToast('กรุณาเปิดหน้าขายใหม่', 'error');
+            const button = event.target.querySelector('button[type="submit"]');
+            if (button.disabled) return;
+            const label = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '⏳ กำลังบันทึก...';
             try {
-                // ส่งข้อมูลการขายไปยัง Google Apps Script
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'sell',
-                        pin: adminPin,
-                        id: card.id,
-                        rowIndex: card.rowIndex,
-                        sellQty: sellQty,
-                        soldPrice: soldPrice,
-                        cardName: card.name
-                    })
-                });
-                const result = await res.json();
-                
-                if (result.status === 'success') {
-                    showToast('✅ บันทึกการขายสำเร็จ!');
-                    document.getElementById('sell-modal').classList.add('hidden');
-                    loadData(); // โหลดข้อมูลใหม่เพื่ออัปเดตสต็อกและบอร์ดสรุป
-                } else {
-                    showToast('❌ เกิดข้อผิดพลาด: ' + result.message, 'error');
-                }
-            } catch (err) {
-                showToast('❌ เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว', 'error');
+                const response = await fetch(API_URL, {method: 'POST', body: JSON.stringify({
+                    action: 'sell', pin: adminPin, id: card.id, rowIndex: card.rowIndex,
+                    sellQty: values.qty, soldPrice: values.price, unitCost: values.unitCost,
+                    fees: values.fees, shippingCost: values.shippingCost, saleId: currentSaleId
+                })});
+                const result = await response.json();
+                if (result.status !== 'success') throw new Error(result.message || 'บันทึกไม่สำเร็จ');
+                currentSaleId = '';
+                document.getElementById('sell-modal').classList.add('hidden');
+                showToast('✅ บันทึกการขายและต้นทุนแล้ว');
+                await loadData();
+            } catch (error) {
+                showToast('❌ ' + error.message, 'error');
             } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+                button.innerHTML = label;
+                button.disabled = false;
             }
         }
 

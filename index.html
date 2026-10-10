@@ -2219,22 +2219,22 @@ function closeChartModal() {
             };
 
             try {
-                        if (mode === 'add') {
-                const duplicate = findDuplicateCard(payload);
-        
-                if (duplicate) {
-                    const shouldContinue = window.confirm(
-                        `พบการ์ดที่อาจซ้ำ: ${duplicate.name}\n` +
-                        `Set: ${duplicate.set} • เลข: ${duplicate.cardNumber}\n` +
-                        `จำนวนในรายการเดิม: ${duplicate.qty ?? 0} ใบ\n\n` +
-                        `ต้องการเพิ่มเป็นรายการใหม่แยกจากเดิมไหม?\n` +
-                        `ตกลง = เพิ่มรายการใหม่\n` +
-                        `ยกเลิก = กลับไปตรวจข้อมูล`
-                    );
-        
-                    if (!shouldContinue) return;
+                if (mode === 'add') {
+                    const duplicate = findDuplicateCard(payload);
+                
+                    if (duplicate) {
+                        const shouldContinue = window.confirm(
+                            `พบการ์ดที่อาจซ้ำ: ${duplicate.name}\n` +
+                            `Set: ${duplicate.set} • เลข: ${duplicate.cardNumber}\n` +
+                            `จำนวนในรายการเดิม: ${duplicate.qty ?? 0} ใบ\n\n` +
+                            `ต้องการเพิ่มเป็นรายการใหม่แยกจากเดิมไหม?\n` +
+                            `ตกลง = เพิ่มรายการใหม่\n` +
+                            `ยกเลิก = กลับไปตรวจข้อมูล`
+                        );
+                
+                        if (!shouldContinue) return;
+                    }
                 }
-            }
                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await res.json();
                 if (result.status === 'success') {

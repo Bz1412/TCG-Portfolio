@@ -188,6 +188,73 @@
             opacity: 1;
         }
 
+        /* หน้าชั้นวางแฟ้ม */
+        #binder-shelf {
+            display: none;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 24px 16px;
+        }
+        
+        #view-binder.shelf-mode > :not(#binder-shelf) {
+            display: none !important;
+        }
+        
+        #view-binder.shelf-mode > #binder-shelf {
+            display: block;
+        }
+        
+        .binder-shelf-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 24px 16px;
+            margin-top: 20px;
+        }
+        
+        .set-binder {
+            position: relative;
+            min-height: 180px;
+            padding: 22px 14px 18px 26px;
+            border: 0;
+            border-left: 12px solid #064e3b;
+            border-radius: 5px 14px 14px 5px;
+            background: linear-gradient(135deg, #059669, #065f46);
+            color: white;
+            text-align: left;
+            box-shadow: 0 8px 0 #d6c4a5, 0 12px 12px #00000018;
+            cursor: pointer;
+            transition: transform .15s;
+        }
+        
+        .set-binder:hover {
+            transform: translateY(-4px);
+        }
+        
+        .set-binder:focus-visible {
+            outline: 3px solid #f59e0b;
+            outline-offset: 4px;
+        }
+        
+        .set-binder-name {
+            display: block;
+            margin: 12px 0;
+            font-size: 14px;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+        
+        .set-binder-count {
+            font-size: 11px;
+            color: #d1fae5;
+        }
+        
+        @media (min-width: 640px) {
+            .binder-shelf-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
         @keyframes slideLeft { from { transform: translateX(60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes slideRight { from { transform: translateX(-60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .slide-in-left { animation: slideLeft 0.2s ease; }
@@ -483,8 +550,25 @@
     </div>
 
     <!-- ===================== VIEW: BINDER ===================== -->
-    <div id="view-binder">
+    <div id="view-binder" class="shelf-mode">
+            <section id="binder-shelf">
+                <h2 class="text-xl font-extrabold text-gray-900">
+                    📚 ชั้นวางแฟ้ม
+                </h2>
+                <p class="text-xs text-gray-500 mt-1">
+                    เลือก Set เพื่อเปิดแฟ้มสะสม
+                </p>
+        
+                <div id="binder-shelf-grid" class="binder-shelf-grid"></div>
+            </section>            
         <div class="bg-white px-4 pt-10 pb-3 flex items-center gap-3 border-b border-gray-100 shadow-sm flex-shrink-0">
+                <button
+                    type="button"
+                    onclick="showBinderShelf()"
+                    class="flex-shrink-0 rounded-lg bg-gray-100 px-3 py-2 text-xs font-bold text-gray-700"
+                >
+                    ← ชั้นวาง
+                </button>
             <div class="flex-1 min-w-0">
                 <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">แฟ้มสะสมการ์ด</p>
                 <select id="binder-set-select" onchange="loadBinderSet()" class="w-full bg-transparent text-sm font-extrabold text-gray-900 outline-none mt-0.5 truncate border-0 p-0">
@@ -531,44 +615,44 @@
     </div>
 
     <!-- Modal กรอกรหัส PIN (Numpad) -->
-<div id="pin-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-    <div class="bg-gray-900 rounded-3xl w-full max-w-[320px] p-6 shadow-2xl border border-gray-800 text-center relative flex flex-col items-center animate-fade-in-up">
-
-        <button onclick="closePinModal()" class="absolute top-4 right-5 text-gray-500 hover:text-white text-2xl leading-none">&times;</button>
-        
-        <div class="w-14 h-14 bg-gray-800 rounded-full flex items-center justify-center mb-4">
-            <span class="text-2xl">🔒</span>
-        </div>
-        
-        <h3 class="text-white text-lg font-bold mb-1">เข้าสู่ระบบผู้ดูแล</h3>
-        <p class="text-gray-400 text-sm mb-6">กรุณากดรหัส PIN 6 หลัก</p>
-
-        <div class="flex gap-3 justify-center mb-8" id="pin-indicators">
-            <div class="w-3.5 h-3.5 rounded-full border-2 border-gray-600 transition-all duration-200"></div>
-            <div class="w-3.5 h-3.5 rounded-full border-2 border-gray-600 transition-all duration-200"></div>
-            <div class="w-3.5 h-3.5 rounded-full border-2 border-gray-600 transition-all duration-200"></div>
-            <div class="w-3.5 h-3.5 rounded-full border-2 border-gray-600 transition-all duration-200"></div>
-            <div class="w-3.5 h-3.5 rounded-full border-2 border-gray-600 transition-all duration-200"></div>
-            <div class="w-3.5 h-3.5 rounded-full border-2 border-gray-600 transition-all duration-200"></div>
-        </div>
-        
-        <div class="grid grid-cols-3 gap-x-6 gap-y-4 w-full px-4">
-            <button onclick="pressPin('1')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">1</button>
-            <button onclick="pressPin('2')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">2</button>
-            <button onclick="pressPin('3')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">3</button>
-            <button onclick="pressPin('4')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">4</button>
-            <button onclick="pressPin('5')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">5</button>
-            <button onclick="pressPin('6')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">6</button>
-            <button onclick="pressPin('7')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">7</button>
-            <button onclick="pressPin('8')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">8</button>
-            <button onclick="pressPin('9')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">9</button>
+    <div id="pin-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-gray-900 rounded-3xl w-full max-w-[320px] p-6 shadow-2xl border border-gray-800 text-center relative flex flex-col items-center animate-fade-in-up">
+    
+            <button onclick="closePinModal()" class="absolute top-4 right-5 text-gray-500 hover:text-white text-2xl leading-none">&times;</button>
             
-            <button onclick="closePinModal()" class="h-14 rounded-full text-gray-500 hover:text-gray-300 text-sm font-medium active:scale-95 transition-all">ยกเลิก</button>
-            <button onclick="pressPin('0')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">0</button>
-            <button onclick="deletePin()" class="h-14 rounded-full text-gray-500 hover:text-gray-300 text-xl font-medium active:scale-95 transition-all">⌫</button>
+            <div class="w-14 h-14 bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                <span class="text-2xl">🔒</span>
+            </div>
+            
+            <h3 class="text-white text-lg font-bold mb-1">เข้าสู่ระบบผู้ดูแล</h3>
+            <p class="text-gray-400 text-sm mb-6">กรุณากดรหัส PIN 6 หลัก</p>
+    
+            <div class="flex gap-3 justify-center mb-8" id="pin-indicators">
+                <div class="w-3.5 h-3.5 rounded-full border-2 border-gray-600 transition-all duration-200"></div>
+                <div class="w-3.5 h-3.5 rounded-full border-2 border-gray-600 transition-all duration-200"></div>
+                <div class="w-3.5 h-3.5 rounded-full border-2 border-gray-600 transition-all duration-200"></div>
+                <div class="w-3.5 h-3.5 rounded-full border-2 border-gray-600 transition-all duration-200"></div>
+                <div class="w-3.5 h-3.5 rounded-full border-2 border-gray-600 transition-all duration-200"></div>
+                <div class="w-3.5 h-3.5 rounded-full border-2 border-gray-600 transition-all duration-200"></div>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-x-6 gap-y-4 w-full px-4">
+                <button onclick="pressPin('1')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">1</button>
+                <button onclick="pressPin('2')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">2</button>
+                <button onclick="pressPin('3')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">3</button>
+                <button onclick="pressPin('4')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">4</button>
+                <button onclick="pressPin('5')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">5</button>
+                <button onclick="pressPin('6')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">6</button>
+                <button onclick="pressPin('7')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">7</button>
+                <button onclick="pressPin('8')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">8</button>
+                <button onclick="pressPin('9')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">9</button>
+                
+                <button onclick="closePinModal()" class="h-14 rounded-full text-gray-500 hover:text-gray-300 text-sm font-medium active:scale-95 transition-all">ยกเลิก</button>
+                <button onclick="pressPin('0')" class="h-14 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-2xl font-medium active:bg-purple-600 active:scale-95 transition-all">0</button>
+                <button onclick="deletePin()" class="h-14 rounded-full text-gray-500 hover:text-gray-300 text-xl font-medium active:scale-95 transition-all">⌫</button>
+            </div>
         </div>
     </div>
-</div>
 
     <!-- ===================== MODAL: Add/Edit ===================== -->
     <div id="detail-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -1216,7 +1300,10 @@ function verifyPin() {
 
             const bs = document.getElementById('binder-set-select');
             const prevB = bs.value;
-            bs.innerHTML = '<option value="">-- เลือกชุดการ์ด --</option>' + uniqueSets.map(s => `<option value="${s}">${s}</option>`).join('');
+            bs.innerHTML = '<option value="">-- เลือกชุดการ์ด --</option>' +
+            uniqueSets.map(s =>
+                `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`
+            ).join('');
             if (uniqueSets.includes(prevB)) { bs.value = prevB; }
         }
 
@@ -1304,7 +1391,17 @@ function refreshSyncedViews(changed) {
     if (changed.data) {
         updateSetDropdowns(); applyFilters(); renderHallOfFame();
         renderCardOfTheDay(true);
-        if (document.getElementById('binder-set-select').value) loadBinderSet(true);
+        renderBinderShelf();
+
+        const binderView = document.getElementById('view-binder');
+        
+        if (!binderView.classList.contains('shelf-mode')) {
+            if (document.getElementById('binder-set-select').value) {
+                loadBinderSet(true);
+            } else {
+                showBinderShelf();
+            }
+        }
         if (document.getElementById('collection-showcase-modal')?.open) openCollectionShowcase();
     }
     if (changed.data || changed.sales || changed.packs) updateSummary();
@@ -1947,11 +2044,7 @@ function startDataSync() {
 
             syncCardOfTheDayTimer();
 
-            if (tab === 'binder') {
-                const sel = document.getElementById('binder-set-select');
-                if (!sel.value && sel.options.length > 1) { sel.value = sel.options[1].value; loadBinderSet(); }
-                else if (sel.value) loadBinderSet();
-            }
+            if (tab === 'binder') showBinderShelf();
         }
 
         function showMissingCards() {
@@ -2005,6 +2098,71 @@ function startDataSync() {
                 if (m) maxTotal = Math.max(maxTotal, parseInt(m[1], 10));
             });
             return maxTotal;
+        }
+
+        function renderBinderShelf() {
+            const groups = new Map();
+        
+            allCards.forEach(card => {
+                const setName = String(card.set || '').trim();
+                if (!setName) return;
+        
+                if (!groups.has(setName)) groups.set(setName, 0);
+        
+                const qty = Number(card.qty);
+                if (
+                    String(card.isWishlist) !== 'true' &&
+                    Number.isFinite(qty) &&
+                    qty > 0
+                ) {
+                    groups.set(setName, groups.get(setName) + qty);
+                }
+            });
+        
+            const sets = [...groups.entries()]
+                .sort(([a], [b]) => a.localeCompare(b, 'th'));
+        
+            document.getElementById('binder-shelf-grid').innerHTML =
+                sets.length
+                    ? sets.map(([setName, qty]) => `
+                        <button
+                            type="button"
+                            class="set-binder"
+                            data-set="${escapeHtml(setName)}"
+                            onclick="openBinderFromShelf(this.dataset.set)"
+                        >
+                            <span class="text-3xl" aria-hidden="true">📁</span>
+                            <span class="set-binder-name">
+                                ${escapeHtml(setName)}
+                            </span>
+                            <span class="set-binder-count">
+                                มีแล้ว ${qty.toLocaleString()} ใบ
+                            </span>
+                            <span class="block text-xs mt-4">เปิดแฟ้ม →</span>
+                        </button>
+                    `).join('')
+                    : `<p class="col-span-full text-center text-sm text-gray-400 py-10">
+                           ยังไม่มี Set ในคลัง กรุณาระบุ Set ให้การ์ดก่อน
+                       </p>`;
+        }
+        
+        function showBinderShelf() {
+            renderBinderShelf();
+            document.getElementById('view-binder').classList.add('shelf-mode');
+        }
+        
+        function openBinderFromShelf(setName) {
+            const select = document.getElementById('binder-set-select');
+            select.value = setName;
+        
+            if (!select.value) {
+                showBinderShelf();
+                return;
+            }
+        
+            document.getElementById('view-binder').classList.remove('shelf-mode');
+            loadBinderSet();
+            select.focus();
         }
 
         function loadBinderSet(keepPage = false) {

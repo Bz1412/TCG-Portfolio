@@ -248,6 +248,51 @@
             font-size: 11px;
             color: #d1fae5;
         }
+
+        #binder-style-modal::backdrop {
+    background: rgba(0, 0, 0, .55);
+        }
+        
+        .binder-shelf-item {
+            min-width: 0;
+        }
+        
+        .binder-shelf-item .set-binder {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .binder-cover-image {
+            display: block;
+            width: 100%;
+            height: 135px;
+            object-fit: contain;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 4px 5px #0004);
+        }
+        
+        .binder-cover-icon {
+            display: grid;
+            place-items: center;
+            height: 135px;
+            font-size: 48px;
+        }
+        
+        .binder-edit-button {
+            width: 100%;
+            margin-top: 14px;
+            padding: 8px;
+            border-radius: 10px;
+            background: white;
+            color: #374151;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        
+        /* ให้ปุ่มแต่งปกอยู่ใต้แฟ้ม */
+        .binder-shelf-item .set-binder {
+            height: auto;
+        }
         
         @media (min-width: 640px) {
             .binder-shelf-grid {
@@ -548,6 +593,74 @@
 
         </main>
     </div>
+
+    <dialog
+    id="binder-style-modal"
+    class="rounded-2xl p-5 w-[92vw] max-w-sm shadow-xl"
+>
+    <form onsubmit="saveBinderStyle(event)" class="space-y-4">
+        <h3 class="text-lg font-extrabold">🎨 แต่งปกแฟ้ม</h3>
+
+        <p
+            id="binder-style-name"
+            class="text-sm text-gray-500 break-words"
+        ></p>
+
+        <div>
+            <label for="binder-cover-select" class="text-sm font-bold">
+                การ์ดบนปก
+            </label>
+
+            <select
+                id="binder-cover-select"
+                class="w-full mt-1 border rounded-xl p-3 text-sm"
+                onchange="previewBinderCover()"
+            ></select>
+        </div>
+
+        <img
+            id="binder-cover-preview"
+            alt="ตัวอย่างภาพบนปกแฟ้ม"
+            class="hidden h-40 mx-auto object-contain rounded-lg"
+            onerror="this.onerror=null;this.src=CARD_PLACEHOLDER"
+        >
+
+        <div class="flex items-center justify-between">
+            <label for="binder-color" class="text-sm font-bold">
+                สีแฟ้ม
+            </label>
+
+            <input
+                type="color"
+                id="binder-color"
+                value="#065f46"
+                class="w-16 h-10 cursor-pointer"
+            >
+        </div>
+
+        <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" id="binder-pinned">
+            📌 ปักหมุดแฟ้มนี้ไว้ด้านบน
+        </label>
+
+        <div class="flex gap-2">
+            <button
+                type="button"
+                onclick="document.getElementById('binder-style-modal').close()"
+                class="flex-1 bg-gray-100 rounded-xl py-3 text-sm font-bold"
+            >
+                ยกเลิก
+            </button>
+
+            <button
+                type="submit"
+                class="flex-1 bg-gray-900 text-white rounded-xl py-3 text-sm font-bold"
+            >
+                บันทึก
+            </button>
+        </div>
+    </form>
+</dialog>
 
     <!-- ===================== VIEW: BINDER ===================== -->
     <div id="view-binder" class="shelf-mode">
@@ -1130,6 +1243,8 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbyxUtqszvNC3tsfCnp2pH2dMJplBRX6KKX1f-JqzK3q57aAylJ3BOkGEFUJ0bxAI8e-/exec";
         const CARDS_PER_PAGE = 9;
         let allCards = [], currentFiltered = [];
+        let allBinderSettings = [];
+        let editingBinderStyle = null;
         let allSales = [];
         let salesSchemaVersion = 0;
         let currentSaleId = '';
@@ -1407,6 +1522,9 @@ function renderSalesListWhenSafe(id, sales) {
 }
 
 function refreshSyncedViews(changed) {
+    if (changed.binders && !changed.data) {
+            renderBinderShelf();
+        }
     if (changed.data) {
         updateSetDropdowns(); applyFilters(); renderHallOfFame();
         renderCardOfTheDay(true);
@@ -1439,12 +1557,15 @@ function applySnapshot(snapshot, {cached = false} = {}) {
     } else {
         if (!Array.isArray(snapshot.data) || !Array.isArray(snapshot.sales) || !Array.isArray(snapshot.packs)) throw syncApiError('เซิร์ฟเวอร์ส่งข้อมูลไม่ครบ', 'RESPONSE');
         const changed = {};
-        for (const key of ['data', 'sales', 'packs', 'history']) {
+        for (const key of ['data', 'sales', 'packs', 'history', 'binders']) {
             const text = JSON.stringify(snapshot[key] || []);
             changed[key] = text !== syncState.sections[key];
             syncState.sections[key] = text;
         }
         allCards = snapshot.data; allSales = snapshot.sales; allPacks = snapshot.packs;
+        allBinderSettings = Array.isArray(snapshot.binders)
+                ? snapshot.binders
+                : [];
         salesSchemaVersion = Number(snapshot.salesSchemaVersion) || 0;
         syncState.version = snapshot.version || '';
         syncState.schema = Number(snapshot.syncSchemaVersion) || 0;
@@ -2120,50 +2241,209 @@ function startDataSync() {
         }
 
         function renderBinderShelf() {
-            const groups = new Map();
-        
-            allCards.forEach(card => {
-                const setName = String(card.set || '').trim();
-                if (!setName) return;
-        
-                if (!groups.has(setName)) groups.set(setName, 0);
-        
-                const qty = Number(card.qty);
-                if (
-                    String(card.isWishlist) !== 'true' &&
-                    Number.isFinite(qty) &&
-                    qty > 0
-                ) {
-                    groups.set(setName, groups.get(setName) + qty);
+                const groups = new Map();
+            
+                allCards.forEach(card => {
+                    const setName = String(card.set || '').trim();
+                    if (!setName) return;
+            
+                    if (!groups.has(setName)) groups.set(setName, []);
+            
+                    groups.get(setName).push(card);
+                });
+            
+                const sets = [...groups.entries()].sort(([a], [b]) =>
+                    Number(getBinderStyle(b).pinned === true) -
+                    Number(getBinderStyle(a).pinned === true) ||
+                    a.localeCompare(b, 'th')
+                );
+            
+                document.getElementById('binder-shelf-grid').innerHTML =
+                    sets.length ? sets.map(([setName, cards]) => {
+                        const style = getBinderStyle(setName);
+            
+                        const color = /^#[0-9a-f]{6}$/i.test(style.color)
+                            ? style.color
+                            : '#065f46';
+            
+                        const cover = cards.find(card =>
+                            String(card.id) === style.coverCardId
+                        );
+            
+                        const qty = cards.reduce((sum, card) => {
+                            const count = Number(card.qty);
+            
+                            return sum + (
+                                String(card.isWishlist) !== 'true' &&
+                                Number.isFinite(count) &&
+                                count > 0
+                                    ? count
+                                    : 0
+                            );
+                        }, 0);
+            
+                        return `
+                            <div class="binder-shelf-item">
+                                <button
+                                    type="button"
+                                    class="set-binder"
+                                    style="background:${color};border-left-color:#0005"
+                                    data-set="${escapeHtml(setName)}"
+                                    onclick="openBinderFromShelf(this.dataset.set)"
+                                >
+                                    ${cover?.image ? `
+                                        <img
+                                            class="binder-cover-image"
+                                            src="${escapeHtml(getSafeImageUrl(cover.image))}"
+                                            alt="${escapeHtml(cover.name)}"
+                                            loading="lazy"
+                                            onerror="this.onerror=null;this.src=CARD_PLACEHOLDER"
+                                        >
+                                    ` : `
+                                        <span class="binder-cover-icon" aria-hidden="true">
+                                            📁
+                                        </span>
+                                    `}
+            
+                                    <span
+                                        class="set-binder-name"
+                                        style="color:white;text-shadow:0 1px 3px #000"
+                                    >
+                                        ${style.pinned ? '📌 ' : ''}${escapeHtml(setName)}
+                                    </span>
+            
+                                    <span
+                                        class="set-binder-count"
+                                        style="color:white;background:#0006;padding:3px 8px;border-radius:8px"
+                                    >
+                                        มีแล้ว ${qty.toLocaleString()} ใบ
+                                    </span>
+            
+                                    <span
+                                        class="block text-xs mt-4"
+                                        style="color:white;text-shadow:0 1px 3px #000"
+                                    >
+                                        เปิดแฟ้ม →
+                                    </span>
+                                </button>
+            
+                                <button
+                                    type="button"
+                                    class="binder-edit-button"
+                                    data-set="${escapeHtml(setName)}"
+                                    onclick="openBinderStyle(this.dataset.set)"
+                                >
+                                    🎨 แต่งปก
+                                </button>
+                            </div>
+                        `;
+                    }).join('') : `
+                        <p class="col-span-full text-center text-sm text-gray-400 py-10">
+                            ยังไม่มี Set ในคลัง
+                        </p>
+                    `;
+            }
+
+        function getBinderStyle(setName) {
+                return allBinderSettings.find(item => item.setName === setName) || {
+                    setName,
+                    coverCardId: '',
+                    color: '#065f46',
+                    pinned: false,
+                    settingsVersion: ''
+                };
+            }
+            
+            function openBinderStyle(setName) {
+                if (!adminPin) {
+                    showToast('กรุณาเข้าสู่ระบบผู้ดูแลก่อนแต่งปกค่ะ', 'error');
+                    return;
                 }
-            });
-        
-            const sets = [...groups.entries()]
-                .sort(([a], [b]) => a.localeCompare(b, 'th'));
-        
-            document.getElementById('binder-shelf-grid').innerHTML =
-                sets.length
-                    ? sets.map(([setName, qty]) => `
-                        <button
-                            type="button"
-                            class="set-binder"
-                            data-set="${escapeHtml(setName)}"
-                            onclick="openBinderFromShelf(this.dataset.set)"
-                        >
-                            <span class="text-3xl" aria-hidden="true">📁</span>
-                            <span class="set-binder-name">
-                                ${escapeHtml(setName)}
-                            </span>
-                            <span class="set-binder-count">
-                                มีแล้ว ${qty.toLocaleString()} ใบ
-                            </span>
-                            <span class="block text-xs mt-4">เปิดแฟ้ม →</span>
-                        </button>
-                    `).join('')
-                    : `<p class="col-span-full text-center text-sm text-gray-400 py-10">
-                           ยังไม่มี Set ในคลัง กรุณาระบุ Set ให้การ์ดก่อน
-                       </p>`;
-        }
+            
+                editingBinderStyle = { ...getBinderStyle(setName) };
+            
+                document.getElementById('binder-style-name').textContent = setName;
+            
+                const cards = allCards.filter(card =>
+                    String(card.set || '').trim() === setName &&
+                    card.id &&
+                    card.image
+                );
+            
+                const select = document.getElementById('binder-cover-select');
+            
+                select.innerHTML = '<option value="">ใช้ไอคอนแฟ้ม</option>' +
+                    cards.map(card => `
+                        <option value="${escapeHtml(card.id)}">
+                            ${escapeHtml(card.name)} · ${escapeHtml(card.cardNumber || '')}
+                        </option>
+                    `).join('');
+            
+                select.value = editingBinderStyle.coverCardId;
+                if (select.selectedIndex < 0) select.value = '';
+            
+                document.getElementById('binder-color').value =
+                    /^#[0-9a-f]{6}$/i.test(editingBinderStyle.color)
+                        ? editingBinderStyle.color
+                        : '#065f46';
+            
+                document.getElementById('binder-pinned').checked =
+                    editingBinderStyle.pinned === true;
+            
+                previewBinderCover();
+                document.getElementById('binder-style-modal').showModal();
+            }
+            
+            function previewBinderCover() {
+                const id = document.getElementById('binder-cover-select').value;
+            
+                const card = allCards.find(card =>
+                    String(card.id) === id &&
+                    String(card.set || '').trim() === editingBinderStyle?.setName
+                );
+            
+                const image = document.getElementById('binder-cover-preview');
+                image.classList.toggle('hidden', !card?.image);
+            
+                if (card?.image) {
+                    image.onerror = function () {
+                        this.onerror = null;
+                        this.src = CARD_PLACEHOLDER;
+                    };
+                    image.src = getSafeImageUrl(card.image);
+                } else {
+                    image.removeAttribute('src');
+                }
+            }
+            
+            async function saveBinderStyle(event) {
+                event.preventDefault();
+                if (!editingBinderStyle || !adminPin) return;
+            
+                const button = event.target.querySelector('button[type="submit"]');
+                button.disabled = true;
+                button.textContent = 'กำลังบันทึก...';
+            
+                try {
+                    await sendMutation({
+                        action: 'saveBinderSettings',
+                        pin: adminPin,
+                        setName: editingBinderStyle.setName,
+                        expectedVersion: editingBinderStyle.settingsVersion,
+                        coverCardId: document.getElementById('binder-cover-select').value,
+                        color: document.getElementById('binder-color').value,
+                        pinned: document.getElementById('binder-pinned').checked
+                    });
+            
+                    document.getElementById('binder-style-modal').close();
+                    showToast('✅ บันทึกปกแฟ้มแล้ว');
+                } catch (error) {
+                    showToast(error.message, 'error');
+                } finally {
+                    button.disabled = false;
+                    button.textContent = 'บันทึก';
+                }
+            }
         
         function showBinderShelf() {
             renderBinderShelf();

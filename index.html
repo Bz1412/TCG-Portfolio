@@ -685,6 +685,14 @@
                         <label class="text-[11px] font-semibold text-gray-500">ชุด / ซีรีส์</label>
                         <input type="text" id="form-set" list="set-list" required class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
                     </div>
+                    <button
+                        type="button"
+                        onclick="openSasomSearch()"
+                        class="w-full rounded-xl bg-orange-50 border border-orange-200
+                               px-4 py-3 text-sm font-bold text-orange-700"
+                    >
+                        🔎 เช็คราคาบน SASOM
+                    </button>
                     <div>
                         <label class="text-[11px] font-semibold text-gray-500">ลำดับการ์ด</label>
                         <input type="text" id="form-cardNumber" placeholder="เช่น 054/130" class="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900">
@@ -3246,6 +3254,26 @@ function compressAndUploadImage(event) {
             sell.forEach(c => { txt += `- ${c.name} [${c.set}] ${c.rarity&&c.rarity!=='-'?`(${c.rarity}) `:''}สภาพ ${c.condition} x${c.qty} = ${Number(c.price*c.qty).toLocaleString()} บ.\n`; tot += c.price*c.qty; });
             txt += `\n💰 รวม: ${tot.toLocaleString()} บาท\nสนใจ IB ได้เลยครับ!`;
             navigator.clipboard.writeText(txt).then(() => showToast('คัดลอกแล้ว!'));
+        }
+
+        function openSasomSearch() {
+            const setCode = document.getElementById('form-setCode')
+                .value.trim().replace(/\s+/g, ' ');
+        
+            const cardNumber = document.getElementById('form-cardNumber')
+                .value.trim().replace(/\s+/g, '');
+        
+            if (!setCode || !cardNumber) {
+                showToast('กรุณาระบุรหัส Set และเลขการ์ดก่อนค่ะ', 'error');
+                return;
+            }
+        
+            const url = new URL('https://sasom.co.th/th/shop');
+        
+            url.searchParams.set('query', `${setCode} ${cardNumber}`);
+            url.searchParams.set('type', 'ask');
+        
+            window.open(url.href, '_blank', 'noopener,noreferrer');
         }
         
         // ==========================================

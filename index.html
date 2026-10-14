@@ -476,6 +476,16 @@
         .sync-bar button:disabled { opacity:.45; cursor:wait; }
         .sync-pending { flex-basis:100%; padding:8px; border-radius:8px; background:#fffbeb; color:#92400e; line-height:1.7; }
         .sync-pending[hidden] { display:none; }
+        /* Durable background tasks */
+        #task-dock {position:fixed;right:12px;bottom:88px;z-index:110;width:min(370px,calc(100vw - 24px));background:#fff;border:1px solid #d1d5db;border-radius:16px;padding:12px;box-shadow:0 8px 28px #0002;font-size:12px;color:#334155;}
+        #task-dock[hidden] {display:none;}
+        #task-dock .task-heading {display:flex;justify-content:space-between;gap:10px;width:100%;font-weight:700;text-align:left;}
+        #task-dock progress {width:100%;height:5px;accent-color:#10b981;margin:8px 0;}
+        #task-dock small {font-size:10px;color:#64748b;}
+        #task-dock .task-items {max-height:36vh;overflow:auto;margin-top:8px;}
+        #task-dock article {border-top:1px solid #e5e7eb;padding:9px 0;overflow-wrap:anywhere;}
+        #task-dock article button {margin:5px 5px 0 0;border:1px solid #d1d5db;border-radius:6px;padding:4px 7px;}
+        #task-dock .task-error {color:#b45309;}
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 selection:bg-gray-200 selection:text-gray-900">
@@ -1645,6 +1655,8 @@ function clearPendingMutation() {
 }
 
 async function sendMutation(payload) {
+    return TcgTasks.enqueueMutation(payload);
+}
     if (navigator.onLine === false) throw syncApiError('ออฟไลน์อยู่ กรุณาเก็บฟอร์มไว้แล้วบันทึกเมื่อเชื่อมต่อได้', 'OFFLINE');
     if (syncState.writing) throw syncApiError('กำลังบันทึกรายการอื่น กรุณารอสักครู่', 'BUSY');
     if (syncState.pending) throw syncApiError('มีรายการเดิมรอตรวจผล กรุณากด “ตรวจผลบันทึก” ด้านบนก่อน', 'PENDING');
@@ -1901,15 +1913,16 @@ function startDataSync() {
                         deliveryStatus: status,
                         trackingNumber: tracking
                     });
-                if (result.status !== 'success') {
+                if (result.status !== 'queued') {
                     throw new Error(result.message || 'บันทึกไม่สำเร็จ');
                 }
         
 
         
-                renderSalesListWhenSafe('full-sales-list', allSales);
+                box.dataset.dirty = 'false';
+                if (box.contains(document.activeElement)) document.activeElement.blur();
         
-                showToast('✅ บันทึกสถานะและเลขพัสดุแล้ว');
+                showToast('☁️ รับงานจัดส่งเข้าคิวแล้ว');
             } catch (error) {
                 showToast('❌ ' + error.message, 'error');
             } finally {
@@ -2436,7 +2449,7 @@ function startDataSync() {
                     });
             
                     document.getElementById('binder-style-modal').close();
-                    showToast('✅ บันทึกปกแฟ้มแล้ว');
+                    showToast('☁️ รับงานแต่งปกเข้าคิวแล้ว');
                 } catch (error) {
                     showToast(error.message, 'error');
                 } finally {
@@ -2834,6 +2847,7 @@ function closeChartModal() {
         function openImageLightbox(url) { document.getElementById('lightbox-img').src = getSafeImageUrl(url); toggleImageModal(true); }
 
         function openAddForm() {
+    TcgTasks.clearImage();
     editingCardVersion = '';
     if (!adminPin) return loginAdmin();
     document.getElementById('card-form').reset();
@@ -2858,6 +2872,7 @@ function closeChartModal() {
 }
 
         function openEditForm(id) {
+            TcgTasks.clearImage();
             const card = allCards.find(c => c.id == id); if (!card) return;
             editingCardVersion = card.recordVersion || '';
             document.getElementById('form-mode').value = 'update';
@@ -3009,10 +3024,10 @@ function closeChartModal() {
                     sellQty: values.qty, soldPrice: values.price, unitCost: values.unitCost,
                     fees: values.fees, shippingCost: values.shippingCost, saleId: currentSaleId
                 });
-                if (result.status !== 'success') throw new Error(result.message || 'บันทึกไม่สำเร็จ');
+                if (result.status !== 'queued') throw new Error(result.message || 'บันทึกไม่สำเร็จ');
                 currentSaleId = '';
                 document.getElementById('sell-modal').classList.add('hidden');
-                showToast('✅ บันทึกการขายและต้นทุนแล้ว');
+                showToast('☁️ รับรายการขายเข้าคิวแล้ว');
 
             } catch (error) {
                 showToast('❌ ' + error.message, 'error');
@@ -3143,7 +3158,6 @@ function closeChartModal() {
             if (!modal.open) modal.showModal();
         }
 
-        // ===== ส่งข้อมูลฟอร์ม (เพิ่ม/แก้ไขการ์ด) =====
         async function submitForm(e) {
             e.preventDefault();
             if (!adminPin) return showToast('กรุณาล็อกอินด้วยรหัสผู้ดูแลก่อน', 'error');
@@ -3197,8 +3211,8 @@ function closeChartModal() {
                     }
                 }
                 const result = await sendMutation(payload);
-                if (result.status === 'success') {
-                    showToast('✅ บันทึกข้อมูลการ์ดสำเร็จ');
+                if (result.status === 'queued') {
+                    showToast('☁️ เก็บงานในเครื่องแล้ว กำลังส่งเบื้องหลัง');
                     toggleModal(false);
 
                 } else {
@@ -3231,8 +3245,8 @@ function closeChartModal() {
                     rowIndex: document.getElementById('form-rowIndex').value
                 };
                 const result = await sendMutation(payload);
-                if (result.status === 'success') {
-                    showToast('🗑️ ลบข้อมูลสำเร็จ');
+                if (result.status === 'queued') {
+                    showToast('☁️ รับงานลบเข้าคิวแล้ว');
                     toggleModal(false);
 
                 } else {
@@ -3276,8 +3290,8 @@ async function submitPack(e) {
     try {
         const result = await sendMutation(payload);
         
-        if (result.status === 'success') {
-            showToast('📦 บันทึกต้นทุนแพ็คสำเร็จ!');
+        if (result.status === 'queued') {
+            showToast('☁️ รับรายการแพ็คเข้าคิวแล้ว');
             document.getElementById('pack-modal').classList.add('hidden');
             e.target.reset(); // ล้างฟอร์ม
 
@@ -3294,6 +3308,8 @@ async function submitPack(e) {
 
        // ===== ย่อขนาดและอัปโหลดรูปภาพ =====
 function compressAndUploadImage(event) {
+    TcgTasks.chooseImage(event);
+}
     const file = event.target.files[0];
     if (!file) return;
     
@@ -3762,5 +3778,7 @@ function compressAndUploadImage(event) {
                 startDataSync();
         
     </script>
+<aside id="task-dock" aria-label="สถานะงานเบื้องหลัง" hidden></aside>
+    <script src="./background-tasks.js?v=1"></script>
 </body>
 </html>

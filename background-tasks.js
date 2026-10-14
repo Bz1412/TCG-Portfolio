@@ -267,7 +267,7 @@ const TcgTasks = (() => {
         const live = jobs.filter(active);
         const recent = jobs.filter(j => j.state === 'done' && Date.now()-j.completedAt < 300000);
         const shown = [...live, ...recent.slice(-4)];
-        const visible = shown.length > 0 || !!fatalMessage;
+        const visible = live.length > 0 || !!fatalMessage;
         host.hidden = !visible;
         const image = jobs.find(j => j.id === currentImageTask && j.state === 'done');
         if (image?.result?.url) {

@@ -486,6 +486,50 @@
         #task-dock article {border-top:1px solid #e5e7eb;padding:9px 0;overflow-wrap:anywhere;}
         #task-dock article button {margin:5px 5px 0 0;border:1px solid #d1d5db;border-radius:6px;padding:4px 7px;}
         #task-dock .task-error {color:#b45309;}
+        #task-dock {
+            width: min(300px, calc(100vw - 24px));
+            right: 12px;
+            bottom: 84px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            box-shadow: 0 3px 12px #00000015;
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity .3s ease, transform .3s ease;
+        }
+        
+        #task-dock .task-heading {
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            line-height: 20px;
+        }
+        
+        #task-dock .task-heading > span:first-child {
+            min-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        
+        /* ซ่อนแถบความคืบหน้าและข้อความเสริม */
+        #task-dock progress,
+        #task-dock > small {
+            display: none;
+        }
+        
+        /* รายละเอียดจะปรากฏเมื่อกดแถบ */
+        #task-dock .task-items {
+            max-height: 30vh;
+            overflow-y: auto;
+        }
+        
+        #task-dock.task-fade-out {
+            opacity: 0;
+            transform: translateY(8px);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 selection:bg-gray-200 selection:text-gray-900">

@@ -14,7 +14,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="./background-tasks.js?v=1"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
@@ -1658,41 +1657,6 @@ function clearPendingMutation() {
 async function sendMutation(payload) {
     return TcgTasks.enqueueMutation(payload);
 }
-    if (navigator.onLine === false) throw syncApiError('ออฟไลน์อยู่ กรุณาเก็บฟอร์มไว้แล้วบันทึกเมื่อเชื่อมต่อได้', 'OFFLINE');
-    if (syncState.writing) throw syncApiError('กำลังบันทึกรายการอื่น กรุณารอสักครู่', 'BUSY');
-    if (syncState.pending) throw syncApiError('มีรายการเดิมรอตรวจผล กรุณากด “ตรวจผลบันทึก” ด้านบนก่อน', 'PENDING');
-    if (!syncState.confirmedProtocol) {
-        await loadData({silent: true, force: true});
-        if (!syncState.confirmedProtocol) throw syncApiError('กรุณาเชื่อมต่อเซิร์ฟเวอร์และ Deploy รหัส.gs รุ่นซิงก์ใหม่ก่อนบันทึก', 'CONFIG');
-    }
-    if (syncState.writing || syncState.pending) throw syncApiError('มีรายการอื่นกำลังบันทึกหรือรอตรวจผล กรุณารอสักครู่', 'BUSY');
-    const requestId = 'REQ-' + (globalThis.crypto?.randomUUID?.() || Date.now() + '-' + Math.random().toString(36).slice(2));
-    const body = {...payload, requestId, syncSchemaVersion: 1};
-    const pending = {...body}; delete pending.pin;
-    syncState.pending = pending; storageSet(SYNC_PENDING_STORAGE, JSON.stringify(pending));
-    syncState.writing = true; stopReadsForWrite(); updateSyncStatus();
-    try {
-        const result = await requestApi(body);
-        if (result.requestId !== requestId) throw syncApiError('เซิร์ฟเวอร์ยังไม่ยืนยันรหัสรายการบันทึก', 'RESPONSE', true);
-        if (payload.action === 'updateSaleDelivery') {
-            document.querySelectorAll('[data-sale-id]').forEach(box => {
-                if (box.dataset.saleId === String(payload.saleId)) box.dataset.dirty = 'false';
-            });
-            if (document.activeElement?.closest?.('[data-sale-id]')) document.activeElement.blur();
-        }
-        applySnapshot(result);
-        clearPendingMutation();
-        return result;
-    } catch (error) {
-        if (!error.uncertain && error.code !== 'UNCERTAIN') clearPendingMutation();
-        syncState.state = ['NETWORK', 'TIMEOUT', 'HTTP', 'RESPONSE'].includes(error.code) ? 'error' : 'online';
-        syncState.lastError = error.message;
-        if (syncState.pending) error.message = 'ยังไม่ยืนยันผลบันทึก กด “ตรวจผลบันทึก” ด้านบนก่อนส่งซ้ำ';
-        throw error;
-    } finally {
-        syncState.writing = false; updateSyncStatus(); scheduleDataSync(1500);
-    }
-}
 
 async function checkPendingMutation({silent = false} = {}) {
     if (!syncState.pending || syncState.writing) return;
@@ -3308,62 +3272,10 @@ async function submitPack(e) {
 }
 
        // ===== ย่อขนาดและอัปโหลดรูปภาพ =====
-function compressAndUploadImage(event) {
-    TcgTasks.chooseImage(event);
-}
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const overlay = document.getElementById('upload-overlay');
-    overlay.classList.remove('hidden');
-    overlay.classList.add('flex');
-    
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (e) => {
-        const img = new Image();
-        img.src = e.target.result;
-        img.onload = async () => {
-            const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 800; // ย่อขนาดเพื่อไม่ให้ไฟล์หนักเกินไป
-            const scaleSize = MAX_WIDTH / img.width;
-            canvas.width = MAX_WIDTH;
-            canvas.height = img.height * scaleSize;
-            
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            
-            // 🌟 แก้ไขที่ 1: ตัดคำนำหน้า 'data:image/jpeg;base64,' ออกก่อนส่ง
-            const base64String = canvas.toDataURL('image/jpeg', 0.8);
-            const base64Data = base64String.split(',')[1]; 
-            const fileName = "Card_" + Date.now() + ".jpg"; // สร้างชื่อไฟล์แบบสุ่ม
-            
-            try {
-                const result = await requestApi({ 
-                        action: 'uploadImage', // 🌟 แก้ไขที่ 2: เปลี่ยนชื่อ action ให้ตรงกับ Apps Script
-                        base64: base64Data,    // 🌟 แก้ไขที่ 3: เปลี่ยนชื่อตัวแปรให้ตรง และเพิ่ม fileName
-                        fileName: fileName,
-                        mimeType: 'image/jpeg',
-                        pin: adminPin 
-                    }, {timeout: 60000});
+        function compressAndUploadImage(event) {
+            TcgTasks.chooseImage(event);
+        }
                 
-                if (result.status === 'success') {
-                    document.getElementById('form-image').value = result.url;
-                    document.getElementById('modal-image-preview').src = result.url;
-                    showToast('✅ อัปโหลดรูปภาพสำเร็จ');
-                } else {
-                    showToast('❌ อัปโหลดล้มเหลว: ' + result.message, 'error');
-                }
-            } catch (err) {
-                showToast('❌ ' + err.message + ' · รูปยังไม่ถูกแนบ กรุณาตรวจแล้วลองใหม่', 'error');
-            } finally {
-                overlay.classList.add('hidden');
-                overlay.classList.remove('flex');
-            }
-        };
-    };
-}
-
         // ==========================================
         // ระบบซ่อน/แสดง ฟิลด์การ์ดเกรด
         // ==========================================

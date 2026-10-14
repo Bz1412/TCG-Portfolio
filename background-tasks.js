@@ -259,6 +259,59 @@ const TcgTasks = (() => {
         finally { busy = false; void render(); kick(5000); scheduleDataSync(); }
     }
 
+    let taskDockTimer = null;
+    let taskDockDoneKey = '';
+    
+    function updateTaskDockVisibility(host, live, recent, hasError) {
+        // มีงานค้างหรือข้อผิดพลาด ให้แสดงต่อ
+        if (live.length || hasError) {
+            clearTimeout(taskDockTimer);
+            taskDockTimer = null;
+    
+            host.hidden = false;
+            host.classList.remove('task-fade-out');
+            return true;
+        }
+    
+        const latest = recent.reduce((newest, job) =>
+            !newest || job.completedAt > newest.completedAt
+                ? job
+                : newest
+        , null);
+    
+        if (!latest) {
+            clearTimeout(taskDockTimer);
+            taskDockTimer = null;
+            host.hidden = true;
+            return false;
+        }
+    
+        const doneKey = latest.id + ':' + latest.completedAt;
+    
+        // งานเดิมที่ซ่อนไปแล้ว ไม่ต้องแสดงซ้ำตอนตรวจคิว
+        if (doneKey === taskDockDoneKey) {
+            return !host.hidden;
+        }
+    
+        taskDockDoneKey = doneKey;
+        clearTimeout(taskDockTimer);
+    
+        expanded = false;
+        host.hidden = false;
+        host.classList.remove('task-fade-out');
+    
+        taskDockTimer = setTimeout(() => {
+            host.classList.add('task-fade-out');
+    
+            taskDockTimer = setTimeout(() => {
+                host.hidden = true;
+                taskDockTimer = null;
+            }, 300);
+        }, 1800);
+    
+        return true;
+    }
+
     async function render() {
         const host = document.getElementById('task-dock');
         if (!host) return;
@@ -267,8 +320,12 @@ const TcgTasks = (() => {
         const live = jobs.filter(active);
         const recent = jobs.filter(j => j.state === 'done' && Date.now()-j.completedAt < 300000);
         const shown = [...live, ...recent.slice(-4)];
-        const visible = live.length > 0 || !!fatalMessage;
-        host.hidden = !visible;
+        const visible = updateTaskDockVisibility(
+            host,
+            live,
+            recent,
+            !!fatalMessage
+        );
         const image = jobs.find(j => j.id === currentImageTask && j.state === 'done');
         if (image?.result?.url) {
             document.getElementById('form-image').value = image.result.url;

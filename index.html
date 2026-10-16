@@ -11,6 +11,7 @@
     <meta name="theme-color" content="#f9fafb">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTgxOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTElIiBmaWxsPSIjZmZmZmZmIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAwIiBmb250LXdlaWdodD0iYm9sZCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VENHPC90ZXh0Pjwvc3ZnPg==">
     <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTgxOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTElIiBmaWxsPSIjZmZmZmZmIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAwIiBmb250LXdlaWdodD0iYm9sZCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VENHPC90ZXh0Pjwvc3ZnPg==">
+    <link rel="stylesheet" href="./card-scanner.css?v=1">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -841,6 +842,15 @@
             <div class="flex justify-center bg-gray-50 p-4 rounded-2xl border border-gray-100 cursor-pointer" onclick="openImageLightbox(document.getElementById('modal-image-preview').src)">
                 <img id="modal-image-preview" src="" class="h-40 object-contain rounded-lg drop-shadow-sm" onerror="this.src='https://placehold.co/150/f9fafb/9ca3af?text=No+Image'">
             </div>
+
+            <button
+                type="button"
+                onclick="CardScanner.open()"
+                class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold text-sm"
+            >
+                📷 สแกนการ์ดหลายใบ
+            </button>
+            
             <form id="card-form" onsubmit="submitForm(event)" class="space-y-3.5 pt-2">
                 <input type="hidden" id="form-mode"> <input type="hidden" id="form-rowIndex"> <input type="hidden" id="form-id">
                 <div>
@@ -3736,6 +3746,7 @@ async function submitPack(e) {
         
     </script>
 <aside id="task-dock" aria-label="สถานะงานเบื้องหลัง" hidden></aside>
-    <script src="./background-tasks.js?v=1"></script>
+    <script src="./background-tasks.js?v=4"></script>
+    <script src="./card-scanner.js?v=1"></script>
 </body>
 </html>

@@ -2257,22 +2257,6 @@ function startDataSync() {
             return maxTotal;
         }
 
-        // ===== BINDER LOGIC =====
-        function parseCardNum(str) {
-            if (!str) return null;
-            const m = String(str).match(/^(\d+)/);
-            return m ? parseInt(m[1], 10) : null;
-        }
-
-        function getTotalFromSet(setCards) {
-            let maxTotal = 0;
-            setCards.forEach(c => {
-                const m = String(c.cardNumber||'').match(/\/(\d+)/);
-                if (m) maxTotal = Math.max(maxTotal, parseInt(m[1], 10));
-            });
-            return maxTotal;
-        }
-
         function renderBinderShelf() {
                 const groups = new Map();
             
@@ -2746,47 +2730,6 @@ function calcBulkValue() {
     
     alert(`💰 สรุปมูลค่าการ์ดที่เลือก\n\nจำนวน: ${selectedCards.size} รายการ (รวม ${totalQty} ใบ)\nมูลค่าประเมินรวม: ฿${totalVal.toLocaleString()}`);
     toggleSelectMode(); // คำนวณเสร็จแล้ว ปิดบาร์เลือกให้ทันที
-}
-
-// ==========================================
-// ส่วนที่ 2: ระบบสถิติแบบ Modal ลิสต์ (หน้าขาว)
-// ==========================================
-function openStatsModal() {
-    const content = document.getElementById('stats-content');
-    
-    if (!allCards || allCards.length === 0) {
-        content.innerHTML = '<p class="text-center text-gray-500 text-sm">ยังไม่มีข้อมูลการ์ดในคลัง</p>';
-        document.getElementById('stats-modal').classList.remove('hidden');
-        return;
-    }
-
-    // จัดกลุ่มตาม Rarity
-    const rarityCount = {};
-    allCards.forEach(c => {
-        if (c.qty > 0 && String(c.isWishlist) !== 'true') {
-            const r = c.rarity && c.rarity !== '-' ? c.rarity : 'ไม่ระบุ';
-            rarityCount[r] = (rarityCount[r] || 0) + Number(c.qty);
-        }
-    });
-
-    const rarityHtml = Object.entries(rarityCount)
-        .sort((a, b) => b[1] - a[1]) // เรียงจากมากไปน้อย
-        .map(([r, count]) => `
-            <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
-                <span class="text-sm font-bold text-gray-700">${r}</span>
-                <span class="text-sm font-black text-emerald-600">${count} ใบ</span>
-            </div>
-        `).join('');
-
-    content.innerHTML = `
-        <div>
-            <h3 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">🌟 จำนวนแยกตามระดับความหายาก</h3>
-            <div class="space-y-2 max-h-64 overflow-y-auto scrollbar-hide">
-                ${rarityHtml || '<p class="text-xs text-gray-400">ไม่มีข้อมูล</p>'}
-            </div>
-        </div>
-    `;
-    document.getElementById('stats-modal').classList.remove('hidden');
 }
 
 // ==========================================
@@ -3747,7 +3690,8 @@ async function submitPack(e) {
         
     </script>
 <aside id="task-dock" aria-label="สถานะงานเบื้องหลัง" hidden></aside>
-    <script src="./background-tasks.js?v=4"></script>
+    <script src="./background-tasks.js?v=6"></script>
     <script src="./card-scanner.js?v=4"></script>
+    <script src="./binder-cover-addon.js?v=1"></script>
 </body>
 </html>

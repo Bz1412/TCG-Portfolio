@@ -1,3 +1,4 @@
+/* background-tasks.js — v9 */
 const TcgTasks = (() => {
     const DB_NAME = 'tcg-background-v1';
     const endpoint = API_URL;
@@ -24,12 +25,14 @@ const TcgTasks = (() => {
         update: 'แก้ไขการ์ด',
         delete: 'ลบการ์ด',
         sell: 'บันทึกขาย',
+        sellBundle: 'บันทึกขายเหมา',
         addPack: 'บันทึกแพ็ค',
         updateSaleDelivery: 'บันทึกการจัดส่ง',
         saveBinderSettings: 'แต่งปกแฟ้ม',
-        sellBundle: 'บันทึกขายเหมา',
         uploadImage: 'อัปโหลดรูป'
     };
+
+    // ===== ฐานข้อมูลคิวในเครื่อง =====
 
     function database() {
         if (!dbPromise) {
@@ -146,6 +149,8 @@ const TcgTasks = (() => {
         void render();
     }
 
+    // ===== ตรวจรายการที่ใช้ข้อมูลเดียวกัน =====
+
     const entity = payload =>
         ['update', 'delete', 'sell'].includes(payload.action)
             ? 'card:' + payload.id
@@ -161,10 +166,12 @@ const TcgTasks = (() => {
                 item => 'card:' + String(item.id)
             );
         }
-    
+
         const key = entity(payload);
         return key ? [key] : [];
     }
+
+    // ===== เก็บงานเข้าคิว =====
 
     async function enqueue(payload, extra = {}) {
         if (!adminPin) {
@@ -177,7 +184,7 @@ const TcgTasks = (() => {
         delete clean.requestId;
 
         const id = 'REQ-' + crypto.randomUUID();
-        const {blob, ...metadata} = extra;
+        const { blob, ...metadata } = extra;
 
         const job = {
             id,
@@ -188,6 +195,7 @@ const TcgTasks = (() => {
             attempts: 0,
             nextAt: 0,
             entity: entity(clean),
+
             label: titles[clean.action] + ' · ' + (
                 clean.name ||
                 clean.setName ||
@@ -196,12 +204,14 @@ const TcgTasks = (() => {
                 extra.fileName ||
                 ''
             ),
+
             payload: {
                 ...clean,
                 requestId: id,
                 syncSchemaVersion: 1,
                 responseMode: 'ack'
             },
+
             ...metadata
         };
 
@@ -209,15 +219,17 @@ const TcgTasks = (() => {
             job.stage = 'รอรูปภาพก่อนบันทึกการ์ด';
         }
 
-        // ตรวจงานซ้ำและบันทึกภายใน transaction เดียวกัน
         await transaction('readwrite', (store, done, images) => {
             store.getAll().onsuccess = event => {
                 const keys = entityKeys(clean);
-                const conflict = e.target.result.some(j =>
-                    j.endpoint === endpoint &&
-                    active(j) &&
-                    entityKeys(j.payload || {}).some(key => keys.includes(key))
-                );    
+
+                const conflict = event.target.result.some(job =>
+                    job.endpoint === endpoint &&
+                    active(job) &&
+                    entityKeys(job.payload || {}).some(
+                        key => keys.includes(key)
+                    )
+                );
 
                 if (conflict) {
                     done(false);
@@ -227,7 +239,7 @@ const TcgTasks = (() => {
                 store.add(job);
 
                 if (blob) {
-                    images.add({id, blob});
+                    images.add({ id, blob });
                 }
 
                 done(true);
@@ -267,6 +279,8 @@ const TcgTasks = (() => {
             imageTaskId: dependency
         });
     }
+
+    // ===== อัปโหลดรูปจากฟอร์มการ์ด =====
 
     function clearImage() {
         currentImageTask = '';
@@ -313,16 +327,14 @@ const TcgTasks = (() => {
         document.getElementById('form-image').value = '';
 
         imageReady = enqueue(
-            {action: 'uploadImage'},
-            {blob: file, fileName: file.name}
+            { action: 'uploadImage' },
+            { blob: file, fileName: file.name }
         ).then(result => {
             if (currentImageTask === session) {
                 currentImageTask = result.taskId;
             }
 
-            showToast(
-                'รับรูปเข้าคิวแล้ว กรอกข้อมูลและกดบันทึกต่อได้ค่ะ'
-            );
+            showToast('รับรูปเข้าคิวแล้ว กรอกข้อมูลและกดบันทึกต่อได้ค่ะ');
 
             return result.taskId;
         }).catch(error => {
@@ -387,10 +399,13 @@ const TcgTasks = (() => {
 
                 reader.readAsDataURL(jpg);
             });
+
         } finally {
             bitmap.close();
         }
     }
+
+    // ===== ส่งงานและตรวจผลเดิม =====
 
     async function complete(job, result = {}) {
         job.state = 'done';
@@ -460,7 +475,7 @@ const TcgTasks = (() => {
                     return false;
                 }
 
-                // ส่งซ้ำด้วย requestId และข้อมูลเดิมเท่านั้น
+                // ใช้ requestId และข้อมูลเดิมเมื่อส่งซ้ำ
                 job.state = 'queued';
             }
 
@@ -527,7 +542,7 @@ const TcgTasks = (() => {
                 ? 'กำลังส่งรูปและรอลิงก์'
                 : 'กำลังส่งและรอยืนยัน';
 
-            // เก็บสถานะก่อนส่งข้อมูลจริงเสมอ
+            // เก็บสถานะก่อนส่งจริง
             await put(job);
             signal();
 
@@ -560,9 +575,8 @@ const TcgTasks = (() => {
 
             await complete(job, reply.result || {});
             return true;
+
         } catch (error) {
-            // ถ้าเซิร์ฟเวอร์ยืนยันแล้ว แต่เก็บผลในเครื่องไม่สำเร็จ
-            // ให้ตรวจ receipt จากสถานะ sending ที่เก็บไว้ในรอบถัดไป
             if (job.state === 'done') throw error;
 
             const uncertain =
@@ -640,7 +654,7 @@ const TcgTasks = (() => {
 
             await navigator.locks.request(
                 'tcg-outbox:' + endpoint,
-                {ifAvailable: true},
+                { ifAvailable: true },
                 async lock => {
                     if (!lock) return;
 
@@ -687,6 +701,7 @@ const TcgTasks = (() => {
                         }
 
                         const fresh = await list();
+
                         const byId = new Map(
                             fresh.map(job => [job.id, job])
                         );
@@ -727,20 +742,23 @@ const TcgTasks = (() => {
                     }
                 }
             );
+
         } catch (error) {
             fatalMessage = error.message || 'คิวงานหยุดชั่วคราว';
+
         } finally {
             busy = false;
 
             void render();
             kick(5000);
 
-            // ไม่เลื่อนเวลาซิงก์ออกไปเรื่อย ๆ ตอนคิวว่าง
             if (pausedReads && !syncState.readPromise) {
                 scheduleDataSync();
             }
         }
     }
+
+    // ===== แถบสถานะและการจางหาย =====
 
     let taskDockTimer = null;
     let taskDockDoneKey = '';
@@ -799,7 +817,6 @@ const TcgTasks = (() => {
 
     async function render() {
         const host = document.getElementById('task-dock');
-
         if (!host) return;
 
         const version = ++renderVersion;
@@ -940,10 +957,12 @@ const TcgTasks = (() => {
         `;
     }
 
+    // ===== ลองใหม่ / ยกเลิก / คัดลอก =====
+
     async function changeJob(id, cancel) {
         await navigator.locks.request(
             'tcg-outbox:' + endpoint,
-            {ifAvailable: true},
+            { ifAvailable: true },
             async lock => {
                 if (!lock) {
                     showToast(
@@ -988,6 +1007,7 @@ const TcgTasks = (() => {
                     if (currentImageTask === id) {
                         clearImage();
                     }
+
                 } else {
                     job.state = 'queued';
                     job.nextAt = 0;
@@ -1008,7 +1028,7 @@ const TcgTasks = (() => {
 
             if (!job || job.endpoint !== endpoint) return;
 
-            const data = {...job.payload};
+            const data = { ...job.payload };
             delete data.base64;
 
             await navigator.clipboard.writeText(
@@ -1016,6 +1036,7 @@ const TcgTasks = (() => {
             );
 
             showToast('คัดลอกแล้ว');
+
         } catch {
             showToast(
                 'คัดลอกไม่สำเร็จ กรุณาอนุญาตคลิปบอร์ด',
@@ -1023,6 +1044,8 @@ const TcgTasks = (() => {
             );
         }
     }
+
+    // ===== รูปแบบแถบงาน =====
 
     function ensureTaskDock() {
         if (!document.getElementById('task-dock')) {
@@ -1146,6 +1169,8 @@ const TcgTasks = (() => {
         document.head.appendChild(style);
     }
 
+    // ===== เริ่มระบบคิว =====
+
     function start() {
         if (started) return;
 
@@ -1184,7 +1209,8 @@ const TcgTasks = (() => {
         kick(20);
     }
 
-    // นำเข้าการ์ดจากตัวสแกน พร้อมรูปของแต่ละใบ
+    // ===== นำเข้าการ์ดจากตัวสแกน =====
+
     async function enqueueScannedCards(items) {
         if (!adminPin) {
             throw new Error('กรุณาเข้าสู่ระบบผู้ดูแลก่อน');
@@ -1265,9 +1291,11 @@ const TcgTasks = (() => {
                 condition: String(p.condition || 'NM'),
                 qty: Number(p.qty),
                 price: Number(p.price),
+
                 buyPrice: String(p.buyPrice ?? '').trim() === ''
                     ? ''
                     : Number(p.buyPrice),
+
                 tags: String(p.tags || ''),
                 image: '',
                 gradeCompany: '',
@@ -1299,6 +1327,7 @@ const TcgTasks = (() => {
                     id: imageId,
                     label: 'อัปโหลดรูป · ' + clean.name,
                     stage: 'รอคิว',
+
                     payload: {
                         action: 'uploadImage',
                         requestId: imageId,
@@ -1315,6 +1344,7 @@ const TcgTasks = (() => {
                     stage: 'รอรูปภาพก่อนบันทึกการ์ด',
                     imageTaskId: imageId,
                     scannerFingerprint: fingerprint,
+
                     payload: {
                         ...clean,
                         requestId: id,
@@ -1325,7 +1355,6 @@ const TcgTasks = (() => {
             };
         });
 
-        // เก็บรูปและรายการทุกใบใน transaction เดียวกัน
         const result = await transaction(
             'readwrite',
             (store, done, images) => {
@@ -1379,7 +1408,7 @@ const TcgTasks = (() => {
                         });
                     }
 
-                    done({accepted});
+                    done({ accepted });
                 };
             }
         );
@@ -1397,7 +1426,8 @@ const TcgTasks = (() => {
         };
     }
 
-    // บันทึกปกแฟ้ม พร้อมอัปโหลดรูปที่เลือกเอง
+    // ===== อัปโหลดปกและบันทึกการตั้งค่าแฟ้ม =====
+
     async function enqueueBinderSettings(payload, file = null) {
         if (!adminPin) {
             throw new Error('กรุณาเข้าสู่ระบบผู้ดูแลก่อน');
@@ -1447,6 +1477,7 @@ const TcgTasks = (() => {
             stage: 'รออัปโหลดปก',
             label: 'อัปโหลดปก · ' + clean.setName,
             fileName: file.name || 'binder.jpg',
+
             payload: {
                 action: 'uploadImage',
                 requestId: imageId,
@@ -1462,6 +1493,7 @@ const TcgTasks = (() => {
             stage: 'รอรูปหน้าปก',
             label: 'แต่งปกแฟ้ม · ' + clean.setName,
             imageTaskId: imageId,
+
             payload: {
                 ...clean,
                 requestId: id,

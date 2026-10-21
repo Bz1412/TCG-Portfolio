@@ -27,6 +27,7 @@ const TcgTasks = (() => {
         addPack: 'บันทึกแพ็ค',
         updateSaleDelivery: 'บันทึกการจัดส่ง',
         saveBinderSettings: 'แต่งปกแฟ้ม',
+        sellBundle: 'บันทึกขายเหมา',
         uploadImage: 'อัปโหลดรูป'
     };
 
@@ -154,6 +155,17 @@ const TcgTasks = (() => {
                     ? 'sale:' + payload.saleId
                     : '';
 
+    function entityKeys(payload) {
+        if (payload.action === 'sellBundle') {
+            return (payload.items || []).map(
+                item => 'card:' + String(item.id)
+            );
+        }
+    
+        const key = entity(payload);
+        return key ? [key] : [];
+    }
+
     async function enqueue(payload, extra = {}) {
         if (!adminPin) {
             throw new Error('กรุณาเข้าสู่ระบบผู้ดูแลก่อน');
@@ -200,12 +212,12 @@ const TcgTasks = (() => {
         // ตรวจงานซ้ำและบันทึกภายใน transaction เดียวกัน
         await transaction('readwrite', (store, done, images) => {
             store.getAll().onsuccess = event => {
-                const conflict = event.target.result.some(existing =>
-                    existing.endpoint === endpoint &&
-                    job.entity &&
-                    existing.entity === job.entity &&
-                    active(existing)
-                );
+                const keys = entityKeys(clean);
+                const conflict = e.target.result.some(j =>
+                    j.endpoint === endpoint &&
+                    active(j) &&
+                    entityKeys(j.payload || {}).some(key => keys.includes(key))
+                );    
 
                 if (conflict) {
                     done(false);
